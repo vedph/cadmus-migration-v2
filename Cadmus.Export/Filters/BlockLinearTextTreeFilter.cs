@@ -30,6 +30,7 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
         // if ends with a single \n just return the node, no split required
         if (i == text.Length - 1) return node;
 
+        int start = 0;
         while (i > -1)
         {
             // create head node with payload equal to node except for text
@@ -37,18 +38,21 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
             current?.AddChild(left);
 
             // left = text up to \n included
-            left.Data!.Text = text[..(i + 1)];
+            left.Data!.Text = text[start..(i + 1)];
             head ??= left;
 
             // right = text past \n up to the next \n if any; child of left
             TreeNode<TextSpanPayload> right = new(node.Data.Clone());
             int j = text.IndexOf('\n', i + 1);
-            right.Data!.Text = j > -1 ? text[(i + 1)..j] : text[(i + 1)..];
+            right.Data!.Text = j > -1
+                ? text[(i + 1)..(j + 1)]
+                : text[(i + 1)..];
             left.AddChild(right);
 
             // move past \n
             current = right;
-            i = j;
+            i = j > -1? j + 1 : j;
+            start = i;
         }
 
         return head!;
