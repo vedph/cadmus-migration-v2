@@ -279,7 +279,7 @@ public abstract class ItemComposer
 
         // apply tree filters
         foreach (ITextTreeFilter filter in TextTreeFilters)
-            tree = filter.Apply(tree);
+            tree = filter.Apply(tree, item);
 
         return tree;
     }

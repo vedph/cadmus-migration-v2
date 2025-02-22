@@ -1,4 +1,5 @@
-﻿using Fusi.Tools.Data;
+﻿using Cadmus.Core;
+using Fusi.Tools.Data;
 
 namespace Cadmus.Export;
 
@@ -11,6 +12,8 @@ public interface ITextTreeFilter
     /// Applies this filter to the specified tree, generating a new tree.
     /// </summary>
     /// <param name="tree">The tree's root node.</param>
+    /// <param name="item">The item being rendered.</param>
     /// <returns>The root node of the new tree.</returns>
-    public TreeNode<TextSpanPayload> Apply(TreeNode<TextSpanPayload> tree);
+    public TreeNode<TextSpanPayload> Apply(TreeNode<TextSpanPayload> tree,
+        IItem item);
 }
