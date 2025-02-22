@@ -19,43 +19,47 @@ namespace Cadmus.Export.Filters;
 public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
 {
     private static TreeNode<TextSpanPayload> SplitNode(
-        TreeNode<TextSpanPayload> node)
+          TreeNode<TextSpanPayload> node)
     {
-        TreeNode<TextSpanPayload>? head = null;
-        TreeNode<TextSpanPayload>? current = null;
-
         string text = node.Data!.Text!;
         int i = text.IndexOf('\n');
 
-        // if ends with a single \n just return the node, no split required
-        if (i == text.Length - 1) return node;
+        // if no newline found, return the node as is
+        if (i == -1) return node;
 
-        int start = 0;
-        while (i > -1)
+        // create the first left node
+        TreeNode<TextSpanPayload> head = new(node.Data.Clone());
+        head.Data!.Text = text[..(i + 1)];
+        TreeNode<TextSpanPayload> current = head;
+
+        // process remaining text
+        int start = i + 1;
+        while (start < text.Length)
         {
-            // create head node with payload equal to node except for text
-            TreeNode<TextSpanPayload> left = new(node.Data.Clone());
-            current?.AddChild(left);
+            i = text.IndexOf('\n', start);
 
-            // left = text up to \n included
-            left.Data!.Text = text[start..(i + 1)];
-            head ??= left;
+            // create new node with the next segment
+            TreeNode<TextSpanPayload> next = new(node.Data.Clone());
+            if (i == -1)
+            {
+                // no more newlines, take rest of text
+                next.Data!.Text = text[start..];
+            }
+            else
+            {
+                // take text up to and including newline
+                next.Data!.Text = text[start..(i + 1)];
+            }
 
-            // right = text past \n up to the next \n if any; child of left
-            TreeNode<TextSpanPayload> right = new(node.Data.Clone());
-            int j = text.IndexOf('\n', i + 1);
-            right.Data!.Text = j > -1
-                ? text[(i + 1)..(j + 1)]
-                : text[(i + 1)..];
-            left.AddChild(right);
+            // link nodes
+            current.AddChild(next);
+            current = next;
 
-            // move past \n
-            current = right;
-            i = j > -1? j + 1 : j;
-            start = i;
+            if (i == -1) break;
+            start = i + 1;
         }
 
-        return head!;
+        return head;
     }
 
     /// <summary>
@@ -68,7 +72,7 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
     /// </returns>
     /// <exception cref="ArgumentNullException">tree</exception>
     public TreeNode<TextSpanPayload> Apply(TreeNode<TextSpanPayload> tree,
-        IItem item)
+          IItem item)
     {
         ArgumentNullException.ThrowIfNull(tree);
 
@@ -79,15 +83,18 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
         {
             if (node.Data?.Text?.Contains('\n') == true)
             {
-                // current -> left -> right
-                TreeNode<TextSpanPayload> left = SplitNode(node);
-                current.AddChild(left);
-                // continue from right
-                current = left.Children[0];
+                // split node and add to current
+                TreeNode<TextSpanPayload> splitHead = SplitNode(node);
+                current.AddChild(splitHead);
+
+                // find the last node in the split chain
+                current = splitHead;
+                while (current.Children.Count > 0)
+                    current = current.Children[0];
             }
             else
             {
-                // current -> node
+                // add node as is
                 current.AddChild(node);
                 current = node;
             }

@@ -122,4 +122,83 @@ public class BlockLinearTextTreeFilterTests
 
         Assert.Empty(rightChild.Children);
     }
+
+    [Fact]
+    public void Apply_TextStartingWithNewline_SplitsNodes()
+    {
+        BlockLinearTextTreeFilter filter = new();
+        TreeNode<TextSpanPayload> root = CreateNode("\nHello\nworld");
+
+        TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
+
+        // \n
+        Assert.Single(result.Children);
+        TreeNode<TextSpanPayload> first = result.Children[0];
+        Assert.Equal("\n", first.Data!.Text);
+
+        // Hello\n
+        Assert.Single(first.Children);
+        TreeNode<TextSpanPayload> second = first.Children[0];
+        Assert.Equal("Hello\n", second.Data!.Text);
+
+        // world
+        Assert.Single(second.Children);
+        TreeNode<TextSpanPayload> third = second.Children[0];
+        Assert.Equal("world", third.Data!.Text);
+
+        Assert.Empty(third.Children);
+    }
+
+    [Fact]
+    public void Apply_EmptyText_ReturnsNodeUnchanged()
+    {
+        BlockLinearTextTreeFilter filter = new();
+        TreeNode<TextSpanPayload> root = CreateNode("");
+
+        TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
+
+        Assert.Single(result.Children);
+        Assert.Equal("", result.Children[0].Data!.Text);
+        Assert.Empty(result.Children[0].Children);
+    }
+
+    [Fact]
+    public void Apply_ConsecutiveNewlines_SplitsNodes()
+    {
+        BlockLinearTextTreeFilter filter = new();
+        TreeNode<TextSpanPayload> root = CreateNode("Hello\n\nworld");
+
+        TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
+
+        // Hello\n
+        Assert.Single(result.Children);
+        TreeNode<TextSpanPayload> first = result.Children[0];
+        Assert.Equal("Hello\n", first.Data!.Text);
+
+        // \n
+        Assert.Single(first.Children);
+        TreeNode<TextSpanPayload> second = first.Children[0];
+        Assert.Equal("\n", second.Data!.Text);
+
+        // world
+        Assert.Single(second.Children);
+        TreeNode<TextSpanPayload> third = second.Children[0];
+        Assert.Equal("world", third.Data!.Text);
+
+        Assert.Empty(third.Children);
+    }
+
+    [Fact]
+    public void Apply_NullTextInPayload_HandlesGracefully()
+    {
+        BlockLinearTextTreeFilter filter = new();
+        var node = new TreeNode<TextSpanPayload>(new TextSpanPayload(
+            new FragmentTextRange(0, 0)) { Text = null });
+
+        TreeNode<TextSpanPayload> result = filter.Apply(node, new Item());
+
+        Assert.Single(result.Children);
+        Assert.Null(result.Children[0].Data!.Text);
+        Assert.Empty(result.Children[0].Children);
+    }
 }
