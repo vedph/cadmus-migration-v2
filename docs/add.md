@@ -64,3 +64,26 @@ que bixit|annos XX
 ▶️ (3) **assign text values** to each merged range. This is trivial as it just means getting substrings from the whole text, as delimited by each range.
 
 ▶️ (4) **build a text tree**: this tree is built from a blank root node, having in a single branch descendant nodes corresponding to the merged ranges. The first range is child of the blank root node, and each following range is child of the previous one.
+
+Each node has a payload with this model:
+
+- range: the original fragment range.
+- text: the text corresponding to this node. Initially this is equal to the source range's text, but it might be changed by filters.
+- features: a set of generic name=value pairs, where both are strings. Duplicate names are allowed and represent arrays. Initially these are empty, but they are going to be used later.
+
+So the tree is:
+
+```mermaid
+graph TB;
+
+root --> 1[qu]
+1 --> 2[e]
+2 --> 3[_]
+3 --> 4[b]
+4 --> 5[ixit/annos]
+5 --> 6[_XX]
+```
+
+▶️ (5) **apply text tree filters**: optionally, apply filters to the tree nodes. Each of the filters takes the input of the previous one and generates a new tree. TODO block filter
+
+▶️ (6) **render the text tree** (via an `ITextTreeRenderer`):
