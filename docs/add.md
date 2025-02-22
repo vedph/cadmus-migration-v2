@@ -84,6 +84,6 @@ root --> 1[qu]
 5 --> 6[_XX]
 ```
 
-▶️ (5) **apply text tree filters**: optionally, apply filters to the tree nodes. Each of the filters takes the input of the previous one and generates a new tree. TODO block filter
+▶️ (5) **apply text tree filters**: optionally, apply filters to the tree nodes. Each of the filters takes the input of the previous one and generates a new tree. Typically, an essential filter here is the block linear tree text filter, which splits nodes wherever they include newlines. This ensures that each node has at most 1 newline, and that it appears at the end of its text. This is often required to ensure that text blocks will be correctly rendered.
 
 ▶️ (6) **render the text tree** (via an `ITextTreeRenderer`):
