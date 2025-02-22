@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Version>5.0.4</Version>
+		<FileVersion>5.0.4</FileVersion>
+		<AssemblyVersion>5.0.4</AssemblyVersion>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<Authors>Daniele Fusi</Authors>
+		<Company>Fusi</Company>
+		<Product>Cadmus</Product>
+		<Description>Cadmus export components.</Description>
+		<Copyright>by Daniele Fusi 2022</Copyright>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+		<PackageTags>Cadmus</PackageTags>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="Assets\Iso639.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Assets\Iso639.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Cadmus.Core" Version="8.0.6" />
+		<PackageReference Include="Cadmus.General.Parts" Version="7.0.3" />
+		<PackageReference Include="Cadmus.Mongo" Version="8.0.6" />
+		<PackageReference Include="Fusi.Microsoft.Extensions.Configuration.InMemoryJson" Version="4.0.0" />
+		<PackageReference Include="Fusi.Tools.Configuration" Version="6.0.0" />
+		<PackageReference Include="Fusi.Xml" Version="5.0.0" />
+		<PackageReference Include="Fusi.Xml.Extras" Version="5.0.0" />
+		<PackageReference Include="JmesPath.Net" Version="1.0.330" />
+		<PackageReference Include="Markdig" Version="0.40.0" />
+	</ItemGroup>
+
+</Project>
