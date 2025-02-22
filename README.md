@@ -1,4 +1,4 @@
-# Cadmus Migration
+# Cadmus Migration V2
 
 Tools for migrating (importing/exporting) Cadmus data. Export tools also include "preview", i.e. a human-friendly, highly customizable output for each Cadmus object, to be integrated in the editor itself.
 
@@ -27,6 +27,8 @@ Excel (XLSX or XLS) thesauri importers.
 Proteus-based components for importing Cadmus items and parts from sources handled with Proteus readers.
 
 ## History
+
+---
 
 ### 5.0.4
 
