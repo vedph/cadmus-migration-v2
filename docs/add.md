@@ -208,28 +208,40 @@ At this stage, we're done with the tree and we can move to step (6) for renderin
       <rdg wit="#a">que</rdg>
     </app>
     <app>
-      <lem wit="#b">vixit</lem>
+      <lem id="lem1" wit="#b">vixit</lem>
       <rdg wit="#a">bixit</rdg>
+      <witDetail target="#lem1" wit="#a" type="pc"/>
     </app>
 </p>
 <p>
     <app>
       <lem wit="#a">annos</lem>
       <rdg resp="#editor">annis
-        <note>accustive here is rare but attested.</note>
+        <note>accusative here is rare but attested.</note>
       </rdg>
     </app>
     XX
 </p>
 ```
 
-We can easily build this TEI by just traversing our tree:
+We can easily build this TEI code by just traversing our tree:
 
 1. at root, we start opening a block (`p`);
-2. at `quae`, we create an `app` element with children `lem` and `rdg` for the node's text (`quae`) and its variant (`que`), with the respective witnesses. In this example we have witness `a` for the original reading and `b` for the normalized orthography: as remarked above, let's just pretend they are true tradition variants instead.
+2. at `quae`, which has variant feature(s), we create an `app` element with children `lem` and `rdg` for the node's text (`quae`) and its variant (`que`), with the respective witnesses. In this example we have witness `a` for the original reading and `b` for the normalized orthography: as remarked above, let's just pretend they are true tradition variants instead.
 3. we then render a space for the corresponding node.
 4. at `vixit`, we do as above for `quae`.
 5. at the newline we close the block (`p`) and open a new one.
 6. at `annos`, we do as for the other variants. Here we have an author in the source fragment, rather than a witness; and a note with some text.
 7. finally, at space + `XX` we render the text.
 8. we close the block.
+
+So the rules for this renderer would be:
+
+- use a specific element for blocks (e.g. `p` for prose, `l` for verses):
+  - open a block at root;
+  - close and reopen the block after each node ending with a newline;
+  - close the block at end.
+- whenever the node has apparatus variant/note feature(s), add an `app` element and wrap the node's text into its `lem` child, and the variants into `rdg` children. In this context:
+  - add to `lem`/`rdg` attributes `@wit` for witnesses and `@resp` for authors;
+  - add to `lem`/`rdg` a child `note` for notes;
+  - witnesses notes (e.g. "in rasura", "manus altera", etc.) are rendered into `witDetail` elements which are siblings of `lem`/`rdg` and immediately follow it. In this example we have a `pc` note meaning "post correcturam".
