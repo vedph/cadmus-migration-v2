@@ -38,12 +38,14 @@ public class BlockLinearTextTreeFilterTests
         // Hello\n
         Assert.Single(result.Children);
         TreeNode<TextSpanPayload> left = result.Children[0];
-        Assert.Equal("Hello\n", left.Data!.Text);
+        Assert.Equal("Hello", left.Data!.Text);
+        Assert.True(left.Data.IsBeforeEol);
 
         // world
         Assert.Single(left.Children);
         TreeNode<TextSpanPayload> right = left.Children[0];
         Assert.Equal("world", right.Data!.Text);
+        Assert.False(right.Data.IsBeforeEol);
 
         Assert.Empty(right.Children);
     }
@@ -59,17 +61,20 @@ public class BlockLinearTextTreeFilterTests
         // Hello\n
         Assert.Single(result.Children);
         TreeNode<TextSpanPayload> left = result.Children[0];
-        Assert.Equal("Hello\n", left.Data!.Text);
+        Assert.Equal("Hello", left.Data!.Text);
+        Assert.True(left.Data.IsBeforeEol);
 
         // world\n
         Assert.Single(left.Children);
         TreeNode<TextSpanPayload> middle = left.Children[0];
-        Assert.Equal("world\n", middle.Data!.Text);
+        Assert.Equal("world", middle.Data!.Text);
+        Assert.True(middle.Data.IsBeforeEol);
 
         // again
         Assert.Single(middle.Children);
         TreeNode<TextSpanPayload> right = middle.Children[0];
         Assert.Equal("again", right.Data!.Text);
+        Assert.False(right.Data.IsBeforeEol);
 
         Assert.Empty(right.Children);
     }
@@ -85,12 +90,14 @@ public class BlockLinearTextTreeFilterTests
         // Hello\n
         Assert.Single(result.Children);
         TreeNode<TextSpanPayload> left = result.Children[0];
-        Assert.Equal("Hello\n", left.Data!.Text);
+        Assert.Equal("Hello", left.Data!.Text);
+        Assert.True(left.Data.IsBeforeEol);
 
         // world\n
         Assert.Single(left.Children);
         TreeNode<TextSpanPayload> right = left.Children[0];
-        Assert.Equal("world\n", right.Data!.Text);
+        Assert.Equal("world", right.Data!.Text);
+        Assert.True(right.Data.IsBeforeEol);
 
         Assert.Empty(right.Children);
     }
@@ -108,17 +115,20 @@ public class BlockLinearTextTreeFilterTests
         // Hello\n
         Assert.Single(result.Children);
         TreeNode<TextSpanPayload> left = result.Children[0];
-        Assert.Equal("Hello\n", left.Data!.Text);
+        Assert.Equal("Hello", left.Data!.Text);
+        Assert.True(left.Data.IsBeforeEol);
 
         // world\n
         Assert.Single(left.Children);
         TreeNode<TextSpanPayload> right = left.Children[0];
-        Assert.Equal("world\n", right.Data!.Text);
+        Assert.Equal("world", right.Data!.Text);
+        Assert.True(right.Data.IsBeforeEol);
 
         // again
         Assert.Single(right.Children);
         TreeNode<TextSpanPayload> rightChild = right.Children[0];
         Assert.Equal("again", rightChild.Data!.Text);
+        Assert.False(rightChild.Data.IsBeforeEol);
 
         Assert.Empty(rightChild.Children);
     }
@@ -134,17 +144,20 @@ public class BlockLinearTextTreeFilterTests
         // \n
         Assert.Single(result.Children);
         TreeNode<TextSpanPayload> first = result.Children[0];
-        Assert.Equal("\n", first.Data!.Text);
+        Assert.Equal("", first.Data!.Text);
+        Assert.True(first.Data.IsBeforeEol);
 
         // Hello\n
         Assert.Single(first.Children);
         TreeNode<TextSpanPayload> second = first.Children[0];
-        Assert.Equal("Hello\n", second.Data!.Text);
+        Assert.Equal("Hello", second.Data!.Text);
+        Assert.True(second.Data.IsBeforeEol);
 
         // world
         Assert.Single(second.Children);
         TreeNode<TextSpanPayload> third = second.Children[0];
         Assert.Equal("world", third.Data!.Text);
+        Assert.False(third.Data.IsBeforeEol);
 
         Assert.Empty(third.Children);
     }
@@ -173,17 +186,20 @@ public class BlockLinearTextTreeFilterTests
         // Hello\n
         Assert.Single(result.Children);
         TreeNode<TextSpanPayload> first = result.Children[0];
-        Assert.Equal("Hello\n", first.Data!.Text);
+        Assert.Equal("Hello", first.Data!.Text);
+        Assert.True(first.Data.IsBeforeEol);
 
         // \n
         Assert.Single(first.Children);
         TreeNode<TextSpanPayload> second = first.Children[0];
-        Assert.Equal("\n", second.Data!.Text);
+        Assert.Equal("", second.Data!.Text);
+        Assert.True(second.Data.IsBeforeEol);
 
         // world
         Assert.Single(second.Children);
         TreeNode<TextSpanPayload> third = second.Children[0];
         Assert.Equal("world", third.Data!.Text);
+        Assert.False(third.Data.IsBeforeEol);
 
         Assert.Empty(third.Children);
     }

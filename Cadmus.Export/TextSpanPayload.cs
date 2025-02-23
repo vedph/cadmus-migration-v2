@@ -14,10 +14,9 @@ namespace Cadmus.Export;
 public class TextSpanPayload(FragmentTextRange range)
 {
     /// <summary>
-    /// The milestone type payload. This is a blank node used as a milestone
-    /// in a branch.
+    /// Gets the source fragment text range for this payload.
     /// </summary>
-    public const string TYPE_MILESTONE = "milestone";
+    public FragmentTextRange Range { get; } = range;
 
     /// <summary>
     /// Gets or sets the optional node type.
@@ -25,9 +24,10 @@ public class TextSpanPayload(FragmentTextRange range)
     public string? Type { get; set; }
 
     /// <summary>
-    /// Gets the source fragment text range for this payload.
+    /// Gets or sets a value indicating whether this span was before and end
+    /// of line marker (LF) in the source text.
     /// </summary>
-    public FragmentTextRange Range { get; } = range;
+    public bool IsBeforeEol { get; set; }
 
     /// <summary>
     /// Gets or sets the text.
@@ -48,6 +48,7 @@ public class TextSpanPayload(FragmentTextRange range)
         return new TextSpanPayload(Range)
         {
             Type = Type,
+            IsBeforeEol = IsBeforeEol,
             Text = Text,
             Features = [..Features]
         };

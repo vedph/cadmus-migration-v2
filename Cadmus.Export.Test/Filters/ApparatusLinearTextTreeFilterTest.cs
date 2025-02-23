@@ -126,7 +126,7 @@ public sealed class ApparatusLinearTextTreeFilterTest
             range.AssignText(tr.Item1);
         // build a linear tree from ranges
         TreeNode<TextSpanPayload> tree = ItemComposer.BuildTreeFromRanges(
-            mergedRanges);
+            mergedRanges, tr.Item1);
         // get filter
         ApparatusLinearTextTreeFilter filter = new();
 

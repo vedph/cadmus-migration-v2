@@ -21,16 +21,7 @@ namespace Cadmus.Export;
 public sealed class TokenTextPartFlattener : ITextPartFlattener,
     IConfigurable<TokenTextPartFlattenerOptions>
 {
-    private string _lineSeparator;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TokenTextPartFlattener"/>
-    /// class.
-    /// </summary>
-    public TokenTextPartFlattener()
-    {
-        _lineSeparator = "\n";
-    }
+    private string _lineSeparator = "\n";
 
     /// <summary>
     /// Configures the object with the specified options.
@@ -113,8 +104,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener,
         PropertyInfo? pi = part.GetType().GetProperty("Fragments");
         if (pi == null) return Array.Empty<string>();
 
-        if (pi.GetValue(part)! is not IEnumerable frags)
-            return Array.Empty<string>();
+        if (pi.GetValue(part) is not IEnumerable frags) return [];
 
         List<string> locs = [];
         foreach (object fr in frags)

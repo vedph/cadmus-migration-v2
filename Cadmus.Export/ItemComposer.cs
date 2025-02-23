@@ -215,10 +215,12 @@ public abstract class ItemComposer
     /// and each range is a child of the previous one.
     /// </summary>
     /// <param name="ranges">The ranges.</param>
+    /// <param name="text">The whole text where lines are separated by a LF.
+    /// </param>
     /// <returns>The root node of the built tree.</returns>
     /// <exception cref="ArgumentNullException">ranges</exception>
     public static TreeNode<TextSpanPayload> BuildTreeFromRanges(
-        IList<FragmentTextRange> ranges)
+        IList<FragmentTextRange> ranges, string text)
     {
         ArgumentNullException.ThrowIfNull(ranges);
 
@@ -229,6 +231,10 @@ public abstract class ItemComposer
             TreeNode<TextSpanPayload> child = new()
             {
                 Data = new TextSpanPayload(range)
+                {
+                    IsBeforeEol = range.End >= text.Length ||
+                        text[range.End + 1] == '\n'
+                }
             };
             node.AddChild(child);
             node = child;
@@ -275,8 +281,9 @@ public abstract class ItemComposer
         foreach (FragmentTextRange range in mergedRanges)
             range.AssignText(tr.Item1);
 
-        // build a linear tree from ranges
-        TreeNode<TextSpanPayload> tree = BuildTreeFromRanges(mergedRanges);
+        // build a linear tree from merged ranges
+        TreeNode<TextSpanPayload> tree = BuildTreeFromRanges(
+            mergedRanges, tr.Item1);
 
         // apply tree filters
         foreach (ITextTreeFilter filter in TextTreeFilters)

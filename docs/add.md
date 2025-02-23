@@ -67,11 +67,13 @@ que bixit|annos XX
 
 ▶️ (4) **build a text tree**: this tree is built from a blank root node, having in a single branch descendant nodes corresponding to the merged ranges. The first range is child of the blank root node, and each following range is child of the previous one.
 
-Each node has a payload with this model:
+Each node has _payload_ data with this model:
 
 - range: the source merged range with its fragment ID(s).
+- type: an optional string representing a node type when required.
+- before EOL: true if node is appeared before a line end marker (LF) in the original text.
 - text: the text corresponding to this node. Initially this is equal to the source range's text, but it might be changed by filters.
-- features: a set of generic name=value pairs, where both are strings. Duplicate names are allowed and represent arrays. Initially these are empty, but they are going to be used later.
+- features: a set of generic name=value pairs, where both are strings, plus a source identifier (equal to or derived from the fragment ID). Duplicate names are allowed and represent arrays. Initially these are empty, but they are going to be used later.
 
 So the tree is:
 
@@ -88,7 +90,9 @@ root --> 1[qu]
 
 >The tree structure may seem an overcomplication when dealing with a single linear branch, but it is really useful when rendering more complex data. See below for more.
 
-▶️ (5) **apply text tree filters**: optionally, apply filters to the tree nodes. Each of the filters takes the input of the previous one and generates a new tree. In this example we use the block linear tree text filter, which splits nodes wherever they include newlines. This ensures that each node has at most 1 newline, and that it appears at the end of its text. This is often required to ensure that text blocks will be correctly rendered. The result is:
+Note that here a node contains text with a LF character, which is used to mark the end of the original line. Typically this is adjusted in the next step so that such nodes are split.
+
+▶️ (5) **apply text tree filters**: optionally, apply filters to the tree nodes. Each of the filters takes the input of the previous one and generates a new tree. Almost always you will be using the _block linear tree text filter_, which splits nodes wherever they include newlines. This ensures that each node has at most 1 newline, and that it appears at the end of its text. This is required to ensure that text blocks will be correctly rendered. The result is:
 
 ```mermaid
 graph LR;
@@ -97,7 +101,7 @@ root --> 1[qu]
 1 --> 2[e]
 2 --> 3[_]
 3 --> 4[b]
-4 --> 5[ixit/]
+4 --> 5[ixit]
 5 --> 6[annos]
 6 --> 7[_XX]
 ```
@@ -110,7 +114,7 @@ When an apparatus is involved, this can potentially modify the text by selecting
 
 The approach depends on the complexity of the source data. Let us consider various scenarios, from the simplest to the most complex ones.
 
-The standard apparatus fragment model is:
+The standard [apparatus](https://github.com/vedph/cadmus-philology/blob/master/docs/fr.apparatus.md) fragment model is:
 
 - location
 - tag
@@ -229,17 +233,16 @@ We can easily build this TEI code by just traversing our tree:
 1. at root, we start opening a block (`p`);
 2. at `quae`, which has variant feature(s), we create an `app` element with children `lem` and `rdg` for the node's text (`quae`) and its variant (`que`), with the respective witnesses. In this example we have witness `a` for the original reading and `b` for the normalized orthography: as remarked above, let's just pretend they are true tradition variants instead.
 3. we then render a space for the corresponding node.
-4. at `vixit`, we do as above for `quae`.
-5. at the newline we close the block (`p`) and open a new one.
-6. at `annos`, we do as for the other variants. Here we have an author in the source fragment, rather than a witness; and a note with some text.
-7. finally, at space + `XX` we render the text.
-8. we close the block.
+4. at `vixit`, we do as above for `quae`. This being marked as a node before EOL, we also close the block (`p`) and open a new one.
+5. at `annos`, we do as for the other variants. Here we have an author in the source fragment, rather than a witness; and a note with some text.
+6. finally, at space + `XX` we render the text.
+7. we close the block.
 
 So the rules for this renderer would be:
 
 - use a specific element for blocks (e.g. `p` for prose, `l` for verses):
   - open a block at root;
-  - close and reopen the block after each node ending with a newline;
+  - close and reopen the block after each node before a newline;
   - close the block at end.
 - whenever the node has apparatus variant/note feature(s), add an `app` element and wrap the node's text into its `lem` child, and the variants into `rdg` children. In this context:
   - add to `lem`/`rdg` attributes `@wit` for witnesses and `@resp` for authors;

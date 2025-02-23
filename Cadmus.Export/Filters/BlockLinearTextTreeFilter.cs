@@ -9,7 +9,7 @@ namespace Cadmus.Export.Filters;
 /// A text tree filter which works on "linear" trees, i.e. those trees having
 /// a single branch, to split nodes at every occurrence of a LF character.
 /// Whenever a node is split, the resulting nodes have the same payload except
-/// for the text; the original node text is copied only up to the LF included;
+/// for the text; the original node text is copied only up to the LF excluded;
 /// a new node with text past LF is added if this text is not empty, and this
 /// new right-half node becomes the child of the left-half node and the parent
 /// of what was the child of the original node.
@@ -29,7 +29,8 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
 
         // create the first left node
         TreeNode<TextSpanPayload> head = new(node.Data.Clone());
-        head.Data!.Text = text[..(i + 1)];
+        head.Data!.Text = text[..i];
+        head.Data.IsBeforeEol = true;
         TreeNode<TextSpanPayload> current = head;
 
         // process remaining text
@@ -47,8 +48,9 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
             }
             else
             {
-                // take text up to and including newline
-                next.Data!.Text = text[start..(i + 1)];
+                // take text up to newline (excluded)
+                next.Data!.Text = text[start..i];
+                next.Data.IsBeforeEol = true;
             }
 
             // link nodes
