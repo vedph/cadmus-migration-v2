@@ -157,16 +157,69 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.Empty(node.Data.Features);
 
         // next child is vixit
-        node = tree.Children[2];
+        Assert.Single(node.Children);
+        node = node.Children[0];
         Assert.NotNull(node.Data);
         Assert.Equal("vixit", node.Data.Text);
-        // - app-variant: vixit, accepted, witness b, note pc
         Assert.Equal(3, node.Data.Features.Count);
         id = prefix + "1.0";
-        feature = node.Data.Features.FirstOrDefault(f => f.Source == id);
+
+        // - app-variant: vixit, accepted
+        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
+            f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
         Assert.NotNull(feature);
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_VARIANT, feature.Name);
         Assert.Equal("bixit", feature.Value);
 
+        // - witness b
+        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
+            f.Name == ApparatusLinearTextTreeFilter.F_APP_WITNESS);
+        Assert.NotNull(feature);
+        Assert.Equal("b", feature.Value);
+
+        // - note pc
+        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
+            f.Name == ApparatusLinearTextTreeFilter.F_APP_NOTE);
+        Assert.NotNull(feature);
+        Assert.Equal("pc", feature.Value);
+
+        // next child is space
+        Assert.Single(node.Children);
+        node = node.Children[0];
+        Assert.NotNull(node.Data);
+        Assert.Equal(" ", node.Data.Text);
+        Assert.Empty(node.Data.Features);
+
+        // next child is annos
+        Assert.Single(node.Children);
+        node = node.Children[0];
+        Assert.NotNull(node.Data);
+        Assert.Equal("annos", node.Data.Text);
+        Assert.Equal(3, node.Data.Features.Count);
+        id = prefix + "2.0";
+
+        // -app-variant: annis
+        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
+            f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
+        Assert.NotNull(feature);
+        Assert.Equal("annis", feature.Value);
+
+        // -author: editor
+        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
+            f.Name == ApparatusLinearTextTreeFilter.F_APP_AUTHOR);
+        Assert.NotNull(feature);
+        Assert.Equal("editor", feature.Value);
+
+        // -author-note: accusative here is rare but attested.
+        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
+            f.Name == ApparatusLinearTextTreeFilter.F_APP_AUTHOR_NOTE);
+        Assert.NotNull(feature);
+        Assert.Equal("accusative here is rare but attested.", feature.Value);
+
+        // next child is " XX"
+        Assert.Single(node.Children);
+        node = node.Children[0];
+        Assert.NotNull(node.Data);
+        Assert.Equal(" XX", node.Data.Text);
+        Assert.Empty(node.Data.Features);
     }
 }
