@@ -46,7 +46,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener,
 
     private static int LocateTokenEnd(string text, int index)
     {
-        int i = text.IndexOf(' ', index);
+        int i = text.IndexOfAny([' ', '\n'], index);
         return i == -1 ? text.Length : i;
     }
 
