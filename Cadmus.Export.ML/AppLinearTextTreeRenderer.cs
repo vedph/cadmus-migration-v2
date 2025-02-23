@@ -1,6 +1,4 @@
-﻿using Cadmus.Core;
-using Cadmus.Export.Filters;
-using Cadmus.General.Parts;
+﻿using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
@@ -15,7 +13,8 @@ namespace Cadmus.Export.ML;
 /// Linear text tree with single apparatus layer renderer.
 /// </summary>
 /// <seealso cref="ITextTreeRenderer" />
-public sealed class AppLinearTextTreeRenderer : TextTreeRenderer, ITextTreeRenderer,
+public sealed class AppLinearTextTreeRenderer : TextTreeRenderer,
+    ITextTreeRenderer,
     IConfigurable<AppLinearTextTreeRendererOptions>
 {
     /// <summary>
@@ -67,11 +66,20 @@ public sealed class AppLinearTextTreeRenderer : TextTreeRenderer, ITextTreeRende
 
         // create root element
         XElement root = new(rootName);
+        XElement block = new(blockName);
+        root.Add(block);
 
         // traverse nodes and build the XML
         tree.Traverse(node =>
         {
             // TODO
+
+            // open a new block if needed
+            if (node.Data?.IsBeforeEol == true)
+            {
+                block = new XElement(blockName);
+                root.Add(block);
+            }
             return true;
         });
 
