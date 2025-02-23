@@ -3,8 +3,8 @@ using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
-using Proteus.Text.Xml;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Cadmus.Export.Filters;
@@ -13,22 +13,111 @@ namespace Cadmus.Export.Filters;
 /// A text tree filter which uses the apparatus part of the item (with
 /// <see cref="ApparatusLayerFragment"/>s), if any, to modify text and features
 /// of a linear tree.
+/// <para>Tag: <c>text-tree-filter.apparatus-linear</c>.</para>
 /// </summary>
+/// <remarks>This filter can modify the node's payload text, and add these
+/// features to it:
+/// <list type="bullet">
+/// <item>
+/// <term>app-variant</term>
+/// <description>Text variant.</description>
+/// </item>
+/// <item>
+/// <term>app-note</term>
+/// <description>Note.</description>
+/// </item>
+/// </list>
+/// <para>In both cases, each feature has as source the fragment ID plus
+/// a suffix like <c>.INDEX</c> where INDEX is the index of the fragment's entry
+/// which generated these features.</para>
+/// </remarks>
 /// <seealso cref="ITextTreeFilter" />
 [Tag("text-tree-filter.apparatus-linear")]
-public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter,
-    IConfigurable<ApparatusLinearTextTreeFilterOptions>
+public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
 {
-    private ApparatusLinearTextTreeFilterOptions _options = new();
-
     /// <summary>
-    /// Configures this filter with the specified options.
+    /// The name of the feature for the apparatus variant.
     /// </summary>
-    /// <param name="options">The options.</param>
-    /// <exception cref="ArgumentNullException">options</exception>
-    public void Configure(ApparatusLinearTextTreeFilterOptions options)
+    public const string F_APP_VARIANT = "app-variant";
+    /// <summary>
+    /// The name of the feature for the apparatus note.
+    /// </summary>
+    public const string F_APP_NOTE = "app-note";
+
+    private static void FeaturizeApparatus(TreeNode<TextSpanPayload> node,
+        TokenTextLayerPart<ApparatusLayerFragment> part)
     {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
+        foreach (string id in node.Data!.Range.FragmentIds)
+        {
+            // get the source fragment
+            int i = int.Parse(id[(id.LastIndexOf('_') + 1)..],
+                CultureInfo.InvariantCulture);
+            ApparatusLayerFragment fr = part.Fragments[i];
+
+            int entryIndex = 0;
+            foreach (ApparatusEntry entry in fr.Entries)
+            {
+                switch (entry.Type)
+                {
+                    case ApparatusEntryType.AdditionBefore:
+                        // if accepted, prepend to text and add original text
+                        // as variant; otherwise, add as variant
+                        if (entry.IsAccepted)
+                        {
+                            node.Data.Features.Add(new TextSpanFeature(
+                                F_APP_VARIANT, node.Data.Text!, $"{id}.{entryIndex}"));
+                            node.Data.Text = entry.Value + node.Data.Text;
+                        }
+                        else
+                        {
+                            node.Data.Features.Add(new TextSpanFeature(
+                                F_APP_VARIANT, entry.Value ?? "", $"{id}.{entryIndex}"));
+                        }
+                        break;
+
+                    case ApparatusEntryType.AdditionAfter:
+                        // if accepted, append to text and add original text
+                        // as variant; otherwise, add as variant
+                        if (entry.IsAccepted)
+                        {
+                            node.Data.Features.Add(new TextSpanFeature(
+                                F_APP_VARIANT, node.Data.Text!, $"{id}.{entryIndex}"));
+                            node.Data.Text += entry.Value;
+                        }
+                        else
+                        {
+                            node.Data.Features.Add(new TextSpanFeature(
+                                F_APP_VARIANT, entry.Value ?? "", $"{id}.{entryIndex}"));
+                        }
+                        break;
+
+                    case ApparatusEntryType.Replacement:
+                        // if accepted, replace text and add original text as
+                        // variant; otherwise, add as variant
+                        if (entry.IsAccepted)
+                        {
+                            node.Data.Features.Add(new TextSpanFeature(
+                                F_APP_VARIANT, node.Data.Text!, $"{id}.{entryIndex}"));
+                            node.Data.Text = entry.Value;
+                        }
+                        else
+                        {
+                            node.Data.Features.Add(new TextSpanFeature(
+                                F_APP_VARIANT, entry.Value ?? "", $"{id}.{entryIndex}"));
+                        }
+                        break;
+                }
+
+                // add note if any
+                if (!string.IsNullOrEmpty(entry.Note))
+                {
+                    node.Data.Features.Add(new TextSpanFeature(
+                        F_APP_NOTE, entry.Note, $"{id}.{entryIndex}"));
+                }
+
+                entryIndex++;
+            }
+        }
     }
 
     /// <summary>
@@ -49,25 +138,23 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter,
         // nope if no apparatus part
         if (item.Parts.FirstOrDefault(p =>
             p is TokenTextLayerPart<ApparatusLayerFragment>) is not
-            TokenTextLayerPart<ApparatusLayerFragment> appPart)
+            TokenTextLayerPart<ApparatusLayerFragment> part)
         {
             return tree;
         }
 
-        string prefix = $"{appPart.TypeId}:{appPart.RoleId}_";
+        string prefix = $"{part.TypeId}:{part.RoleId}_";
 
-        throw new NotImplementedException();
+        tree.Traverse(node =>
+        {
+            if (node.Data?.Range?.FragmentIds?.Any(id => id.StartsWith(prefix))
+                == true)
+            {
+                FeaturizeApparatus(node, part);
+            }
+            return true;
+        });
+
+        return tree;
     }
-}
-
-/// <summary>
-/// Options for <see cref="ApparatusLinearTextTreeFilter"/>.
-/// </summary>
-/// <seealso cref="XmlTextFilterOptions" />
-public class ApparatusLinearTextTreeFilterOptions : XmlTextFilterOptions
-{
-    /// <summary>
-    /// Gets or sets the name of the block element. The default is "tei:p".
-    /// </summary>
-    public string BlockElementName { get; set; } = "tei:p";
 }
