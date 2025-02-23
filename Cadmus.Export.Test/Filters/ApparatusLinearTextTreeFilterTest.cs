@@ -186,16 +186,9 @@ public sealed class ApparatusLinearTextTreeFilterTest
 
         // - note pc
         feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
-            f.Name == ApparatusLinearTextTreeFilter.F_APP_NOTE);
+            f.Name == ApparatusLinearTextTreeFilter.F_APP_WITNESS_NOTE);
         Assert.NotNull(feature);
         Assert.Equal("pc", feature.Value);
-
-        // next child is space
-        Assert.Single(node.Children);
-        node = node.Children[0];
-        Assert.NotNull(node.Data);
-        Assert.Equal(" ", node.Data.Text);
-        Assert.Empty(node.Data.Features);
 
         // next child is annos
         Assert.Single(node.Children);
