@@ -138,6 +138,7 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.Null(tree.Data);
 
         // next child is quae
+        Assert.Single(tree.Children);
         TreeNode<TextSpanPayload> node = tree.Children[0];
         Assert.NotNull(node.Data);
         Assert.Equal("quae", node.Data.Text);
@@ -157,7 +158,8 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.Equal("b", feature.Value);
 
         // next child is space
-        node = tree.Children[0];
+        Assert.Single(node.Children);
+        node = node.Children[0];
         Assert.NotNull(node.Data);
         Assert.Equal(" ", node.Data.Text);
         Assert.Empty(node.Data.Features);
@@ -170,11 +172,11 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.Equal(3, node.Data.Features.Count);
         id = prefix + "1.0";
 
-        // - app-variant: vixit, accepted
+        // - app-variant: vixit|, accepted
         feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
             f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
         Assert.NotNull(feature);
-        Assert.Equal("bixit", feature.Value);
+        Assert.Equal("bixit\n", feature.Value);
 
         // - witness b
         feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
