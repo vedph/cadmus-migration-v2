@@ -62,11 +62,12 @@ public class TextSpanPayload(FragmentTextRange range)
     /// </returns>
     public override string ToString()
     {
-        List<TextSpanFeature> featuresToDisplay = Features.Count > 10
-            ? [.. Features.Take(10)] : Features;
+        List<TextSpanFeature> featuresToDisplay = Features.Count > 5
+            ? [.. Features.Take(5)] : Features;
         string featuresString = string.Join(", ", featuresToDisplay);
-        if (Features.Count > 10)
-            featuresString += $", ... ({Features.Count - 10})";
-        return $"[{Type}] {Text}: {featuresString}";
+        if (Features.Count > 5)
+            featuresString += $", ... ({Features.Count - 5})";
+
+        return $"[{Type}] {Text}{(IsBeforeEol? "\u21b4" : "")}: {featuresString}";
     }
 }

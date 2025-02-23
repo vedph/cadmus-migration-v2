@@ -18,34 +18,19 @@ namespace Cadmus.Export;
 /// <para>Tag: <c>it.vedph.text-flattener.token</c>.</para>
 /// </summary>
 [Tag("it.vedph.text-flattener.token")]
-public sealed class TokenTextPartFlattener : ITextPartFlattener,
-    IConfigurable<TokenTextPartFlattenerOptions>
+public sealed class TokenTextPartFlattener : ITextPartFlattener
 {
-    private string _lineSeparator = "\n";
-
-    /// <summary>
-    /// Configures the object with the specified options.
-    /// </summary>
-    /// <param name="options">The options.</param>
-    /// <exception cref="ArgumentNullException">options</exception>
-    public void Configure(TokenTextPartFlattenerOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
-
-        _lineSeparator = options.LineSeparator;
-    }
-
     private static int LocateTokenEnd(string text, int index)
     {
         int i = text.IndexOfAny([' ', '\n'], index);
         return i == -1 ? text.Length : i;
     }
 
-    private int GetIndexFromPoint(TokenTextPoint p, TokenTextPart part,
+    private static int GetIndexFromPoint(TokenTextPoint p, TokenTextPart part,
         bool end = false)
     {
         // base index for Y
-        int index = ((p.Y - 1) * _lineSeparator.Length) +
+        int index = (p.Y - 1) +
             part.Lines.Select(l => l.Text.Length).Take(p.Y - 1).Sum();
 
         // locate X
@@ -140,7 +125,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener,
             throw new ArgumentNullException(nameof(textPart));
         ArgumentNullException.ThrowIfNull(layerParts);
 
-        string text = string.Join(_lineSeparator, ttp.Lines.Select(l => l.Text));
+        string text = string.Join("\n", ttp.Lines.Select(l => l.Text));
 
         // convert all the fragment locations into ranges
         IList<FragmentTextRange> ranges = [];
@@ -160,16 +145,4 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener,
 
         return Tuple.Create(text, ranges);
     }
-}
-
-/// <summary>
-/// Options for <see cref="TokenTextPartFlattener"/>.
-/// </summary>
-public class TokenTextPartFlattenerOptions
-{
-    /// <summary>
-    /// Gets or sets the line separator to be used in the string built
-    /// from the text being exported. The default value is LF.
-    /// </summary>
-    public string LineSeparator { get; set; } = "\n";
 }

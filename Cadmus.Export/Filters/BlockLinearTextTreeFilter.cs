@@ -85,6 +85,13 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
         {
             if (node.Data?.Text?.Contains('\n') == true)
             {
+                // corner case: single newline, set flag for parent and skip
+                if (node.Data.Text == "\n")
+                {
+                    current.Data!.IsBeforeEol = true;
+                    return true;
+                }
+
                 // split node and add to current
                 TreeNode<TextSpanPayload> splitHead = SplitNode(node);
                 current.AddChild(splitHead);
@@ -96,9 +103,18 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
             }
             else
             {
-                // add node as is
-                current.AddChild(node);
-                current = node;
+                // add node as is unless it's the root
+                if (node == tree) return true;
+
+                TreeNode<TextSpanPayload> child = new()
+                {
+                    Id = node.Id,
+                    Label = node.Label,
+                    IsExpanded = node.IsExpanded,
+                    Data = node.Data
+                };
+                current.AddChild(child);
+                current = child;
             }
             return true;
         });

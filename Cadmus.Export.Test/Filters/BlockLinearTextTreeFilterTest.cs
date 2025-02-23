@@ -9,8 +9,12 @@ public class BlockLinearTextTreeFilterTests
 {
     private static TreeNode<TextSpanPayload> CreateNode(string text)
     {
-        return new TreeNode<TextSpanPayload>(new TextSpanPayload(
-            new FragmentTextRange(0, text.Length)) { Text = text });
+        return new TreeNode<TextSpanPayload>(
+            new TextSpanPayload(
+                new FragmentTextRange(0, text.Length))
+                {
+                    Text = text
+                });
     }
 
     [Fact]
@@ -208,7 +212,7 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_NullTextInPayload_HandlesGracefully()
     {
         BlockLinearTextTreeFilter filter = new();
-        var node = new TreeNode<TextSpanPayload>(new TextSpanPayload(
+        TreeNode<TextSpanPayload> node = new(new TextSpanPayload(
             new FragmentTextRange(0, 0)) { Text = null });
 
         TreeNode<TextSpanPayload> result = filter.Apply(node, new Item());
@@ -216,5 +220,59 @@ public class BlockLinearTextTreeFilterTests
         Assert.Single(result.Children);
         Assert.Null(result.Children[0].Data!.Text);
         Assert.Empty(result.Children[0].Children);
+    }
+
+    [Fact]
+    public void Apply_NewlineOnlyNode_Removed()
+    {
+        // que bixit|annos XX
+        BlockLinearTextTreeFilter filter = new();
+        // que
+        TreeNode<TextSpanPayload> root = CreateNode("que");
+        TreeNode<TextSpanPayload> current = root;
+        // space
+        TreeNode<TextSpanPayload> node = CreateNode(" ");
+        current.AddChild(node);
+        // bixit
+        node = CreateNode("bixit");
+        current.AddChild(node);
+        current = node;
+        // LF
+        node = CreateNode("\n");
+        current.AddChild(node);
+        current = node;
+        // annos
+        node = CreateNode("annos");
+        current.AddChild(node);
+        current = node;
+        // space + XX
+        node = CreateNode(" XX");
+        current.AddChild(node);
+
+        TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
+
+        // root
+        Assert.Single(result.Children);
+        // que
+        TreeNode<TextSpanPayload> que = result.Children[0];
+        Assert.Equal("que", que.Data!.Text);
+        // space
+        Assert.Single(que.Children);
+        TreeNode<TextSpanPayload> space = que.Children[0];
+        Assert.Equal(" ", space.Data!.Text);
+        // bixit
+        Assert.Single(space.Children);
+        TreeNode<TextSpanPayload> bixit = space.Children[0];
+        Assert.Equal("bixit", bixit.Data!.Text);
+        Assert.True(bixit.Data.IsBeforeEol);
+        // annos
+        Assert.Single(bixit.Children);
+        TreeNode<TextSpanPayload> annos = bixit.Children[0];
+        Assert.Equal("annos", annos.Data!.Text);
+        // space + XX
+        Assert.Single(annos.Children);
+        TreeNode<TextSpanPayload> xx = annos.Children[0];
+        Assert.Equal(" XX", xx.Data!.Text);
+        Assert.False(xx.HasChildren);
     }
 }

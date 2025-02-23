@@ -232,7 +232,7 @@ public abstract class ItemComposer
             {
                 Data = new TextSpanPayload(range)
                 {
-                    IsBeforeEol = range.End >= text.Length ||
+                    IsBeforeEol = range.End + 1 < text.Length &&
                         text[range.End + 1] == '\n'
                 }
             };
