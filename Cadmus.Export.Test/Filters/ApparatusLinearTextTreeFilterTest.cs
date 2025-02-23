@@ -178,7 +178,8 @@ public sealed class ApparatusLinearTextTreeFilterTest
         feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
             f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
         Assert.NotNull(feature);
-        Assert.Equal("bixit\n", feature.Value);
+        Assert.Equal("bixit", feature.Value);
+        Assert.True(node.Data.IsBeforeEol);
 
         // - witness b
         feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
