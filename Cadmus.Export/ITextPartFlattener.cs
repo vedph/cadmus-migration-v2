@@ -20,6 +20,6 @@ public interface ITextPartFlattener
     /// in an item.</param>
     /// <param name="layerParts">The layer parts you want to export.</param>
     /// <returns>Tuple with 1=text and 2=ranges.</returns>
-    Tuple<string, IList<FragmentTextRange>> GetTextRanges(IPart textPart,
+    Tuple<string, IList<FragmentTextRange>> Flatten(IPart textPart,
         IList<IPart> layerParts);
 }

@@ -143,7 +143,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener,
     /// <returns>Tuple with 1=text and 2=ranges.</returns>
     /// <exception cref="ArgumentNullException">textPart or layerParts
     /// </exception>
-    public Tuple<string, IList<FragmentTextRange>> GetTextRanges(IPart textPart,
+    public Tuple<string, IList<FragmentTextRange>> Flatten(IPart textPart,
         IList<IPart> layerParts)
     {
         if (textPart is not TokenTextPart ttp)

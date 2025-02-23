@@ -311,7 +311,7 @@ public sealed class CadmusPreviewer
             .ToList();
 
         // flatten them
-        var tr = flattener.GetTextRanges(part, layerParts);
+        var tr = flattener.Flatten(part, layerParts);
 
         // build blocks rows
         // TODO: implement

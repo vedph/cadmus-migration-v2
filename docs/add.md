@@ -137,9 +137,9 @@ In this approach we just have a single layer with apparatus. So, merging just pr
 
 For instance, say that in our sample text we have these apparatus fragments (really our example just deals with orthography, but let us pretend these are variants to make things simpler and continue using the same text):
 
-1. `que`: variant=`quae`, accepted.
-2. `bixit`: variant=`vixit`, accepted.
-3. `annos`: variant=`annis`, not accepted.
+1. `que`: variant=`quae`, accepted, witnesses=`b`.
+2. `bixit`: variant=`vixit`, accepted, witnesses=`b` with note=`pc`.
+3. `annos`: variant=`annis`, not accepted, authors=`editor` with note=`accusative here is rare but attested.`.
 
 So merged ranges would be:
 
@@ -175,7 +175,7 @@ class 5 em;
 
 >In this diagram, yellow borders mark nodes linked to apparatus fragments.
 
-Given that we have a single layer, we won't need to add or delete nodes, but just to change their payload data adding an **apparatus linear tree text filter** to stage (5). So, traversing our nodes:
+Given that we have a single layer, we won't need to add or delete nodes, but just to change their payload data adding an **apparatus linear tree text filter** to ▶️ step (5). So, traversing our nodes:
 
 1. for the `que` node, linked to the fragment at index 0, we will change the text to `quae` because the variant there is accepted, and move the original text `que` into a variant feature. Other features will be added for witnesses, authors, or note, all from the same source fragment (`it.vedph.token-text-layer:fr.it.vedph.apparatus_0`).
 2. for the `bixit` node, linked to the fragment at index 1, we will do the same: text will be `vixit` and `bixit` will be a variant. As above, other features will be added as needed.
@@ -199,7 +199,7 @@ class 5 em;
 5 --> 6[_XX]
 ```
 
-At this stage, we're done with the tree and we can move to step (6) for rendering it. Rendition depends on the desired output format; for this example, let's keep things simple and say that we want a TEI text fragment like this (witnesses and other attributes are fake data assumed to be in the fragments, and text is indented for more readability):
+At this stage, we're done with the tree and we can move to ▶️ step (6) for rendering it. Rendition depends on the desired output format; for this example, let's keep things simple and say that we want a TEI text fragment like this (witnesses and other attributes are fake data assumed to be in the fragments, and text is indented for more readability):
 
 ```xml
 <p>
@@ -215,7 +215,7 @@ At this stage, we're done with the tree and we can move to step (6) for renderin
 </p>
 <p>
     <app>
-      <lem wit="#a">annos</lem>
+      <lem>annos</lem>
       <rdg resp="#editor">annis
         <note>accusative here is rare but attested.</note>
       </rdg>

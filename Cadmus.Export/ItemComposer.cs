@@ -217,7 +217,7 @@ public abstract class ItemComposer
     /// <param name="ranges">The ranges.</param>
     /// <returns>The root node of the built tree.</returns>
     /// <exception cref="ArgumentNullException">ranges</exception>
-    protected static TreeNode<TextSpanPayload> BuildTreeFromRanges(
+    public static TreeNode<TextSpanPayload> BuildTreeFromRanges(
         IList<FragmentTextRange> ranges)
     {
         ArgumentNullException.ThrowIfNull(ranges);
@@ -265,7 +265,7 @@ public abstract class ItemComposer
         }
 
         // flatten ranges
-        var tr = TextPartFlattener.GetTextRanges(textPart, layerParts);
+        var tr = TextPartFlattener.Flatten(textPart, layerParts);
 
         // merge ranges
         IList<FragmentTextRange> mergedRanges = FragmentTextRange.MergeRanges(

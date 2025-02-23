@@ -76,7 +76,7 @@ public sealed class TokenTextPartFlattenerTest
         TokenTextPart textPart = GetSampleTextPart();
         IList<IPart> layerParts = GetSampleLayerParts();
 
-        Tuple<string, IList<FragmentTextRange>> result = flattener.GetTextRanges(
+        Tuple<string, IList<FragmentTextRange>> result = flattener.Flatten(
             textPart, layerParts);
 
         // text

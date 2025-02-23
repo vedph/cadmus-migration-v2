@@ -15,22 +15,10 @@ namespace Cadmus.Export.Filters;
 /// of a linear tree.
 /// <para>Tag: <c>text-tree-filter.apparatus-linear</c>.</para>
 /// </summary>
-/// <remarks>This filter can modify the node's payload text, and add these
-/// features to it:
-/// <list type="bullet">
-/// <item>
-/// <term>app-variant</term>
-/// <description>Text variant.</description>
-/// </item>
-/// <item>
-/// <term>app-note</term>
-/// <description>Note.</description>
-/// </item>
-/// </list>
-/// <para>In both cases, each feature has as source the fragment ID plus
-/// a suffix like <c>.INDEX</c> where INDEX is the index of the fragment's entry
-/// which generated these features.</para>
-/// </remarks>
+/// <remarks>This filter can modify the node's payload text, and add features
+/// to it. Each feature has as source the fragment ID plus a suffix like
+/// <c>.INDEX</c> where INDEX is the index of the fragment's entry
+/// which generated it.</remarks>
 /// <seealso cref="ITextTreeFilter" />
 [Tag("text-tree-filter.apparatus-linear")]
 public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
@@ -43,6 +31,48 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
     /// The name of the feature for the apparatus note.
     /// </summary>
     public const string F_APP_NOTE = "app-note";
+    /// <summary>
+    /// The name of the feature for an apparatus entry witness.
+    /// </summary>
+    public const string F_APP_WITNESS = "app-witness";
+    /// <summary>
+    /// The name of the feature for an apparatus entry witness note.
+    /// </summary>
+    public const string F_APP_WITNESS_NOTE = "app-witness.note";
+    /// <summary>
+    /// The name if the feature for an apparatus entry author.
+    /// </summary>
+    public const string F_APP_AUTHOR = "app-author";
+    /// <summary>
+    /// The name of the feature for an apparatus entry author note.
+    /// </summary>
+    public const string F_APP_AUTHOR_NOTE = "app-author.note";
+
+    private static void AddWitnessesOrAuthors(ApparatusEntry entry,
+        TreeNode<TextSpanPayload> node, string source)
+    {
+        foreach (AnnotatedValue wit in entry.Witnesses)
+        {
+            node.Data!.Features.Add(new TextSpanFeature(
+                F_APP_WITNESS, wit.Value!, source));
+            if (!string.IsNullOrEmpty(wit.Note))
+            {
+                node.Data.Features.Add(new TextSpanFeature(
+                    F_APP_WITNESS_NOTE, wit.Note, source));
+            }
+        }
+
+        foreach (LocAnnotatedValue author in entry.Authors)
+        {
+            node.Data!.Features.Add(new TextSpanFeature(
+                F_APP_AUTHOR, author.Value!, source));
+            if (!string.IsNullOrEmpty(author.Note))
+            {
+                node.Data.Features.Add(new TextSpanFeature(
+                    F_APP_AUTHOR_NOTE, author.Note, source));
+            }
+        }
+    }
 
     private static void FeaturizeApparatus(TreeNode<TextSpanPayload> node,
         TokenTextLayerPart<ApparatusLayerFragment> part)
@@ -107,6 +137,9 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
                         }
                         break;
                 }
+
+                // add witnesses and authors
+                AddWitnessesOrAuthors(entry, node, $"{id}.{entryIndex}");
 
                 // add note if any
                 if (!string.IsNullOrEmpty(entry.Note))
