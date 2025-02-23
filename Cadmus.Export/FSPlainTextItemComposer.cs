@@ -75,23 +75,22 @@ public sealed class FSPlainTextItemComposer : ItemComposer, IItemComposer,
     /// <summary>
     /// Does the composition for the specified item.
     /// </summary>
-    /// <param name="item">The item.</param>
-    protected override void DoCompose(IItem item)
+    protected override void DoCompose()
     {
-        if (Output == null) return;
+        if (Output == null || Context.Item == null) return;
 
         // first time we must build the filename
         _fileName ??= SanitizeFileName(
-                _options!.ItemGrouping && !string.IsNullOrEmpty(item.GroupId)
-                ? item.GroupId
-                : item.Title);
+                _options!.ItemGrouping && !string.IsNullOrEmpty(Context.Item.GroupId)
+                ? Context.Item.GroupId
+                : Context.Item.Title);
 
         // item head if any
         if (!string.IsNullOrEmpty(_options!.ItemHead))
             WriteOutput(_fileName, FillTemplate(_options.ItemHead));
 
         // text: there must be one
-        IPart? textPart = item.Parts.Find(
+        IPart? textPart = Context.Item.Parts.Find(
             p => p.RoleId == PartBase.BASE_TEXT_ROLE_ID);
         if (textPart == null || TextPartFlattener == null ||
             TextTreeRenderer == null)
@@ -99,7 +98,7 @@ public sealed class FSPlainTextItemComposer : ItemComposer, IItemComposer,
             return;
         }
 
-        TreeNode<TextSpanPayload>? tree = BuildTextTree(item);
+        TreeNode<TextSpanPayload>? tree = BuildTextTree(Context.Item);
         if (tree == null) return;
 
         // render blocks

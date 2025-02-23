@@ -64,15 +64,14 @@ public abstract class TeiStandoffItemComposer : ItemComposer
     /// <summary>
     /// Composes the output from the specified item.
     /// </summary>
-    /// <param name="item">The item.</param>
     /// <returns>Composition result or null.</returns>
-    /// <exception cref="ArgumentNullException">item</exception>
-    protected override void DoCompose(IItem item)
+    protected override void DoCompose()
     {
-        if (Output == null || TextTreeRenderer == null) return;
+        if (Output == null || TextTreeRenderer == null || Context.Item == null)
+            return;
 
         // build text tree
-        TreeNode<TextSpanPayload>? tree = BuildTextTree(item);
+        TreeNode<TextSpanPayload>? tree = BuildTextTree(Context.Item);
         if (tree == null) return;
 
         // render text from tree
@@ -80,7 +79,7 @@ public abstract class TeiStandoffItemComposer : ItemComposer
         WriteOutput(PartBase.BASE_TEXT_ROLE_ID, result);
 
         // render layers
-        foreach (IPart layerPart in GetLayerParts(item))
+        foreach (IPart layerPart in GetLayerParts(Context.Item))
         {
             string id = BuildLayerIdPrefix(layerPart);
 

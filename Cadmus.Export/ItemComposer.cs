@@ -159,6 +159,7 @@ public abstract class ItemComposer
         ItemNumber = 0;
 
         // reset context
+        Context.Item = null;
         Context.Data.Clear();
         Context.LayerIds.Clear();
         Context.FragmentIds.Clear();
@@ -285,10 +286,9 @@ public abstract class ItemComposer
     }
 
     /// <summary>
-    /// Does the composition for the specified item.
+    /// Does the composition for the context item.
     /// </summary>
-    /// <param name="item">The item.</param>
-    protected abstract void DoCompose(IItem item);
+    protected abstract void DoCompose();
 
     /// <summary>
     /// Clears the context data.
@@ -323,6 +323,7 @@ public abstract class ItemComposer
     {
         ArgumentNullException.ThrowIfNull(item);
 
+        Context.Item = item;
         Context.Data[M_ITEM_NR] = ++ItemNumber;
         Context.Data[M_ITEM_ID] = item.Id;
         Context.Data[M_ITEM_TITLE] = item.Title;
@@ -336,9 +337,10 @@ public abstract class ItemComposer
             _lastGroupId = item.GroupId;
         }
 
-        DoCompose(item);
+        DoCompose();
 
         ClearContextData();
+        Context.Item = null;
     }
 
     /// <summary>

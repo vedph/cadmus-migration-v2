@@ -1,5 +1,7 @@
-﻿using Cadmus.Core.Storage;
+﻿using Cadmus.Core;
+using Cadmus.Core.Storage;
 using Fusi.Tools;
+using System;
 using System.Collections.Generic;
 
 namespace Cadmus.Export;
@@ -9,6 +11,11 @@ namespace Cadmus.Export;
 /// </summary>
 public class RendererContext : DataDictionary, IRendererContext
 {
+    /// <summary>
+    /// Gets or sets the item being rendered.
+    /// </summary>
+    public IItem? Item { get; set; }
+
     /// <summary>
     /// Gets the layer part type IDs which are selected for rendering.
     /// </summary>
@@ -23,6 +30,7 @@ public class RendererContext : DataDictionary, IRendererContext
     /// item. The mapping lasts for all the duration of the item composition
     /// procedure.
     /// </summary>
+    [Obsolete]
     public IDictionary<string, int> LayerIds { get; }
 
     /// <summary>
@@ -33,6 +41,7 @@ public class RendererContext : DataDictionary, IRendererContext
     /// item number + layer ID + row number + fragment index). The mapping
     /// is scoped to each item.
     /// </summary>
+    [Obsolete]
     public IDictionary<string, string> FragmentIds { get; }
 
     /// <summary>
