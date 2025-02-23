@@ -60,7 +60,7 @@ public class FragmentTextRange(int start, int end, params IList<string>? frIds)
     /// <returns>String.</returns>
     public override string ToString()
     {
-        return $"{Start}-{End} {string.Join(", ", FragmentIds)}";
+        return $"{Start}-{End} \"{Text}\" {string.Join(", ", FragmentIds)}";
     }
 
     /// <summary>
