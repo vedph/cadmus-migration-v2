@@ -141,17 +141,23 @@ public sealed class ApparatusLinearTextTreeFilterTest
         TreeNode<TextSpanPayload> node = tree.Children[0];
         Assert.NotNull(node.Data);
         Assert.Equal("quae", node.Data.Text);
-        // - app-variant: que, accepted, witness b
-        Assert.Single(node.Data.Features);
+        // - app-variant: que, accepted
+        Assert.Equal(2, node.Data.Features.Count);
         string id = prefix + "0.0";
         TextSpanFeature? feature = node.Data.Features.FirstOrDefault(
-            f => f.Source == id);
+            f => f.Source == id &&
+                 f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
         Assert.NotNull(feature);
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_VARIANT, feature.Name);
         Assert.Equal("que", feature.Value);
 
+        // - witness b
+        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
+            f.Name == ApparatusLinearTextTreeFilter.F_APP_WITNESS);
+        Assert.NotNull(feature);
+        Assert.Equal("b", feature.Value);
+
         // next child is space
-        node = tree.Children[1];
+        node = tree.Children[0];
         Assert.NotNull(node.Data);
         Assert.Equal(" ", node.Data.Text);
         Assert.Empty(node.Data.Features);
@@ -221,5 +227,8 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.NotNull(node.Data);
         Assert.Equal(" XX", node.Data.Text);
         Assert.Empty(node.Data.Features);
+
+        // no children
+        Assert.False(node.HasChildren);
     }
 }
