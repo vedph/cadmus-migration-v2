@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Cadmus.Export.Filters;
+﻿using Cadmus.Export.Filters;
 using Fusi.Tools.Data;
 
 namespace Cadmus.Export;
