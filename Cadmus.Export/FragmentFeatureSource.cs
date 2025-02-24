@@ -8,7 +8,7 @@ namespace Cadmus.Export;
 /// The corresponding string in the feature has format <c>TypeId:RoleId@Index</c>
 /// or <c>TypeId:RoleId@IndexSuffix</c>.
 /// </summary>
-public record FragmentFeatureSource
+public partial record FragmentFeatureSource
 {
     /// <summary>
     /// Gets the layer part type identifier.
@@ -59,6 +59,9 @@ public record FragmentFeatureSource
         return $"{TypeId}:{RoleId}@{Index}" + (Suffix ?? "");
     }
 
+    [GeneratedRegex(@"^(?<t>[^:]+):(?<r>[^\@]+)(?:\@(?<i>[0-9]+)(?:(?<s>.+))?)?$")]
+    private static partial Regex ParseRegex();
+
     /// <summary>
     /// Parses the specified text representing the source of a feature
     /// derived from a fragment.
@@ -73,8 +76,7 @@ public record FragmentFeatureSource
         ArgumentNullException.ThrowIfNull(text);
 
         // TypeId:RoleId_Index(.Suffix)
-        Match m = Regex.Match(text,
-            @"^(?<t>[^:]+):(?<r>[^\@]+)(?:\@(?<i>[0-9]+)(?:(?<s>.+))?)?$");
+        Match m = ParseRegex().Match(text);
 
         if (!m.Success)
             throw new FormatException($"Invalid feature source format: \"{text}\"");
