@@ -107,7 +107,7 @@ public class TextSpanPayload(FragmentTextRange range)
     /// <returns>
     ///   <c>true</c> if the specified prefix has fragment; otherwise, <c>false</c>.
     /// </returns>
-    public bool HasFeaturesForFragment(string prefix) =>
+    public bool HasFeaturesFromFragment(string prefix) =>
         FeatureSets.Values.Any(s => s.HasFeaturesForFragment(prefix));
 
     /// <summary>

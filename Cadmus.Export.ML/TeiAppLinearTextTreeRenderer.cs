@@ -106,11 +106,18 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         // traverse nodes and build the XML (each node corresponds to a fragment)
         tree.Traverse(node =>
         {
-            if (node.Data?.HasFeaturesForFragment(prefix) == true)
+            if (node.Data?.HasFeaturesFromFragment(prefix) == true)
             {
                 // app
                 XElement app = new(_options.ResolvePrefixedName("tei:app"));
                 block.Add(app);
+
+                // for each set (entry) in key order (e000, e001, ...)
+                foreach (string entryKey in node.Data.FeatureSets.Keys.Order())
+                {
+                    List<TextSpanFeature> features =
+                        node.Data.FeatureSets[entryKey].Features;
+                }
 
                 // TODO
             }
