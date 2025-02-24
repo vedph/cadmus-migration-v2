@@ -42,20 +42,20 @@ public abstract class TextTreeRenderer : IHasRendererFilters
     /// Renders the specified JSON code.
     /// </summary>
     /// <param name="tree">The root node of the text tree.</param>
-    /// <param name="context">The optional renderer context.</param>
+    /// <param name="context">The renderer context.</param>
     /// <returns>Rendered output.</returns>
     protected abstract string DoRender(TreeNode<TextSpanPayload> tree,
-        IRendererContext? context = null);
+        IRendererContext context);
 
     /// <summary>
     /// Renders the specified JSON code.
     /// </summary>
     /// <param name="tree">The root node of the text tree.</param>
-    /// <param name="context">The optional renderer context.</param>
+    /// <param name="context">The renderer context.</param>
     /// <returns>Rendered output.</returns>
     /// <exception cref="ArgumentNullException">tree</exception>
     public string Render(TreeNode<TextSpanPayload> tree,
-        IRendererContext? context = null)
+        IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(tree);
 

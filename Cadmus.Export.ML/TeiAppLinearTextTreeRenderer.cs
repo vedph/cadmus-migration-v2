@@ -61,67 +61,60 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         witDetail.SetAttributeValue(segName, $"#{segId}");
     }
 
-    private void EnrichSegment(IList<Tuple<FragmentFeatureSource,
-        TextSpanFeature>> features, XElement seg, IRendererContext context)
+    private void EnrichSegment(IList<TextSpanFeature> features, XElement seg, IRendererContext context)
     {
         string? prevSeg = null;
         StringBuilder wit = new();
         StringBuilder resp = new();
 
-        foreach (Tuple<FragmentFeatureSource, TextSpanFeature> feature in
-            features)
+        foreach (TextSpanFeature feature in features)
         {
-            switch (feature.Item2.Name)
+            switch (feature.Name)
             {
                 case AppLinearTextTreeFilter.F_APP_E_WITNESS:
                     if (wit.Length > 0) wit.Append(' ');
-                    wit.Append('#').Append(feature.Item2.Value);
-                    prevSeg = feature.Item2.Value;
+                    wit.Append('#').Append(feature.Value);
+                    prevSeg = feature.Value;
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_WITNESS_NOTE:
-                    AddWitDetail("wit", prevSeg, feature.Item2.Value, seg,
+                    AddWitDetail("wit", prevSeg, feature.Value, seg,
                         context);
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_AUTHOR:
                     if (resp.Length > 0) resp.Append(' ');
-                    resp.Append('#').Append(feature.Item2.Value);
-                    prevSeg = feature.Item2.Value;
+                    resp.Append('#').Append(feature.Value);
+                    prevSeg = feature.Value;
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_AUTHOR_NOTE:
-                    AddWitDetail("resp", prevSeg, feature.Item2.Value, seg,
+                    AddWitDetail("resp", prevSeg, feature.Value, seg,
                         context);
                     break;
             }
         }
-
-        // witnesses notes:
-        // <witDetail @target=segID @wit/@resp
-        // TODO
-        
     }
 
     /// <summary>
     /// Renders the specified JSON code.
     /// </summary>
     /// <param name="tree">The root node of the text tree.</param>
-    /// <param name="context">The optional renderer context.</param>
+    /// <param name="context">The renderer context.</param>
     /// <returns>Rendered output.</returns>
-    /// <exception cref="ArgumentNullException">tree</exception>
+    /// <exception cref="ArgumentNullException">tree or context</exception>
     protected override string DoRender(TreeNode<TextSpanPayload> tree,
-        IRendererContext? context = null)
+        IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(tree);
+        ArgumentNullException.ThrowIfNull(context);
 
         // get the root element name
         XName rootName = _options.ResolvePrefixedName(_options.RootElement);
 
         // get the block name
         string blockType = "default";
-        if (context != null &&
-            context.Data.TryGetValue(CONTEXT_BLOCK_TYPE, out object? value))
+        if (context.Data.TryGetValue(CONTEXT_BLOCK_TYPE, out object? value))
         {
             blockType = value as string ?? "default";
         }
@@ -151,11 +144,29 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                 // for each set (entry) in key order (e000, e001, ...)
                 foreach (string entryKey in node.Data.FeatureSets.Keys.Order())
                 {
+                    // get all the features in the entry set
                     List<TextSpanFeature> features =
                         node.Data.FeatureSets[entryKey].Features;
-                }
 
-                // TODO
+                    // if there a variant, it's a rdg, else it's a lem
+                    XElement seg = (features.Any(f => f.Name ==
+                        AppLinearTextTreeFilter.F_APP_E_VARIANT))
+                        ? new XElement(_options.ResolvePrefixedName("tei:rdg"))
+                        : new XElement(_options.ResolvePrefixedName("tei:lem"));
+
+                    EnrichSegment(features, seg, context);
+                    app.Add(seg);
+
+                    // if there is a note, add a note child element
+                    TextSpanFeature? noteFeature = features.FirstOrDefault(
+                        f => f.Name == AppLinearTextTreeFilter.F_APP_E_NOTE);
+                    if (noteFeature != null)
+                    {
+                        XElement note = new(_options.ResolvePrefixedName("tei:note"),
+                            noteFeature.Value);
+                        app.Add(note);
+                    }
+                } // entry
             }
             else
             {
