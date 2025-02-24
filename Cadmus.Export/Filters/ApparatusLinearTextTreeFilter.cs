@@ -15,10 +15,6 @@ namespace Cadmus.Export.Filters;
 /// of a linear tree.
 /// <para>Tag: <c>text-tree-filter.apparatus-linear</c>.</para>
 /// </summary>
-/// <remarks>This filter can modify the node's payload text, and add features
-/// to it. Each feature has as source the fragment ID plus a suffix like
-/// <c>.INDEX</c> where INDEX is the index of the fragment's entry
-/// which generated it.</remarks>
 /// <seealso cref="ITextTreeFilter" />
 [Tag("text-tree-filter.apparatus-linear")]
 public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
@@ -84,64 +80,50 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
                 CultureInfo.InvariantCulture);
             ApparatusLayerFragment fr = part.Fragments[i];
 
+            // process its entries
             int entryIndex = 0;
             foreach (ApparatusEntry entry in fr.Entries)
             {
                 switch (entry.Type)
                 {
                     case ApparatusEntryType.AdditionBefore:
-                        // if accepted, prepend to text and add original text
-                        // as variant; otherwise, add as variant
-                        if (entry.IsAccepted)
+                        // if not accepted add a variant
+                        if (!entry.IsAccepted)
                         {
                             node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT, node.Data.Text!, $"{id}.{entryIndex}"));
-                            node.Data.Text = entry.Value + node.Data.Text;
-                        }
-                        else
-                        {
-                            node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT, entry.Value ?? "", $"{id}.{entryIndex}"));
+                                F_APP_VARIANT,
+                                entry.Value + node.Data.Text,
+                                $"{id}.{entryIndex}"));
                         }
                         break;
 
                     case ApparatusEntryType.AdditionAfter:
-                        // if accepted, append to text and add original text
-                        // as variant; otherwise, add as variant
-                        if (entry.IsAccepted)
+                        // if not accepted add a variant
+                        if (!entry.IsAccepted)
                         {
                             node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT, node.Data.Text!, $"{id}.{entryIndex}"));
-                            node.Data.Text += entry.Value;
-                        }
-                        else
-                        {
-                            node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT, entry.Value ?? "", $"{id}.{entryIndex}"));
+                                F_APP_VARIANT,
+                                node.Data.Text + entry.Value,
+                                $"{id}.{entryIndex}"));
                         }
                         break;
 
                     case ApparatusEntryType.Replacement:
-                        // if accepted, replace text and add original text as
-                        // variant; otherwise, add as variant
-                        if (entry.IsAccepted)
+                        // if not accepted add a variant
+                        if (!entry.IsAccepted)
                         {
                             node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT, node.Data.Text!, $"{id}.{entryIndex}"));
-                            node.Data.Text = entry.Value;
-                        }
-                        else
-                        {
-                            node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT, entry.Value ?? "", $"{id}.{entryIndex}"));
+                                F_APP_VARIANT,
+                                entry.Value!,
+                                $"{id}.{entryIndex}"));
                         }
                         break;
                 }
 
-                // add witnesses and authors
+                // add witnesses and authors with their notes
                 AddWitnessesOrAuthors(entry, node, $"{id}.{entryIndex}");
 
-                // add note if any
+                // add entry note
                 if (!string.IsNullOrEmpty(entry.Note))
                 {
                     node.Data.Features.Add(new TextSpanFeature(

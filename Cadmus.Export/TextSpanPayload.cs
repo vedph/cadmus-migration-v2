@@ -5,6 +5,7 @@ using MongoDB.Driver.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MongoDB.Driver;
 
 namespace Cadmus.Export;
 
@@ -92,23 +93,28 @@ public class TextSpanPayload(FragmentTextRange range)
     /// the specified prefix.
     /// </summary>
     /// <param name="prefix">The prefix.</param>
-    /// <returns>Tuples with feature source and feature, sorted by type ID,
-    /// role ID, index, and suffix.</returns>
+    /// <param name="sort">True to sort results.</param>
+    /// <returns>Tuples with feature source and feature, optionally sorted
+    /// by type ID, role ID, index, and suffix.</returns>
     /// <exception cref="ArgumentNullException">prefix</exception>
     public List<Tuple<FragmentFeatureSource, TextSpanFeature>> GetFragmentFeatures
-        (string prefix)
+        (string prefix, bool sort = false)
     {
         ArgumentNullException.ThrowIfNull(prefix);
 
-        return [..
-            Features.Where(f => f.Source?.StartsWith(prefix) == true)
-                    .Select(f => new Tuple<FragmentFeatureSource, TextSpanFeature>(
-                        FragmentFeatureSource.Parse(f.Source!), f))
-                    .OrderBy(t => t.Item1.TypeId)
-                    .ThenBy(t => t.Item1.RoleId)
-                    .ThenBy(t => t.Item1.Index)
-                    .ThenBy(t => t.Item1.Suffix)
-            ];
+        var results = Features.Where(f => f.Source?.StartsWith(prefix) == true)
+            .Select(f => new Tuple<FragmentFeatureSource, TextSpanFeature>(
+                FragmentFeatureSource.Parse(f.Source!), f));
+
+        if (sort)
+        {
+            results = results.OrderBy(t => t.Item1.TypeId)
+                .ThenBy(t => t.Item1.RoleId)
+                .ThenBy(t => t.Item1.Index)
+                .ThenBy(t => t.Item1.Suffix);
+        }
+
+        return [..results];
     }
 
     /// <summary>

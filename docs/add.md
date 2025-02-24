@@ -137,131 +137,106 @@ The standard [apparatus](https://github.com/vedph/cadmus-philology/blob/master/d
 
 #### Linear Single Layer
 
-In this approach we just have a single layer with apparatus. So, merging just projects the apparatus ranges on the whole text.
-
-For instance, say that in our sample text we have these apparatus fragments (really our example just deals with orthography, but let us pretend these are variants to make things simpler and continue using the same text):
-
-1. `que`: variant=`quae`, accepted, witnesses=`b`.
-2. `bixit`: variant=`vixit`, accepted, witnesses=`b` with note=`pc`.
-3. `annos`: variant=`annis`, not accepted, authors=`editor` with note=`accusative here is rare but attested.`.
-
-So merged ranges would be:
-
-```txt
-012345678901234567
-que bixit|annos XX
-```
-
-1. 0-2 for `que`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@0.0`;
-2. 3 for space, with no fragments;
-3. 4-8 for `bixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@1.0`;
-4. 9 for LF, with no fragments;
-5. 10-14 for `annos`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@2.0`.
-6. 15-17 for space + `XX`.
+In this approach we just have a _single_ layer with _apparatus_. So, merging just projects the apparatus ranges on the whole text; the text is segmented only according to the apparatus fragments.
 
 >Given that we deal with a single layer, we can be sure there is no overlap: this is a constraint imposed to the Cadmus text layers model. This constraint, somewhat artificial for the Cadmus model itself, was designed for compatibility reasons, to make it simpler to deal with third-party models in exports or visualizations.
 
+For instance, say we have this simple text:
+
+```txt
+012345678901234567890123456789012
+illuc unde negant redire quemquam
+AAAAA....................BBBBBBBB
+```
+
+with 2 fragments in the apparatus, one (A) with 3 entries, and another (B) with 2:
+
+- A0: note: witnesses=`O1`, accepted.
+- A1: replacement: value=`illud`, witnesses=`O G R`.
+- A2: replacement: value=`illic`, authors=`Fruterius` with note=`(†1566) 1605a 388`.
+- B0: note: witnesses=`O G`, accepted.
+- B1: replacement: value=`umquam`, witnesses=`R`, note=`some note`.
+
+The merged ranges would be:
+
+1. 0-4 for `illuc`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@0`;
+2. 25-32 for `quemquam`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@1`.
+
 ```mermaid
 graph LR;
 
 classDef em stroke:yellow,stroke-width:2px;
 
-root --> 1[que]
+root --> 1[illuc]
 class 1 em;
-1 --> 2[_]
-2 --> 3[bixit]
+1 --> 2[-unde-negant-redire-]
+2 --> 3[quemquam]
 class 3 em;
-3 --> 4[_]
-4 --> 5[annos]
-class 5 em;
-5 --> 6[_XX]
 ```
 
->In this diagram, yellow borders mark nodes linked to apparatus fragments.
+>In this diagram, yellow borders mark nodes linked to apparatus fragments and dashes represent spaces.
 
-Given that we have a single layer, we won't need to add or delete nodes, but just to change their payload data adding an **apparatus linear tree text filter** to ▶️ step (5). So, traversing our nodes:
+Given that we have a single layer, we won't need to add or delete nodes, but just to change their payload data adding an **apparatus linear tree text filter** to ▶️ step (5). So, traversing our nodes this layer generates features for nodes linked to apparatus fragments:
 
-1. for the `que` node, linked to the fragment at index 0, we will change the text to `quae` because the variant there is accepted, and move the original text `que` into a variant feature. Other features will be added for witnesses, authors, or note, all from the same source fragment (`it.vedph.token-text-layer:fr.it.vedph.apparatus_0`).
-2. for the `bixit` node, linked to the fragment at index 1, we will do the same: text will be `vixit` and `bixit` will be a variant. As above, other features will be added as needed.
-3. for the `annos` node, linked to the fragment at index 2, we will just add a variant, because this is not accepted. As above, other features will be added as needed.
-
-The resulting node will be (as always, data payload is not shown in the diagram):
-
-```mermaid
-graph LR;
-
-classDef em stroke:yellow,stroke-width:2px;
-
-root --> 1[quae]
-class 1 em;
-1 --> 2[_]
-2 --> 3[vixit]
-class 3 em;
-3 --> 4[_]
-4 --> 5[annos]
-class 5 em;
-5 --> 6[_XX]
-```
-
-Here are node details:
-
-1. root.
-2. `quae`: features:
-    - `app-variant`=`que` (source `it.vedph.token-text-layer:fr.it.vedph.apparatus_0.0`);
-    - `app-witness`=`b` (same source).
-3. space.
-4. `vixit`: features:
-    - `app-variant`=`bixit` (source `it.vedph.token-text-layer:fr.it.vedph.apparatus_1.0`);
-    - `app-witness`=`b` (same source);
-    - `app-witness.note`=`pc` (same source).
-5. `annos`: features:
-    - `app-variant`=`annis` (source `it.vedph.token-text-layer:fr.it.vedph.apparatus_2.0`);
-    - `app-author`=`editor` (same source);
-    - `app-author.note`=`accusative here is rare but attested.`.
-6. space + `XX`.
+1. `illuc` is linked to fragment 0:
+    - from entry 0 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.0`):
+      - `app-witness`=`O1`
+    - from entry 1 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.1`):
+      - `app-variant`=`illud`
+      - `app-witness`=`O`
+      - `app-witness`=`G`
+      - `app-witness`=`R`
+    - from entry 2 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.2`):
+      - `app-variant`=`illic`
+      - `app-author`=`Fruterius`
+      - `app-author.note`=`(†1566) 1605a 388`
+2. `quemquam` is linked to fragment 1:
+    - from entry 0 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@1.0`):
+      - `app-witness`=`O`
+      - `app-witness`=`G`
+    - from entry 1 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@1.1`):
+      - `app-variant`=`umquam`
+      - `app-witness`=`R`
+      - `app-note`=`some note`
 
 At this stage, we're done with the tree and we can move to ▶️ step (6) for rendering it. Rendition depends on the desired output format; for this example, let's keep things simple and say that we want a TEI text fragment like this (witnesses and other attributes are fake data assumed to be in the fragments, and text is indented for more readability):
 
 ```xml
 <p>
     <app>
-      <lem wit="#b">quae</lem>
-      <rdg wit="#a">que</rdg>
-    </app>
-    <app>
-      <lem id="lem1" wit="#b">vixit</lem>
-      <rdg wit="#a">bixit</rdg>
-      <witDetail target="#lem1" wit="#a" type="pc"/>
-    </app>
-</p>
-<p>
-    <app>
-      <lem>annos</lem>
-      <rdg resp="#editor">annis
-        <note>accusative here is rare but attested.</note>
+      <lem wit="#O1">illuc</lem>
+      <rdg wit="#O #G #R">illud</rdg>
+      <rdg id="var1" resp="#Fruterius">
+        illic
+        <note>(†1566) 1605a 388</note>
       </rdg>
+      <witDetail target="#var1" resp="#Fruterius">p.c.</witDetail>
     </app>
-    XX
+    unde negant redire
+    <app>
+      <lem wit="#O #G">quemquam</lem>
+      <rdg wit="#R">umquam</rdg>
+    </app>
 </p>
 ```
 
 We can easily build this TEI code by just traversing our tree:
 
-1. at root, we start opening a block (`p`);
-2. at `quae`, which has variant feature(s), we create an `app` element with children `lem` and `rdg` for the node's text (`quae`) and its variant (`que`), with the respective witnesses. In this example we have witness `a` for the original reading and `b` for the normalized orthography: as remarked above, let's just pretend they are true tradition variants instead.
-3. we then render a space for the corresponding node.
-4. at `vixit`, we do as above for `quae`. This being marked as a node before EOL, we also close the block (`p`) and open a new one.
-5. at `annos`, we do as for the other variants. Here we have an author in the source fragment, rather than a witness; and a note with some text.
-6. finally, at space + `XX` we render the text.
-7. we close the block.
+1. at root, start with a block element (`p` in this case);
+2. `illuc`: as the node is linked to a fragment, add an `app` element and inside it add a `lem` element with the node's text as text, and as many `rdg` elements as variants with the variant value as text;
+3. `unde negant redire` (surrounded by spaces) is not linked to fragments, so just output it as text;
+4. `quemquam`: linked to fragment, so process as for 2 above;
+5. close the block.
 
-So the rules for this renderer would be:
+So the rules for this simple renderer would be:
 
 - use a specific element for blocks (e.g. `p` for prose, `l` for verses):
   - open a block at root;
   - close and reopen the block after each node before a newline;
   - close the block at end.
-- whenever the node has apparatus variant/note feature(s), add an `app` element and wrap the node's text into its `lem` child, and the variants into `rdg` children. In this context:
-  - add to `lem`/`rdg` attributes `@wit` for witnesses and `@resp` for authors;
-  - add to `lem`/`rdg` a child `note` for notes;
-  - witnesses notes (e.g. "in rasura", "manus altera", etc.) are rendered into `witDetail` elements which are siblings of `lem`/`rdg` and immediately follow it. In this example we have a `pc` note meaning "post correcturam".
+
+- if the node has apparatus feature(s):
+  - add an `app` element with content:
+    - `lem` = node text with `@wit` for witnesses, `@resp` for authors, a child `note` for note. Also, for each witness/author having its own note, add a `witDetail` sibling with `@target` pointing to the witness/author element, `@wit` or `@resp` with the value of the author/witness, and content=note's value.
+    - `rdg` = variant text, with attributes and children as above.
+- else just output the node's text.

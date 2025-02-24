@@ -1,10 +1,12 @@
-﻿using Cadmus.General.Parts;
+﻿using Cadmus.Export.Filters;
+using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 using Proteus.Text.Xml;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace Cadmus.Export.ML;
@@ -76,9 +78,22 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         {
             if (node.Data?.HasFeaturesForFragment(prefix) == true)
             {
+                // app
                 XElement app = new(_options.ResolvePrefixedName("tei:app"));
                 block.Add(app);
 
+                // add app content from features
+                List<Tuple<FragmentFeatureSource, TextSpanFeature>> features =
+                    node.Data.GetFragmentFeatures(prefix);
+
+                // for each variant
+                foreach (var sf in features.Where(t => t.Item2.Name ==
+                    ApparatusLinearTextTreeFilter.F_APP_VARIANT))
+                {
+                    // lem = text
+                    app.Add(new XElement(_options.ResolvePrefixedName("tei:lem"),
+                        node.Data.Text));
+                }
                 // TODO
             }
             else

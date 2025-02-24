@@ -5,7 +5,6 @@ using Cadmus.Philology.Parts;
 using Fusi.Tools.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Cadmus.Export.Test.Filters;
@@ -18,24 +17,19 @@ public sealed class ApparatusLinearTextTreeFilterTest
         part.Lines.Add(new TextLine
         {
             Y = 1,
-            Text = "que bixit"
-        });
-        part.Lines.Add(new TextLine
-        {
-            Y = 2,
-            Text = "annos XX"
+            Text = "illuc unde negant redire quemquam"
         });
         return part;
     }
 
     private static TokenTextLayerPart<ApparatusLayerFragment> GetApparatusPart()
     {
-        // 1   2     1     2
-        // que bixit|annos XX
-        // AAA AAAAA AAAAA
+        // 1     2    3      4      5
+        // illuc unde negant redire quemquam
+        // AAAAA....................BBBBBBBB
         TokenTextLayerPart<ApparatusLayerFragment> part = new();
 
-        // quae
+        // illuc
         part.Fragments.Add(new()
         {
             Location = "1.1",
@@ -43,61 +37,68 @@ public sealed class ApparatusLinearTextTreeFilterTest
             [
                 new ApparatusEntry
                 {
-                    Type = ApparatusEntryType.Replacement,
-                    Value = "quae",
+                    Type = ApparatusEntryType.Note,
                     IsAccepted = true,
                     Witnesses =
                     [
                         new AnnotatedValue
                         {
-                            Value = "b",
+                            Value = "O1",
                         }
                     ]
                 },
-            ]
-        });
-
-        // vixit
-        part.Fragments.Add(new()
-        {
-            Location = "1.2",
-            Entries =
-            [
                 new ApparatusEntry
                 {
                     Type = ApparatusEntryType.Replacement,
-                    Value = "vixit",
-                    IsAccepted = true,
+                    Value = "illud",
                     Witnesses =
                     [
-                        new AnnotatedValue
-                        {
-                            Value = "b",
-                            Note = "pc"
-                        }
+                        new AnnotatedValue { Value = "O" },
+                        new AnnotatedValue { Value = "G" },
+                        new AnnotatedValue { Value = "R" }
                     ]
                 },
-            ]
-        });
-
-        // annos
-        part.Fragments.Add(new()
-        {
-            Location = "2.1",
-            Entries =
-            [
                 new ApparatusEntry
                 {
                     Type = ApparatusEntryType.Replacement,
-                    Value = "annis",
+                    Value = "illic",
                     Authors =
                     [
                         new LocAnnotatedValue
                         {
-                            Value = "editor",
-                            Note = "accusative here is rare but attested."
-                        }
+                            Value = "Fruterius",
+                            Note = "(†1566) 1605a 388"
+                        },
                     ]
+                },
+            ]
+        });
+
+        // quemquam
+        part.Fragments.Add(new()
+        {
+            Location = "1.5",
+            Entries =
+            [
+                new ApparatusEntry
+                {
+                    Type = ApparatusEntryType.Note,
+                    IsAccepted = true,
+                    Witnesses =
+                    [
+                        new AnnotatedValue { Value = "O" },
+                        new AnnotatedValue { Value = "G" },
+                    ]
+                },
+                new ApparatusEntry
+                {
+                    Type = ApparatusEntryType.Replacement,
+                    Value = "umquam",
+                    Witnesses =
+                    [
+                        new AnnotatedValue { Value = "R" }
+                    ],
+                    Note = "some note"
                 },
             ]
         });
@@ -114,25 +115,27 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Item item = new();
         item.Parts.Add(textPart);
         item.Parts.Add(appPart);
+
         // flatten
         TokenTextPartFlattener flattener = new();
         Tuple<string, IList<FragmentTextRange>> tr = flattener.Flatten(
             textPart, [appPart]);
+
         // merge ranges
         IList<FragmentTextRange> mergedRanges = FragmentTextRange.MergeRanges(
             0, tr.Item1.Length - 1, tr.Item2);
         // assign text to merged ranges
         foreach (FragmentTextRange range in mergedRanges)
             range.AssignText(tr.Item1);
+
         // build a linear tree from ranges
         TreeNode<TextSpanPayload> tree = ItemComposer.BuildTreeFromRanges(
             mergedRanges, tr.Item1);
         // apply block filter
         tree = new BlockLinearTextTreeFilter().Apply(tree, item);
-        // get filter
-        ApparatusLinearTextTreeFilter filter = new();
 
         // act
+        ApparatusLinearTextTreeFilter filter = new();
         filter.Apply(tree, item);
 
         // assert
@@ -141,94 +144,101 @@ public sealed class ApparatusLinearTextTreeFilterTest
         // first node is blank root
         Assert.Null(tree.Data);
 
-        // next child is quae, accepted
+        // next child is illuc
         Assert.Single(tree.Children);
         TreeNode<TextSpanPayload> node = tree.Children[0];
         Assert.NotNull(node.Data);
-        Assert.Equal("quae", node.Data.Text);
-        // - app-variant: que
-        Assert.Equal(2, node.Data.Features.Count);
-        string id = prefix + "0.0";
-        TextSpanFeature? feature = node.Data.Features.FirstOrDefault(
-            f => f.Source == id &&
-                 f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
-        Assert.NotNull(feature);
-        Assert.Equal("que", feature.Value);
+        Assert.Equal("illuc", node.Data.Text);
 
-        // - witness b
-        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
-            f.Name == ApparatusLinearTextTreeFilter.F_APP_WITNESS);
-        Assert.NotNull(feature);
-        Assert.Equal("b", feature.Value);
+        // illuc has 8 features
+        Assert.Equal(8, node.Data.Features.Count);
+        List<Tuple<FragmentFeatureSource, TextSpanFeature>> feats =
+            node.Data.GetFragmentFeatures(prefix);
 
-        // next child is space
+        // from entry 0: app-witness=O1
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
+            feats[0].Item2.Name);
+        Assert.Equal("O1", feats[0].Item2.Value);
+
+        // from entry 1:
+        // - app-variant=illud
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_VARIANT,
+            feats[1].Item2.Name);
+        Assert.Equal("illud", feats[1].Item2.Value);
+
+        // - app-witness=O,G,R
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
+            feats[2].Item2.Name);
+        Assert.Equal("O", feats[2].Item2.Value);
+
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
+            feats[3].Item2.Name);
+        Assert.Equal("G", feats[3].Item2.Value);
+
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
+            feats[4].Item2.Name);
+        Assert.Equal("R", feats[4].Item2.Value);
+
+        // from entry 2:
+        // - app-variant=illic
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_VARIANT,
+            feats[5].Item2.Name);
+        Assert.Equal("illic", feats[5].Item2.Value);
+
+        // - app-author=Fruterius
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_AUTHOR,
+            feats[6].Item2.Name);
+        Assert.Equal("Fruterius", feats[6].Item2.Value);
+
+        // - app-author.note=(†1566) 1605a 388
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_AUTHOR_NOTE,
+            feats[7].Item2.Name);
+        Assert.Equal("(†1566) 1605a 388", feats[7].Item2.Value);
+
+        // next child is unde negant redire
         Assert.Single(node.Children);
         node = node.Children[0];
         Assert.NotNull(node.Data);
-        Assert.Equal(" ", node.Data.Text);
-        Assert.Empty(node.Data.Features);
+        Assert.Equal(" unde negant redire ", node.Data.Text);
+        Assert.Empty(node.Data!.Features);
 
-        // next child is vixit, accepted
+        // next child is quemquam
         Assert.Single(node.Children);
         node = node.Children[0];
         Assert.NotNull(node.Data);
-        Assert.Equal("vixit", node.Data.Text);
-        Assert.Equal(3, node.Data.Features.Count);
-        id = prefix + "1.0";
+        Assert.Equal("quemquam", node.Data.Text);
 
-        // - app-variant: bixit
-        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
-            f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
-        Assert.NotNull(feature);
-        Assert.Equal("bixit", feature.Value);
-        Assert.True(node.Data.IsBeforeEol);
+        // quemquam has 5 features
+        Assert.Equal(5, node.Data.Features.Count);
+        feats = node.Data.GetFragmentFeatures(prefix);
 
-        // - witness b
-        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
-            f.Name == ApparatusLinearTextTreeFilter.F_APP_WITNESS);
-        Assert.NotNull(feature);
-        Assert.Equal("b", feature.Value);
+        // from entry 0:
+        // - app-witness=O,G
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
+            feats[0].Item2.Name);
+        Assert.Equal("O", feats[0].Item2.Value);
 
-        // - witness note pc
-        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
-            f.Name == ApparatusLinearTextTreeFilter.F_APP_WITNESS_NOTE);
-        Assert.NotNull(feature);
-        Assert.Equal("pc", feature.Value);
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
+            feats[1].Item2.Name);
+        Assert.Equal("G", feats[1].Item2.Value);
 
-        // next child is annos
-        Assert.Single(node.Children);
-        node = node.Children[0];
-        Assert.NotNull(node.Data);
-        Assert.Equal("annos", node.Data.Text);
-        Assert.Equal(3, node.Data.Features.Count);
-        id = prefix + "2.0";
+        // from entry 1:
+        // - app-variant=umquam
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_VARIANT,
+            feats[2].Item2.Name);
+        Assert.Equal("umquam", feats[2].Item2.Value);
 
-        // -app-variant: annis
-        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
-            f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
-        Assert.NotNull(feature);
-        Assert.Equal("annis", feature.Value);
+        // - app-witness=R
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
+            feats[3].Item2.Name);
+        Assert.Equal("R", feats[3].Item2.Value);
 
-        // -author: editor
-        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
-            f.Name == ApparatusLinearTextTreeFilter.F_APP_AUTHOR);
-        Assert.NotNull(feature);
-        Assert.Equal("editor", feature.Value);
+        // - app-note=some note
+        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_NOTE,
+            feats[4].Item2.Name);
+        Assert.Equal("some note", feats[4].Item2.Value);
 
-        // -author-note: accusative here is rare but attested.
-        feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
-            f.Name == ApparatusLinearTextTreeFilter.F_APP_AUTHOR_NOTE);
-        Assert.NotNull(feature);
-        Assert.Equal("accusative here is rare but attested.", feature.Value);
-
-        // next child is " XX"
-        Assert.Single(node.Children);
-        node = node.Children[0];
-        Assert.NotNull(node.Data);
-        Assert.Equal(" XX", node.Data.Text);
-        Assert.Empty(node.Data.Features);
-
-        // no children
-        Assert.False(node.HasChildren);
+        // no more children
+        Assert.Empty(node.Children);
     }
 }
