@@ -184,7 +184,7 @@ public sealed class AppLinearTextTreeFilterTest
         Assert.Equal("illic", set.Features[0].Value);
 
         // - app-author=Fruterius
-        Assert.Equal(AppLinearTextTreeFilter.F_APP_AUTHOR,
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_AUTHOR,
             set.Features[1].Name);
         Assert.Equal("Fruterius", set.Features[1].Value);
 

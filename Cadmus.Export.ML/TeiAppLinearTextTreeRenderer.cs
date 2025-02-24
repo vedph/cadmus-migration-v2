@@ -53,10 +53,10 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
 
         // @resp: join all authors
         if (features.Any(f => f.Item2.Name ==
-            AppLinearTextTreeFilter.F_APP_AUTHOR))
+            AppLinearTextTreeFilter.F_APP_E_AUTHOR))
         {
             string resp = string.Join(" ", features.Where(f =>
-                f.Item2.Name == AppLinearTextTreeFilter.F_APP_AUTHOR)
+                f.Item2.Name == AppLinearTextTreeFilter.F_APP_E_AUTHOR)
                 .Select(f => "#" + f.Item2.Value));
             seg.SetAttributeValue("resp", resp);
         }
