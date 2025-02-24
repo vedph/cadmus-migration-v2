@@ -185,9 +185,11 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             return true;
         });
 
-        return root.ToString(_options.Indented
-            ? SaveOptions.OmitDuplicateNamespaces
-            : SaveOptions.OmitDuplicateNamespaces | SaveOptions.DisableFormatting);
+        return string.Concat(
+            root.Nodes().Select(node => node.ToString(_options.Indented
+                ? SaveOptions.OmitDuplicateNamespaces
+                : SaveOptions.OmitDuplicateNamespaces |
+                  SaveOptions.DisableFormatting)));
     }
 }
 
@@ -199,6 +201,8 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
 {
     /// <summary>
     /// Gets or sets the name of the root element. The default is <c>tei:div</c>.
+    /// This is not rendered in output, but it is used as the root of the XML
+    /// fragment built by the renderer.
     /// </summary>
     public string RootElement { get; set; }
 
