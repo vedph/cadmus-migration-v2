@@ -106,7 +106,7 @@ public sealed class AppLinearTextTreeFilterTest
         return part;
     }
 
-    internal static (TreeNode<TextSpanPayload> tree, IItem item) GetTreeAndItem()
+    public static (TreeNode<TextSpanPayload> tree, IItem item) GetTreeAndItem()
     {
         // get item
         TokenTextPart textPart = GetTextPart();

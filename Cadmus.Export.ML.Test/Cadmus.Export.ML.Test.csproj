@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cadmus.Export.ML\Cadmus.Export.ML.csproj" />
+    <ProjectReference Include="..\Cadmus.Export.Test\Cadmus.Export.Test.csproj" />
   </ItemGroup>
 
 </Project>

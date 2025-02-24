@@ -224,6 +224,7 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
     /// </summary>
     public AppLinearTextTreeRendererOptions()
     {
+        DefaultNsPrefix = "tei";
         RootElement = "tei:div";
         BlockElements = new Dictionary<string, string>
         {
