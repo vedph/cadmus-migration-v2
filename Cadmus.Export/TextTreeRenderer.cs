@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Cadmus.Core;
-using Cadmus.Core.Layers;
 using Cadmus.Export.Filters;
-using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 
 namespace Cadmus.Export;
@@ -17,37 +14,6 @@ public abstract class TextTreeRenderer : IHasRendererFilters
     /// Gets the optional filters to apply after the renderer completes.
     /// </summary>
     public IList<IRendererFilter> Filters { get; } = [];
-
-    /// <summary>
-    /// Gets the tag value for the specified object instance decorated
-    /// with <see cref="TagAttribute"/>.
-    /// </summary>
-    /// <param name="instance">The instance.</param>
-    /// <returns>Value or null.</returns>
-    /// <exception cref="ArgumentNullException">instance</exception>
-    protected static string? GetTagValueFor(object instance)
-    {
-        ArgumentNullException.ThrowIfNull(instance);
-
-        Type type = instance.GetType();
-        TagAttribute? attribute = (TagAttribute?)Attribute.GetCustomAttribute(
-            type, typeof(TagAttribute));
-        return attribute?.Tag;
-    }
-
-    /// <summary>
-    /// Gets the fragment ID prefix used in text tree nodes to link fragments.
-    /// This is a string like "it.vedph.token-text-layer:fr.it.vedph.comment_".
-    /// </summary>
-    /// <param name="layerPart">The layer part.</param>
-    /// <param name="layerFragment">The layer fragment.</param>
-    /// <returns>Prefix.</returns>
-    protected static string GetFragmentPrefixFor(IPart layerPart,
-        ITextLayerFragment layerFragment)
-    {
-        return GetTagValueFor(layerPart) + ":" +
-            GetTagValueFor(layerFragment) + "_";
-    }
 
     /// <summary>
     /// Renders the specified JSON code.

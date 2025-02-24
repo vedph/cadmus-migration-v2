@@ -1,4 +1,8 @@
-﻿using MongoDB.Driver.Linq;
+﻿using Cadmus.Core.Layers;
+using Cadmus.Core;
+using Fusi.Tools.Configuration;
+using MongoDB.Driver.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -38,6 +42,74 @@ public class TextSpanPayload(FragmentTextRange range)
     /// Gets the features.
     /// </summary>
     public List<TextSpanFeature> Features { get; init; } = [];
+
+    /// <summary>
+    /// Gets the tag value for the specified object instance decorated
+    /// with <see cref="TagAttribute"/>.
+    /// </summary>
+    /// <param name="instance">The instance.</param>
+    /// <returns>Value or null.</returns>
+    /// <exception cref="ArgumentNullException">instance</exception>
+    public static string? GetTagAttributeValue(object instance)
+    {
+        ArgumentNullException.ThrowIfNull(instance);
+
+        Type type = instance.GetType();
+        TagAttribute? attribute = (TagAttribute?)Attribute.GetCustomAttribute(
+            type, typeof(TagAttribute));
+        return attribute?.Tag;
+    }
+
+    /// <summary>
+    /// Gets the fragment ID prefix used in text tree nodes to link fragments.
+    /// This is a string like "it.vedph.token-text-layer:fr.it.vedph.comment@".
+    /// </summary>
+    /// <param name="layerPart">The layer part.</param>
+    /// <param name="layerFragment">The layer fragment.</param>
+    /// <returns>Prefix.</returns>
+    public static string GetFragmentPrefixFor(IPart layerPart,
+        ITextLayerFragment layerFragment)
+    {
+        return GetTagAttributeValue(layerPart) + ":" +
+               GetTagAttributeValue(layerFragment) + "@";
+    }
+
+    /// <summary>
+    /// Determines whether this span has any feature derived from the type
+    /// of fragment defined by the specified prefix.
+    /// </summary>
+    /// <param name="prefix">The prefix (with form TypeId:RoleId@).</param>
+    /// <returns>
+    ///   <c>true</c> if the specified prefix has fragment; otherwise, <c>false</c>.
+    /// </returns>
+    public bool HasFeaturesForFragment(string prefix)
+    {
+        return Features.Any(f => f.Source?.StartsWith(prefix) == true);
+    }
+
+    /// <summary>
+    /// Gets all the features belonging to the type of fragment defined by
+    /// the specified prefix.
+    /// </summary>
+    /// <param name="prefix">The prefix.</param>
+    /// <returns>Tuples with feature source and feature, sorted by type ID,
+    /// role ID, index, and suffix.</returns>
+    /// <exception cref="ArgumentNullException">prefix</exception>
+    public List<Tuple<FragmentFeatureSource, TextSpanFeature>> GetFragmentFeatures
+        (string prefix)
+    {
+        ArgumentNullException.ThrowIfNull(prefix);
+
+        return [..
+            Features.Where(f => f.Source?.StartsWith(prefix) == true)
+                    .Select(f => new Tuple<FragmentFeatureSource, TextSpanFeature>(
+                        FragmentFeatureSource.Parse(f.Source!), f))
+                    .OrderBy(t => t.Item1.TypeId)
+                    .ThenBy(t => t.Item1.RoleId)
+                    .ThenBy(t => t.Item1.Index)
+                    .ThenBy(t => t.Item1.Suffix)
+            ];
+    }
 
     /// <summary>
     /// Create a shallow clone of this instance.

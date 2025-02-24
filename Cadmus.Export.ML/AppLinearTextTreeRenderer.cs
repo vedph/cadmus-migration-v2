@@ -60,7 +60,7 @@ public sealed class AppLinearTextTreeRenderer : TextTreeRenderer,
             _options.DefaultNsPrefix + ":" + _options.BlockElements[blockType]);
 
         // calculate fragment ID prefix
-        string prefix = GetFragmentPrefixFor(
+        string prefix = TextSpanPayload.GetFragmentPrefixFor(
             new TokenTextLayerPart<ApparatusLayerFragment>(),
             new ApparatusLayerFragment());
 
