@@ -80,7 +80,7 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
         foreach (string id in node.Data!.Range.FragmentIds)
         {
             // get the source fragment
-            int i = int.Parse(id[(id.LastIndexOf('_') + 1)..],
+            int i = int.Parse(id[(id.LastIndexOf('@') + 1)..],
                 CultureInfo.InvariantCulture);
             ApparatusLayerFragment fr = part.Fragments[i];
 

@@ -24,10 +24,10 @@ In this example we want to render all these layers, but you are free to select o
 
 - text: `que bixit|annos XX` (where `|` stands for a LF character, used as the line delimiter).
 - ranges:
-  1. 2-2 for `qu[e]`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.orthography_0`;
-  2. 4-4 for `[b]ixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.orthography_1`;
-  3. 2-4 for `qu[e b]ixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus_0`;
-  4. 4-14 for `bixit|annos`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.comment_0`.
+  1. 2-2 for `qu[e]`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.orthography@0`;
+  2. 4-4 for `[b]ixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.orthography@1`;
+  3. 2-4 for `qu[e b]ixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@0`;
+  4. 4-14 for `bixit|annos`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.comment@0`.
 
 Each of the ranges has a model including:
 
@@ -152,11 +152,11 @@ So merged ranges would be:
 que bixit|annos XX
 ```
 
-1. 0-2 for `que`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus_0`;
+1. 0-2 for `que`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@0.0`;
 2. 3 for space, with no fragments;
-3. 4-8 for `bixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus_1`;
+3. 4-8 for `bixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@1.0`;
 4. 9 for LF, with no fragments;
-5. 10-14 for `annos`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus_2`.
+5. 10-14 for `annos`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@2.0`.
 6. 15-17 for space + `XX`.
 
 >Given that we deal with a single layer, we can be sure there is no overlap: this is a constraint imposed to the Cadmus text layers model. This constraint, somewhat artificial for the Cadmus model itself, was designed for compatibility reasons, to make it simpler to deal with third-party models in exports or visualizations.

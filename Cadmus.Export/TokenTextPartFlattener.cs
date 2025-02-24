@@ -61,7 +61,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener
         return index;
     }
 
-    private FragmentTextRange GetRangeFromLoc(string loc, string text,
+    private static FragmentTextRange GetRangeFromLoc(string loc, string text,
         TokenTextPart part, string frId)
     {
         TokenTextLocation l = TokenTextLocation.Parse(loc);
@@ -99,13 +99,6 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener
         return locs;
     }
 
-    private static string BuildFragmentId(IPart part, int index)
-    {
-        return string.IsNullOrEmpty(part.RoleId)
-            ? $"{part.TypeId}_{index}"
-            : $"{part.TypeId}:{part.RoleId}_{index}";
-    }
-
     /// <summary>
     /// Starting from a text part and a list of layer parts, gets a string
     /// representing the text with a list of layer ranges representing
@@ -136,7 +129,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener
             foreach (string loc in GetFragmentLocations(part))
             {
                 FragmentTextRange r = GetRangeFromLoc(loc, text, ttp,
-                    BuildFragmentId(part, frIndex));
+                    $"{part.TypeId}:{part.RoleId}@{frIndex}");
                 ranges.Add(r);
                 frIndex++;
             }

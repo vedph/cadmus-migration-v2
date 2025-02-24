@@ -97,23 +97,35 @@ public sealed class TokenTextPartFlattenerTest
         Assert.Equal("e", range.Text);
         Assert.Equal(2, range.Start);
         Assert.Equal(2, range.End);
+        Assert.Single(range.FragmentIds);
+        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.orthography@0",
+            range.FragmentIds[0]);
 
         // orthography: [b]ixit
         range = result.Item2[1];
         Assert.Equal("b", range.Text);
         Assert.Equal(4, range.Start);
         Assert.Equal(4, range.End);
+        Assert.Single(range.FragmentIds);
+        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.orthography@1",
+            range.FragmentIds[0]);
 
         // apparatus: qu[e b]ixit
         range = result.Item2[2];
         Assert.Equal("e b", range.Text);
         Assert.Equal(2, range.Start);
         Assert.Equal(4, range.End);
+        Assert.Single(range.FragmentIds);
+        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.apparatus@0",
+            range.FragmentIds[0]);
 
         // comment: [bixit|annos]
         range = result.Item2[3];
         Assert.Equal("bixit\nannos", range.Text);
         Assert.Equal(4, range.Start);
         Assert.Equal(14, range.End);
+        Assert.Single(range.FragmentIds);
+        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.comment@0",
+            range.FragmentIds[0]);
     }
 }
