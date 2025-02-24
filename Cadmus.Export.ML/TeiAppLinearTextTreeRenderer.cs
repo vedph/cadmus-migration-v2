@@ -121,7 +121,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         }
 
         XName blockName = _options.ResolvePrefixedName(
-            _options.DefaultNsPrefix + ":" + _options.BlockElements[blockType]);
+            _options.BlockElements[blockType]);
 
         // calculate the apparatus fragment ID prefix
         string prefix = TextSpanPayload.GetFragmentPrefixFor(

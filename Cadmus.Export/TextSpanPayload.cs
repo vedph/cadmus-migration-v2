@@ -110,7 +110,7 @@ public class TextSpanPayload(FragmentTextRange range)
     ///   <c>false</c>.
     /// </returns>
     public bool HasFeaturesFromFragment(string prefix) =>
-        FeatureSets.Values.Any(s => s.HasFeaturesForFragment(prefix));
+        FeatureSets.Values.Any(s => s.Source.StartsWith(prefix));
 
     /// <summary>
     /// Create a clone of this instance.

@@ -1,4 +1,5 @@
 ﻿using Cadmus.Core;
+using Cadmus.Export.Filters;
 using Cadmus.Export.Test.Filters;
 using Fusi.Tools.Data;
 using Xunit;
@@ -14,6 +15,8 @@ public sealed class TeiAppLinearTextTreeRendererTest
 
         (TreeNode<TextSpanPayload>? tree, IItem item) =
             AppLinearTextTreeFilterTest.GetTreeAndItem();
+        AppLinearTextTreeFilter filter = new();
+        filter.Apply(tree, item);
 
         string xml = renderer.Render(tree, new RendererContext
         {

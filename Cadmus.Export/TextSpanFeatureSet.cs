@@ -37,19 +37,6 @@ public class TextSpanFeatureSet(string key, string source)
     public List<TextSpanFeature> Features { get; } = [];
 
     /// <summary>
-    /// Determines whether this set has features for the fragment whose ID
-    /// starts with the specified prefix.
-    /// </summary>
-    /// <param name="prefix">The prefix.</param>
-    /// <returns>
-    ///   <c>true</c> if has features; otherwise, <c>false</c>.
-    /// </returns>
-    public bool HasFeaturesForFragment(string prefix)
-    {
-        return Features.Any(f => f.Name.StartsWith(prefix));
-    }
-
-    /// <summary>
     /// Clones this set.
     /// </summary>
     /// <returns>Cloned set.</returns>
