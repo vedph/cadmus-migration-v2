@@ -1,7 +1,6 @@
 ﻿using Cadmus.Core.Layers;
 using Cadmus.Core;
 using Fusi.Tools.Configuration;
-using MongoDB.Driver.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,9 +39,34 @@ public class TextSpanPayload(FragmentTextRange range)
     public string? Text { get; set; } = range.Text;
 
     /// <summary>
-    /// Gets the features.
+    /// Gets the features sets. Each set is derived from a specific source,
+    /// like a fragment or a part of it, as specified by
+    /// <see cref="FragmentFeatureSource"/>.
     /// </summary>
-    public List<TextSpanFeature> Features { get; init; } = [];
+    public Dictionary<string, TextSpanFeatureSet> FeatureSets { get; init; } = [];
+
+    /// <summary>
+    /// Adds the specified feature to the set with the specified key, adding
+    /// the set if not exists.
+    /// </summary>
+    /// <param name="key">The set key.</param>
+    /// <param name="feature">The feature to add.</param>
+    /// <param name="source">The set source.</param>
+    /// <exception cref="ArgumentNullException">key or feature or source</exception>
+    public void AddFeatureToSet(string key, TextSpanFeature feature,
+        string source)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(feature);
+        ArgumentNullException.ThrowIfNull(source);
+
+        if (!FeatureSets.TryGetValue(key, out TextSpanFeatureSet? set))
+        {
+            set = new TextSpanFeatureSet(key, source);
+            FeatureSets[key] = set;
+        }
+        set.Features.Add(feature);
+    }
 
     /// <summary>
     /// Gets the tag value for the specified object instance decorated
@@ -83,42 +107,11 @@ public class TextSpanPayload(FragmentTextRange range)
     /// <returns>
     ///   <c>true</c> if the specified prefix has fragment; otherwise, <c>false</c>.
     /// </returns>
-    public bool HasFeaturesForFragment(string prefix)
-    {
-        return Features.Any(f => f.Source?.StartsWith(prefix) == true);
-    }
+    public bool HasFeaturesForFragment(string prefix) =>
+        FeatureSets.Values.Any(s => s.HasFeaturesForFragment(prefix));
 
     /// <summary>
-    /// Gets all the features belonging to the type of fragment defined by
-    /// the specified prefix.
-    /// </summary>
-    /// <param name="prefix">The prefix.</param>
-    /// <param name="sort">True to sort results.</param>
-    /// <returns>Tuples with feature source and feature, optionally sorted
-    /// by type ID, role ID, index, and suffix.</returns>
-    /// <exception cref="ArgumentNullException">prefix</exception>
-    public List<Tuple<FragmentFeatureSource, TextSpanFeature>> GetFragmentFeatures
-        (string prefix, bool sort = false)
-    {
-        ArgumentNullException.ThrowIfNull(prefix);
-
-        var results = Features.Where(f => f.Source?.StartsWith(prefix) == true)
-            .Select(f => new Tuple<FragmentFeatureSource, TextSpanFeature>(
-                FragmentFeatureSource.Parse(f.Source!), f));
-
-        if (sort)
-        {
-            results = results.OrderBy(t => t.Item1.TypeId)
-                .ThenBy(t => t.Item1.RoleId)
-                .ThenBy(t => t.Item1.Index)
-                .ThenBy(t => t.Item1.Suffix);
-        }
-
-        return [..results];
-    }
-
-    /// <summary>
-    /// Create a shallow clone of this instance.
+    /// Create a clone of this instance.
     /// </summary>
     /// <returns>Cloned instance.</returns>
     public TextSpanPayload Clone()
@@ -128,7 +121,8 @@ public class TextSpanPayload(FragmentTextRange range)
             Type = Type,
             IsBeforeEol = IsBeforeEol,
             Text = Text,
-            Features = [..Features]
+            FeatureSets = FeatureSets.ToDictionary(
+                kv => kv.Key, kv => kv.Value.Clone())
         };
     }
 
@@ -140,12 +134,6 @@ public class TextSpanPayload(FragmentTextRange range)
     /// </returns>
     public override string ToString()
     {
-        List<TextSpanFeature> featuresToDisplay = Features.Count > 5
-            ? [.. Features.Take(5)] : Features;
-        string featuresString = string.Join(", ", featuresToDisplay);
-        if (Features.Count > 5)
-            featuresString += $", ... ({Features.Count - 5})";
-
-        return $"[{Type}] {Text}{(IsBeforeEol? "\u21b4" : "")}: {featuresString}";
+        return $"[{Type}] {Text}{(IsBeforeEol? "\u21b4" : "")}: {FeatureSets.Count}";
     }
 }

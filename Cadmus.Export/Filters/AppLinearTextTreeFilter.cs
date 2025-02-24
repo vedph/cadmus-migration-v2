@@ -17,55 +17,78 @@ namespace Cadmus.Export.Filters;
 /// </summary>
 /// <seealso cref="ITextTreeFilter" />
 [Tag("text-tree-filter.apparatus-linear")]
-public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
+public sealed class AppLinearTextTreeFilter : ITextTreeFilter
 {
     /// <summary>
-    /// The name of the feature for the apparatus variant.
+    /// The name of the feature for apparatus tags.
     /// </summary>
-    public const string F_APP_VARIANT = "app-variant";
+    public const string F_APP_TAG = "app-tag";
+
     /// <summary>
-    /// The name of the feature for the apparatus note.
+    /// The name of the feature for apparatus entries tags.
     /// </summary>
-    public const string F_APP_NOTE = "app-note";
+    public const string F_APP_E_TAG = "app.e.tag";
+
+    /// <summary>
+    /// The name of the feature for an entry note.
+    /// </summary>
+    public const string F_APP_E_NOTE = "app.e.note";
+
+    /// <summary>
+    /// The name of the feature for the apparatus variant. This is the entry
+    /// value when the entry is not of type note.
+    /// </summary>
+    public const string F_APP_E_VARIANT = "app.e.variant";
+
     /// <summary>
     /// The name of the feature for an apparatus entry witness.
     /// </summary>
-    public const string F_APP_WITNESS = "app-witness";
+    public const string F_APP_E_WITNESS = "app.e.witness";
+
     /// <summary>
     /// The name of the feature for an apparatus entry witness note.
     /// </summary>
-    public const string F_APP_WITNESS_NOTE = "app-witness.note";
+    public const string F_APP_E_WITNESS_NOTE = "app.e.witness.note";
+
     /// <summary>
-    /// The name if the feature for an apparatus entry author.
+    /// The name of the feature for an apparatus entry author.
     /// </summary>
-    public const string F_APP_AUTHOR = "app-author";
+    public const string F_APP_E_AUTHOR = "app.e.author";
+
     /// <summary>
     /// The name of the feature for an apparatus entry author note.
     /// </summary>
-    public const string F_APP_AUTHOR_NOTE = "app-author.note";
+    public const string F_APP_E_AUTHOR_NOTE = "app.e.author.note";
+
+    /// <summary>
+    /// The name if the feature for an apparatus entry author.
+    /// The value of this feature is the author ID, optionally followed
+    /// by LF and its note when present.
+    /// </summary>
+    public const string F_APP_AUTHOR = "app-author";
 
     private static void AddWitnessesOrAuthors(ApparatusEntry entry,
-        TreeNode<TextSpanPayload> node, string source)
+        TextSpanFeatureSet set)
     {
         foreach (AnnotatedValue wit in entry.Witnesses)
         {
-            node.Data!.Features.Add(new TextSpanFeature(
-                F_APP_WITNESS, wit.Value!, source));
+            set.Features.Add(new TextSpanFeature(F_APP_E_WITNESS, wit.Value!));
+
             if (!string.IsNullOrEmpty(wit.Note))
             {
-                node.Data.Features.Add(new TextSpanFeature(
-                    F_APP_WITNESS_NOTE, wit.Note, source));
+                set.Features.Add(new TextSpanFeature(F_APP_E_WITNESS_NOTE,
+                    wit.Note));
             }
         }
 
         foreach (LocAnnotatedValue author in entry.Authors)
         {
-            node.Data!.Features.Add(new TextSpanFeature(
-                F_APP_AUTHOR, author.Value!, source));
+            set.Features.Add(new TextSpanFeature(F_APP_E_AUTHOR, author.Value!));
+
             if (!string.IsNullOrEmpty(author.Note))
             {
-                node.Data.Features.Add(new TextSpanFeature(
-                    F_APP_AUTHOR_NOTE, author.Note, source));
+                set.Features.Add(new TextSpanFeature(F_APP_E_AUTHOR_NOTE,
+                    author.Note));
             }
         }
     }
@@ -82,6 +105,8 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
 
             // process its entries
             int entryIndex = 0;
+            string? setKey = null;
+
             foreach (ApparatusEntry entry in fr.Entries)
             {
                 switch (entry.Type)
@@ -90,10 +115,13 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
                         // if not accepted add a variant
                         if (!entry.IsAccepted)
                         {
-                            node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT,
-                                entry.Value + node.Data.Text,
-                                $"{id}.{entryIndex}"));
+                            setKey ??= $"e{entryIndex:000}";
+                            node.Data.AddFeatureToSet(
+                                setKey,
+                                new TextSpanFeature(
+                                    F_APP_E_VARIANT,
+                                    entry.Value + node.Data.Text),
+                                $"{id}.{entryIndex}");
                         }
                         break;
 
@@ -101,10 +129,13 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
                         // if not accepted add a variant
                         if (!entry.IsAccepted)
                         {
-                            node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT,
-                                node.Data.Text + entry.Value,
-                                $"{id}.{entryIndex}"));
+                            setKey ??= $"e{entryIndex:000}";
+                            node.Data.AddFeatureToSet(
+                                setKey,
+                                new TextSpanFeature(
+                                    F_APP_E_VARIANT,
+                                    node.Data.Text + entry.Value),
+                                $"{id}.{entryIndex}");
                         }
                         break;
 
@@ -112,22 +143,30 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
                         // if not accepted add a variant
                         if (!entry.IsAccepted)
                         {
-                            node.Data.Features.Add(new TextSpanFeature(
-                                F_APP_VARIANT,
-                                entry.Value!,
-                                $"{id}.{entryIndex}"));
+                            setKey ??= $"e{entryIndex:000}";
+                            node.Data.AddFeatureToSet(
+                                setKey,
+                                new TextSpanFeature(
+                                    F_APP_E_VARIANT,
+                                    entry.Value!),
+                                $"{id}.{entryIndex}");
                         }
                         break;
                 }
 
                 // add witnesses and authors with their notes
-                AddWitnessesOrAuthors(entry, node, $"{id}.{entryIndex}");
-
-                // add entry note
-                if (!string.IsNullOrEmpty(entry.Note))
+                if (setKey != null)
                 {
-                    node.Data.Features.Add(new TextSpanFeature(
-                        F_APP_NOTE, entry.Note, $"{id}.{entryIndex}"));
+                    AddWitnessesOrAuthors(entry, node.Data.FeatureSets[setKey]);
+
+                    // add entry note
+                    if (!string.IsNullOrEmpty(entry.Note))
+                    {
+                        node.Data.AddFeatureToSet(setKey,
+                            new TextSpanFeature(F_APP_E_NOTE, entry.Note),
+                            $"{id}.{entryIndex}");
+                    }
+                    setKey = null;
                 }
 
                 entryIndex++;

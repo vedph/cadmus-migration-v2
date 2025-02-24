@@ -114,26 +114,26 @@ When an apparatus is involved, this can potentially modify the text by selecting
 
 The approach depends on the complexity of the source data. Let us consider various scenarios, from the simplest to the most complex ones.
 
-The standard [apparatus](https://github.com/vedph/cadmus-philology/blob/master/docs/fr.apparatus.md) fragment model is:
+The standard [apparatus](https://github.com/vedph/cadmus-philology/blob/master/docs/fr.apparatus.md) fragment model is (I add the feature name after each property converted to a feature during processing):
 
 - location
-- tag
+- tag (`app-tag`)
 - entries:
   - subrange
-  - tag
-  - value
+  - tag (`app.e.tag`)
+  - value  (`app.e.variant`, when type is not note)
   - normValue
   - isAccepted
   - groupId
   - witnesses:
-    - value
-    - note
+    - value (`app.e.witness`)
+    - note (`app.e.witness.note`)
   - authors:
     - tag
-    - location
-    - value
-    - note
-  - note
+    - value (`app.e.author`)
+    - location (`app.e.author.loc`)
+    - note (`app.e.author.note`)
+  - note (`app.e.note`)
 
 #### Linear Single Layer
 
@@ -180,24 +180,24 @@ Given that we have a single layer, we won't need to add or delete nodes, but jus
 
 1. `illuc` is linked to fragment 0:
     - from entry 0 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.0`):
-      - `app-witness`=`O1`
+      - `app.e.witness`=`O1`
     - from entry 1 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.1`):
-      - `app-variant`=`illud`
-      - `app-witness`=`O`
-      - `app-witness`=`G`
-      - `app-witness`=`R`
+      - `app.e.variant`=`illud`
+      - `app.e.witness`=`O`
+      - `app.e.witness`=`G`
+      - `app.e.witness`=`R`
     - from entry 2 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.2`):
-      - `app-variant`=`illic`
-      - `app-author`=`Fruterius`
-      - `app-author.note`=`(†1566) 1605a 388`
+      - `app.e.variant`=`illic`
+      - `app.e.author`=`Fruterius`
+      - `app.e.author.note`=`(†1566) 1605a 388`
 2. `quemquam` is linked to fragment 1:
     - from entry 0 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@1.0`):
-      - `app-witness`=`O`
-      - `app-witness`=`G`
+      - `app.e.witness`=`O`
+      - `app.e.witness`=`G`
     - from entry 1 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@1.1`):
-      - `app-variant`=`umquam`
-      - `app-witness`=`R`
-      - `app-note`=`some note`
+      - `app.e.variant`=`umquam`
+      - `app.e.witness`=`R`
+      - `app.e.note`=`some note`
 
 At this stage, we're done with the tree and we can move to ▶️ step (6) for rendering it. Rendition depends on the desired output format; for this example, let's keep things simple and say that we want a TEI text fragment like this (witnesses and other attributes are fake data assumed to be in the fragments, and text is indented for more readability):
 

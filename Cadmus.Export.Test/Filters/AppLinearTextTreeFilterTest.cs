@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Cadmus.Export.Test.Filters;
 
-public sealed class ApparatusLinearTextTreeFilterTest
+public sealed class AppLinearTextTreeFilterTest
 {
     private static TokenTextPart GetTextPart()
     {
@@ -135,11 +135,8 @@ public sealed class ApparatusLinearTextTreeFilterTest
         tree = new BlockLinearTextTreeFilter().Apply(tree, item);
 
         // act
-        ApparatusLinearTextTreeFilter filter = new();
+        AppLinearTextTreeFilter filter = new();
         filter.Apply(tree, item);
-
-        // assert
-        string prefix = $"{appPart.TypeId}:{appPart.RoleId}@";
 
         // first node is blank root
         Assert.Null(tree.Data);
@@ -150,57 +147,58 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.NotNull(node.Data);
         Assert.Equal("illuc", node.Data.Text);
 
-        // illuc has 8 features
-        Assert.Equal(8, node.Data.Features.Count);
-        List<Tuple<FragmentFeatureSource, TextSpanFeature>> feats =
-            node.Data.GetFragmentFeatures(prefix);
+        // illuc has 3 sets
+        Assert.Equal(3, node.Data.FeatureSets.Count);
 
-        // from entry 0: app-witness=O1
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
-            feats[0].Item2.Name);
-        Assert.Equal("O1", feats[0].Item2.Value);
+        // from entry 0: app.e.witness=O1
+        TextSpanFeatureSet set = node.Data.FeatureSets["e000"];
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_WITNESS,
+            set.Features[0].Name);
+        Assert.Equal("O1", set.Features[0].Value);
 
         // from entry 1:
-        // - app-variant=illud
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_VARIANT,
-            feats[1].Item2.Name);
-        Assert.Equal("illud", feats[1].Item2.Value);
+        set = node.Data.FeatureSets["e001"];
+        // - app.e.variant=illud
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_VARIANT,
+            set.Features[0].Name);
+        Assert.Equal("illud", set.Features[0].Value);
 
         // - app-witness=O,G,R
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
-            feats[2].Item2.Name);
-        Assert.Equal("O", feats[2].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_WITNESS,
+            set.Features[1].Name);
+        Assert.Equal("O", set.Features[1].Value);
 
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
-            feats[3].Item2.Name);
-        Assert.Equal("G", feats[3].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_WITNESS,
+            set.Features[2].Name);
+        Assert.Equal("G", set.Features[2].Value);
 
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
-            feats[4].Item2.Name);
-        Assert.Equal("R", feats[4].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_WITNESS,
+            set.Features[3].Name);
+        Assert.Equal("R", set.Features[3].Value);
 
         // from entry 2:
+        set = node.Data.FeatureSets["e002"];
         // - app-variant=illic
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_VARIANT,
-            feats[5].Item2.Name);
-        Assert.Equal("illic", feats[5].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_VARIANT,
+            set.Features[0].Name);
+        Assert.Equal("illic", set.Features[0].Value);
 
         // - app-author=Fruterius
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_AUTHOR,
-            feats[6].Item2.Name);
-        Assert.Equal("Fruterius", feats[6].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_AUTHOR,
+            set.Features[1].Name);
+        Assert.Equal("Fruterius", set.Features[1].Value);
 
         // - app-author.note=(†1566) 1605a 388
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_AUTHOR_NOTE,
-            feats[7].Item2.Name);
-        Assert.Equal("(†1566) 1605a 388", feats[7].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_AUTHOR_NOTE,
+            set.Features[2].Name);
+        Assert.Equal("(†1566) 1605a 388", set.Features[2].Value);
 
         // next child is unde negant redire
         Assert.Single(node.Children);
         node = node.Children[0];
         Assert.NotNull(node.Data);
         Assert.Equal(" unde negant redire ", node.Data.Text);
-        Assert.Empty(node.Data!.Features);
+        Assert.Empty(node.Data!.FeatureSets);
 
         // next child is quemquam
         Assert.Single(node.Children);
@@ -208,35 +206,33 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.NotNull(node.Data);
         Assert.Equal("quemquam", node.Data.Text);
 
-        // quemquam has 5 features
-        Assert.Equal(5, node.Data.Features.Count);
-        feats = node.Data.GetFragmentFeatures(prefix);
-
         // from entry 0:
+        set = node.Data.FeatureSets["e000"];
         // - app-witness=O,G
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
-            feats[0].Item2.Name);
-        Assert.Equal("O", feats[0].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_WITNESS,
+            set.Features[0].Name);
+        Assert.Equal("O", set.Features[0].Value);
 
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
-            feats[1].Item2.Name);
-        Assert.Equal("G", feats[1].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_WITNESS,
+            set.Features[1].Name);
+        Assert.Equal("G", set.Features[1].Value);
 
         // from entry 1:
+        set = node.Data.FeatureSets["e001"];
         // - app-variant=umquam
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_VARIANT,
-            feats[2].Item2.Name);
-        Assert.Equal("umquam", feats[2].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_VARIANT,
+            set.Features[0].Name);
+        Assert.Equal("umquam", set.Features[0].Value);
 
         // - app-witness=R
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_WITNESS,
-            feats[3].Item2.Name);
-        Assert.Equal("R", feats[3].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_WITNESS,
+            set.Features[1].Name);
+        Assert.Equal("R", set.Features[1].Value);
 
         // - app-note=some note
-        Assert.Equal(ApparatusLinearTextTreeFilter.F_APP_NOTE,
-            feats[4].Item2.Name);
-        Assert.Equal("some note", feats[4].Item2.Value);
+        Assert.Equal(AppLinearTextTreeFilter.F_APP_E_NOTE,
+            set.Features[2].Name);
+        Assert.Equal("some note", set.Features[2].Value);
 
         // no more children
         Assert.Empty(node.Children);

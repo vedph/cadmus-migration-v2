@@ -7,9 +7,8 @@ namespace Cadmus.Export;
 /// </summary>
 /// <param name="Name">The name.</param>
 /// <param name="Value">The value.</param>
-/// <param name="Source">The source.</param>
 /// <exception cref="ArgumentNullException">name or value</exception>
-public record TextSpanFeature(string Name, string Value, string? Source)
+public record TextSpanFeature(string Name, string Value)
 {
     /// <summary>
     /// Gets the name.
@@ -24,12 +23,6 @@ public record TextSpanFeature(string Name, string Value, string? Source)
         ?? throw new ArgumentNullException(nameof(Value));
 
     /// <summary>
-    /// Gets or sets the source for this feature. In most cases this is a
-    /// fragment ID.
-    /// </summary>
-    public string? Source { get; set; } = Source;
-
-    /// <summary>
     /// Converts to string.
     /// </summary>
     /// <returns>
@@ -37,6 +30,6 @@ public record TextSpanFeature(string Name, string Value, string? Source)
     /// </returns>
     public override string ToString()
     {
-        return $"{Name}: {Value}" + (Source != null? $" [{Source}]" : "");
+        return $"{Name}: {Value}";
     }
 }

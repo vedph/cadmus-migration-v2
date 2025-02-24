@@ -7,6 +7,7 @@ using Proteus.Text.Xml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
 namespace Cadmus.Export.ML;
@@ -35,6 +36,35 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     public void Configure(AppLinearTextTreeRendererOptions options)
     {
         _options = options ?? new AppLinearTextTreeRendererOptions();
+    }
+
+    private void EnrichSegment(IList<Tuple<FragmentFeatureSource,
+        TextSpanFeature>> features, XElement seg)
+    {
+        // @wit: join all witnesses
+        if (features.Any(f => f.Item2.Name ==
+            AppLinearTextTreeFilter.F_APP_E_WITNESS))
+        {
+            string wit = string.Join(" ", features.Where(f =>
+                f.Item2.Name == AppLinearTextTreeFilter.F_APP_E_WITNESS)
+                .Select(f => "#" + f.Item2.Value));
+            seg.SetAttributeValue("wit", wit);
+        }
+
+        // @resp: join all authors
+        if (features.Any(f => f.Item2.Name ==
+            AppLinearTextTreeFilter.F_APP_AUTHOR))
+        {
+            string resp = string.Join(" ", features.Where(f =>
+                f.Item2.Name == AppLinearTextTreeFilter.F_APP_AUTHOR)
+                .Select(f => "#" + f.Item2.Value));
+            seg.SetAttributeValue("resp", resp);
+        }
+
+        // witnesses notes:
+        // <witDetail @target=segID @wit/@resp
+        // TODO
+        
     }
 
     /// <summary>
@@ -73,7 +103,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         XElement block = new(blockName);
         root.Add(block);
 
-        // traverse nodes and build the XML
+        // traverse nodes and build the XML (each node corresponds to a fragment)
         tree.Traverse(node =>
         {
             if (node.Data?.HasFeaturesForFragment(prefix) == true)
@@ -82,18 +112,6 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                 XElement app = new(_options.ResolvePrefixedName("tei:app"));
                 block.Add(app);
 
-                // add app content from features
-                List<Tuple<FragmentFeatureSource, TextSpanFeature>> features =
-                    node.Data.GetFragmentFeatures(prefix);
-
-                // for each variant
-                foreach (var sf in features.Where(t => t.Item2.Name ==
-                    ApparatusLinearTextTreeFilter.F_APP_VARIANT))
-                {
-                    // lem = text
-                    app.Add(new XElement(_options.ResolvePrefixedName("tei:lem"),
-                        node.Data.Text));
-                }
                 // TODO
             }
             else
