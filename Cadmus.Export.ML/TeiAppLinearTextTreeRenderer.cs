@@ -10,10 +10,12 @@ using System.Xml.Linq;
 namespace Cadmus.Export.ML;
 
 /// <summary>
-/// Linear text tree with single apparatus layer renderer.
+/// TEI linear text tree with single apparatus layer renderer.
+/// <para>Tag: <c>text-tree-renderer.tei-app-linear</c>.</para>
 /// </summary>
 /// <seealso cref="ITextTreeRenderer" />
-public sealed class AppLinearTextTreeRenderer : TextTreeRenderer,
+[Tag("text-tree-renderer.tei-app-linear")]
+public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     ITextTreeRenderer,
     IConfigurable<AppLinearTextTreeRendererOptions>
 {
@@ -59,7 +61,7 @@ public sealed class AppLinearTextTreeRenderer : TextTreeRenderer,
         XName blockName = _options.ResolvePrefixedName(
             _options.DefaultNsPrefix + ":" + _options.BlockElements[blockType]);
 
-        // calculate fragment ID prefix
+        // calculate the apparatus fragment ID prefix
         string prefix = TextSpanPayload.GetFragmentPrefixFor(
             new TokenTextLayerPart<ApparatusLayerFragment>(),
             new ApparatusLayerFragment());
@@ -72,7 +74,18 @@ public sealed class AppLinearTextTreeRenderer : TextTreeRenderer,
         // traverse nodes and build the XML
         tree.Traverse(node =>
         {
-            // TODO
+            if (node.Data?.HasFeaturesForFragment(prefix) == true)
+            {
+                XElement app = new(_options.ResolvePrefixedName("tei:app"));
+                block.Add(app);
+
+                // TODO
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(node.Data?.Text))
+                    block.Add(node.Data.Text);
+            }
 
             // open a new block if needed
             if (node.Data?.IsBeforeEol == true)
@@ -90,18 +103,18 @@ public sealed class AppLinearTextTreeRenderer : TextTreeRenderer,
 }
 
 /// <summary>
-/// Options for <see cref="AppLinearTextTreeRenderer"/>.
+/// Options for <see cref="TeiAppLinearTextTreeRenderer"/>.
 /// </summary>
 /// <seealso cref="XmlTextFilterOptions" />
 public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
 {
     /// <summary>
-    /// Gets or sets the name of the root element. The default is <c>div</c>.
+    /// Gets or sets the name of the root element. The default is <c>tei:div</c>.
     /// </summary>
     public string RootElement { get; set; }
 
     /// <summary>
-    /// Gets or sets the block element name(s). The default name is "p" under
+    /// Gets or sets the block element name(s). The default name is "tei:p" under
     /// a <c>default</c> key, other names can be specified for conditional
     /// element names (e.g. when dealing with poetry rather than prose).
     /// If you need to specify a namespaced name, use the format "prefix:name"
@@ -122,10 +135,10 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
     /// </summary>
     public AppLinearTextTreeRendererOptions()
     {
-        RootElement = "div";
+        RootElement = "tei:div";
         BlockElements = new Dictionary<string, string>
         {
-            ["default"] = "p"
+            ["default"] = "tei:p"
         };
     }
 }

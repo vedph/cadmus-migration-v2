@@ -203,6 +203,23 @@ class 5 em;
 5 --> 6[_XX]
 ```
 
+Here are node details:
+
+1. root.
+2. `quae`: features:
+    - `app-variant`=`que` (source `it.vedph.token-text-layer:fr.it.vedph.apparatus_0.0`);
+    - `app-witness`=`b` (same source).
+3. space.
+4. `vixit`: features:
+    - `app-variant`=`bixit` (source `it.vedph.token-text-layer:fr.it.vedph.apparatus_1.0`);
+    - `app-witness`=`b` (same source);
+    - `app-witness.note`=`pc` (same source).
+5. `annos`: features:
+    - `app-variant`=`annis` (source `it.vedph.token-text-layer:fr.it.vedph.apparatus_2.0`);
+    - `app-author`=`editor` (same source);
+    - `app-author.note`=`accusative here is rare but attested.`.
+6. space + `XX`.
+
 At this stage, we're done with the tree and we can move to ▶️ step (6) for rendering it. Rendition depends on the desired output format; for this example, let's keep things simple and say that we want a TEI text fragment like this (witnesses and other attributes are fake data assumed to be in the fragments, and text is indented for more readability):
 
 ```xml

@@ -176,7 +176,7 @@ public sealed class ApparatusLinearTextTreeFilter : ITextTreeFilter
             return tree;
         }
 
-        string prefix = $"{part.TypeId}:{part.RoleId}_";
+        string prefix = $"{part.TypeId}:{part.RoleId}@";
 
         tree.Traverse(node =>
         {

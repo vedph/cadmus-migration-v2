@@ -132,19 +132,21 @@ public sealed class ApparatusLinearTextTreeFilterTest
         // get filter
         ApparatusLinearTextTreeFilter filter = new();
 
+        // act
         filter.Apply(tree, item);
 
-        string prefix = $"{appPart.TypeId}:{appPart.RoleId}_";
+        // assert
+        string prefix = $"{appPart.TypeId}:{appPart.RoleId}@";
 
         // first node is blank root
         Assert.Null(tree.Data);
 
-        // next child is quae
+        // next child is quae, accepted
         Assert.Single(tree.Children);
         TreeNode<TextSpanPayload> node = tree.Children[0];
         Assert.NotNull(node.Data);
         Assert.Equal("quae", node.Data.Text);
-        // - app-variant: que, accepted
+        // - app-variant: que
         Assert.Equal(2, node.Data.Features.Count);
         string id = prefix + "0.0";
         TextSpanFeature? feature = node.Data.Features.FirstOrDefault(
@@ -166,7 +168,7 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.Equal(" ", node.Data.Text);
         Assert.Empty(node.Data.Features);
 
-        // next child is vixit
+        // next child is vixit, accepted
         Assert.Single(node.Children);
         node = node.Children[0];
         Assert.NotNull(node.Data);
@@ -174,7 +176,7 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.Equal(3, node.Data.Features.Count);
         id = prefix + "1.0";
 
-        // - app-variant: vixit|, accepted
+        // - app-variant: bixit
         feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
             f.Name == ApparatusLinearTextTreeFilter.F_APP_VARIANT);
         Assert.NotNull(feature);
@@ -187,7 +189,7 @@ public sealed class ApparatusLinearTextTreeFilterTest
         Assert.NotNull(feature);
         Assert.Equal("b", feature.Value);
 
-        // - note pc
+        // - witness note pc
         feature = node.Data.Features.FirstOrDefault(f => f.Source == id &&
             f.Name == ApparatusLinearTextTreeFilter.F_APP_WITNESS_NOTE);
         Assert.NotNull(feature);
