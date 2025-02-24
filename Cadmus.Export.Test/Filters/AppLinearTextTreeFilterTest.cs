@@ -106,13 +106,12 @@ public sealed class AppLinearTextTreeFilterTest
         return part;
     }
 
-    [Fact]
-    public void Apply_Ok()
+    internal static (TreeNode<TextSpanPayload> tree, IItem item) GetTreeAndItem()
     {
         // get item
         TokenTextPart textPart = GetTextPart();
         TokenTextLayerPart<ApparatusLayerFragment> appPart = GetApparatusPart();
-        Item item = new();
+        IItem item = new Item();
         item.Parts.Add(textPart);
         item.Parts.Add(appPart);
 
@@ -132,7 +131,13 @@ public sealed class AppLinearTextTreeFilterTest
         TreeNode<TextSpanPayload> tree = ItemComposer.BuildTreeFromRanges(
             mergedRanges, tr.Item1);
         // apply block filter
-        tree = new BlockLinearTextTreeFilter().Apply(tree, item);
+        return (new BlockLinearTextTreeFilter().Apply(tree, item), item);
+    }
+
+    [Fact]
+    public void Apply_Ok()
+    {
+        (TreeNode<TextSpanPayload>? tree, IItem item) = GetTreeAndItem();
 
         // act
         AppLinearTextTreeFilter filter = new();
