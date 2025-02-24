@@ -27,6 +27,12 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     /// </summary>
     public const string CONTEXT_BLOCK_TYPE = "block-type";
 
+    /// <summary>
+    /// The key used in the rendering context to keep track of unique identifiers
+    /// for segments like <c>lem</c> and <c>rdg</c>.
+    /// </summary>
+    public const string CONTEXT_SEG_IDKEY = "seg";
+
     private AppLinearTextTreeRendererOptions _options = new();
 
     /// <summary>
@@ -38,27 +44,57 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         _options = options ?? new AppLinearTextTreeRendererOptions();
     }
 
-    private void EnrichSegment(IList<Tuple<FragmentFeatureSource,
-        TextSpanFeature>> features, XElement seg)
+    private void AddWitDetail(string segName, string? segId, string detail,
+        XElement seg, IRendererContext context)
     {
-        // @wit: join all witnesses
-        if (features.Any(f => f.Item2.Name ==
-            AppLinearTextTreeFilter.F_APP_E_WITNESS))
-        {
-            string wit = string.Join(" ", features.Where(f =>
-                f.Item2.Name == AppLinearTextTreeFilter.F_APP_E_WITNESS)
-                .Select(f => "#" + f.Item2.Value));
-            seg.SetAttributeValue("wit", wit);
-        }
+        // witDetail
+        XElement witDetail = new(_options.ResolvePrefixedName("tei:witDetail"),
+            detail);
 
-        // @resp: join all authors
-        if (features.Any(f => f.Item2.Name ==
-            AppLinearTextTreeFilter.F_APP_E_AUTHOR))
+        // @target=segID
+        int targetId = GetNextIdFor(CONTEXT_SEG_IDKEY, context);
+        seg.SetAttributeValue(_options.ResolvePrefixedName("xml:id"),
+            $"seg{targetId}");
+        witDetail.SetAttributeValue("target", $"#seg{targetId}");
+
+        // @wit or @resp
+        witDetail.SetAttributeValue(segName, $"#{segId}");
+    }
+
+    private void EnrichSegment(IList<Tuple<FragmentFeatureSource,
+        TextSpanFeature>> features, XElement seg, IRendererContext context)
+    {
+        string? prevSeg = null;
+        StringBuilder wit = new();
+        StringBuilder resp = new();
+
+        foreach (Tuple<FragmentFeatureSource, TextSpanFeature> feature in
+            features)
         {
-            string resp = string.Join(" ", features.Where(f =>
-                f.Item2.Name == AppLinearTextTreeFilter.F_APP_E_AUTHOR)
-                .Select(f => "#" + f.Item2.Value));
-            seg.SetAttributeValue("resp", resp);
+            switch (feature.Item2.Name)
+            {
+                case AppLinearTextTreeFilter.F_APP_E_WITNESS:
+                    if (wit.Length > 0) wit.Append(' ');
+                    wit.Append('#').Append(feature.Item2.Value);
+                    prevSeg = feature.Item2.Value;
+                    break;
+
+                case AppLinearTextTreeFilter.F_APP_E_WITNESS_NOTE:
+                    AddWitDetail("wit", prevSeg, feature.Item2.Value, seg,
+                        context);
+                    break;
+
+                case AppLinearTextTreeFilter.F_APP_E_AUTHOR:
+                    if (resp.Length > 0) resp.Append(' ');
+                    resp.Append('#').Append(feature.Item2.Value);
+                    prevSeg = feature.Item2.Value;
+                    break;
+
+                case AppLinearTextTreeFilter.F_APP_E_AUTHOR_NOTE:
+                    AddWitDetail("resp", prevSeg, feature.Item2.Value, seg,
+                        context);
+                    break;
+            }
         }
 
         // witnesses notes:
