@@ -52,7 +52,8 @@ public class TextSpanPayload(FragmentTextRange range)
     /// <param name="key">The set key.</param>
     /// <param name="feature">The feature to add.</param>
     /// <param name="source">The set source.</param>
-    /// <exception cref="ArgumentNullException">key or feature or source</exception>
+    /// <exception cref="ArgumentNullException">key or feature or source
+    /// </exception>
     public void AddFeatureToSet(string key, TextSpanFeature feature,
         string source)
     {
@@ -105,7 +106,8 @@ public class TextSpanPayload(FragmentTextRange range)
     /// </summary>
     /// <param name="prefix">The prefix (with form TypeId:RoleId@).</param>
     /// <returns>
-    ///   <c>true</c> if the specified prefix has fragment; otherwise, <c>false</c>.
+    ///   <c>true</c> if the specified prefix has fragment; otherwise,
+    ///   <c>false</c>.
     /// </returns>
     public bool HasFeaturesFromFragment(string prefix) =>
         FeatureSets.Values.Any(s => s.HasFeaturesForFragment(prefix));

@@ -61,7 +61,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         witDetail.SetAttributeValue(segName, $"#{segId}");
     }
 
-    private void EnrichSegment(IList<TextSpanFeature> features, XElement seg, IRendererContext context)
+    private void EnrichSegment(IList<TextSpanFeature> features, XElement seg,
+        IRendererContext context)
     {
         string? prevSeg = null;
         StringBuilder wit = new();
@@ -162,7 +163,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                         f => f.Name == AppLinearTextTreeFilter.F_APP_E_NOTE);
                     if (noteFeature != null)
                     {
-                        XElement note = new(_options.ResolvePrefixedName("tei:note"),
+                        XElement note = new(
+                            _options.ResolvePrefixedName("tei:note"),
                             noteFeature.Value);
                         app.Add(note);
                     }
