@@ -1,26 +1,24 @@
 ﻿using Cadmus.Migration.Cli.Commands;
-using Cadmus.Migration.Cli.Services;
-using Fusi.Cli.Commands;
-using Microsoft.Extensions.CommandLineUtils;
 using Serilog;
-using Serilog.Extensions.Logging;
+using Spectre.Console.Cli;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Cadmus.Migration.Cli;
 
+/// <summary>
+/// Main program.
+/// </summary>
 public static class Program
 {
 #if DEBUG
     private static void DeleteLogs()
     {
         foreach (var path in Directory.EnumerateFiles(
-            AppDomain.CurrentDomain.BaseDirectory, "cadmus-mig-log*.txt"))
+            AppDomain.CurrentDomain.BaseDirectory, "mig-log*.txt"))
         {
             try
             {
@@ -34,39 +32,14 @@ public static class Program
     }
 #endif
 
-    private static CadmusMigCliAppContext? GetAppContext(string[] args)
-    {
-        return new CliAppContextBuilder<CadmusMigCliAppContext>(args)
-            .SetNames("Cadmus Migrator", "Cadmus Migrator CLI")
-            .SetLogger(new SerilogLoggerProvider(Log.Logger)
-                .CreateLogger(nameof(Program)))
-            .SetDefaultConfiguration()
-            .SetCommands(new Dictionary<string,
-                Action<CommandLineApplication, ICliAppContext>>
-            {
-                ["render-items"] = RenderItemsCommand.Configure,
-            })
-        .Build();
-    }
-
-    public static int Main(string[] args)
+    /// <summary>
+    /// Entry point.
+    /// </summary>
+    /// <param name="args">The arguments.</param>
+    public static async Task<int> Main(string[] args)
     {
         try
         {
-            // https://github.com/serilog/serilog-sinks-file
-            string logFilePath = Path.Combine(
-                Path.GetDirectoryName(
-                    Assembly.GetExecutingAssembly().Location) ?? "",
-                    "cadmus-mig-log.txt");
-            Log.Logger = new LoggerConfiguration()
-#if DEBUG
-                .MinimumLevel.Debug()
-#else
-                .MinimumLevel.Information()
-#endif
-                .Enrich.FromLogContext()
-                .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day)
-                .CreateLogger();
 #if DEBUG
             DeleteLogs();
 #endif
@@ -74,20 +47,14 @@ public static class Program
             Stopwatch stopwatch = new();
             stopwatch.Start();
 
-            Task.Run(async () =>
+            CommandApp app = new();
+            app.Configure(config =>
             {
-                CadmusMigCliAppContext? context = GetAppContext(args);
+                config.AddCommand<RenderItemsCommand>("render")
+                    .WithDescription("Render items");
+            });
 
-                if (context?.Command == null)
-                {
-                    // RootCommand will have printed help
-                    return 1;
-                }
-
-                Console.Clear();
-                await context.Command.Run();
-                return 0;
-            }).Wait();
+            int result = await app.RunAsync(args);
 
             Console.ResetColor();
             Console.CursorVisible = true;
@@ -103,7 +70,7 @@ public static class Program
                     stopwatch.Elapsed.Seconds);
             }
 
-            return 0;
+            return result;
         }
         catch (Exception ex)
         {
@@ -113,6 +80,10 @@ public static class Program
             Console.WriteLine(ex.ToString());
             Console.ResetColor();
             return 2;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
         }
     }
 }
