@@ -16,7 +16,7 @@ namespace Cadmus.Export.Preview;
 /// <remarks>The JSON configuration has the following sections:
 /// <list type="bullet">
 /// <item>
-/// <term><c>RendererContextSuppliers</c></term>
+/// <term><c>ContextSuppliers</c></term>
 /// <description>List of renderer context suppliers, each named with a key,
 /// and having its component ID and eventual options. The key is an arbitrary
 /// string, used in the scope of the configuration to reference each filter from
@@ -106,7 +106,7 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
     /// <param name="options">The options.</param>
     /// <param name="section">The section.</param>
     protected override void OverrideOptions(object options,
-      IConfigurationSection? section)
+        IConfigurationSection? section)
     {
         Type optionType = options.GetType();
 
@@ -224,7 +224,7 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
     /// <returns>The supplier or null if not found.</returns>
     public IRendererContextSupplier? GetRendererContextSupplier(string key)
     {
-        return GetComponents<IRendererContextSupplier>("RendererContextSuppliers",
+        return GetComponents<IRendererContextSupplier>("ContextSuppliers",
             null, [key]).FirstOrDefault();
     }
 
@@ -346,9 +346,9 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
             entry.Tag!, entry.OptionsPath);
         if (composer == null) return null;
 
-        // add renderer context suppliers if specified in Options:RendererContextSupplierKeys
+        // add renderer context suppliers if specified in Options:ContextSupplierKeys
         IConfigurationSection section = Configuration.GetSection(
-            entry.OptionsPath + ":RendererContextSupplierKeys");
+            entry.OptionsPath + ":ContextSupplierKeys");
         if (section.Exists())
         {
             foreach (string sKey in section.Get<string[]>()!)

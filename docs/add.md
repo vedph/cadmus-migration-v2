@@ -79,6 +79,26 @@ As an example, consider this configuration, targeting a [project](https://github
 
 ```json
 {
+  "ItemIdCollector": {
+    "Id": "it.vedph.item-id-collector.mongo",
+    "Options": {
+      "FacetId": "text"
+    }
+  },
+  "ContextSuppliers": [
+    {
+      "Keys": "flags",
+      "Id": "renderer-context-supplier.flag",
+      "Options": {
+        "On": {
+          "8": "block-type=poetry"
+        },
+        "Off": {
+          "8": "block-type=prose"
+        }
+      }
+    }
+  ],
   "TextTreeFilters": [
     {
       "Keys": "block-linear",
@@ -132,6 +152,7 @@ As an example, consider this configuration, targeting a [project](https://github
       "Keys": "default",
       "Id": "it.vedph.item-composer.tei.fs",
       "Options": {
+        "ContextSupplierKeys": ["flags"],
         "TextPartFlattenerKey": "it.vedph.token-text",
         "TextTreeFilterKeys": ["block-linear", "app-linear"],
         "TextTreeRendererKey": "tei",
@@ -140,32 +161,23 @@ As an example, consider this configuration, targeting a [project](https://github
         "OutputDirectory": "c:\\users\\dfusi\\Desktop\\sidon"
       }
     }
-  ],
-  "ItemIdCollector": {
-    "Id": "it.vedph.item-id-collector.mongo",
-    "Options": {
-      "FacetId": "text",
-      "Flags": 8,
-      "FlagMatching": 2
-    }
-  }
+  ]
 }
 ```
 
 In this configuration, from top to bottom (the order of sections is free):
 
-- the item ID collector is the component used to collect the identifiers of all the items which will be rendered, in their order. This applies some filters:
-  - get only text items.
-  - get only prose items (flag with value 8=poetic must be clear).
-- two text tree filters, applied after the text has been transformed into a tree:
+- the **item ID collector** is the component used to collect the identifiers of all the items which will be rendered, in their order. This applies some filters to get only text items.
+- the **context suppliers** contains a renderer context supplier component, which updates the current block type to poetry or prose according to the item's flag. When the flag 8 is on, it is poetry; else it's prose. This block type parameter is then used by another component, the tree renderer, to decide whether to output TEI `p` or `l` as blocks.
+- two **text tree filters**, applied after the text has been transformed into a tree:
   - one named `block-linear` is used to split nodes at every occurrence of a newline character. This ensures that TEI block elements will be rendered correctly.
   - another named `app-linear` is used inject apparatus metadata into tree nodes representing the text during the rendering process.
-- there are 2 renderer filters applied after TEI rendering has completed:
+- there are 2 **renderer filters** applied after TEI rendering has completed:
   - the one named `nl-appender` just appends a newline to each rendered item, so the text is more readable.
   - the one named `ns-remover` removes the redundant namespace attribute from the rendered blocks. When rendering a TEI fragment with namespaces, like in TEI, its top level element(s) always get the default namespace; otherwise, an incorrect XML fragment would be emitted. As we are going to provide the default TEI namespace once at the document's root, these namespaces can be removed, because they would be redundant.
-- the text part flattener named `it.vedph.token-text` is used to flatten the layers on a text. In this case it will just use the apparatus layer, which is the only one. Once text is flattened, it will be converted into an at least initially linear tree, where each portion of text is represented by a node, and is child of the previous portion.
-- the text tree renderer with name `tei` is used to render the tree into TEI according to the desired format. In this case we use a renderer designed to handle a linear tree with apparatus, and we add a couple of filters after it completes (`nl-appender` to add a newline, `ns-remover` to remove redundant namespace attributes). Also, we specify that in case the variant is zero (=omission), there should be a `@type` attribute on the `rdg` element with value equal to `omissio`.
-- the item composer, here named `default`, is the component orchestrating the rendering process. It uses a component designed to render TEI with inline apparatus elements. Besides its components (flattener, tree filters, tree renderer) it has some parameters which define:
+- the **text part flattener** named `it.vedph.token-text` is used to flatten the layers on a text. In this case it will just use the apparatus layer, which is the only one. Once text is flattened, it will be converted into an at least initially linear tree, where each portion of text is represented by a node, and is child of the previous portion.
+- the **text tree renderer** with name `tei` is used to render the tree into TEI according to the desired format. In this case we use a renderer designed to handle a linear tree with apparatus, and we add a couple of filters after it completes (`nl-appender` to add a newline, `ns-remover` to remove redundant namespace attributes). Also, we specify that in case the variant is zero (=omission), there should be a `@type` attribute on the `rdg` element with value equal to `omissio`.
+- the **item composer**, here named `default`, is the component orchestrating the rendering process. It uses a component designed to render TEI with inline apparatus elements. Besides its components (flattener, tree filters, tree renderer) it has some parameters which define:
   - the portion of markup to prepend to the generated document (`TextHead`). This is a simple markup including the opening root tag and a TEI header skeleton.
   - the portion of markup to append to the generated document (`TextTail`), which closes the tags opened in the head.
   - the output directory for saving the generated document(s).
