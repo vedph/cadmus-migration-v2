@@ -10,7 +10,7 @@ namespace Cadmus.Export.ML;
 /// </summary>
 /// <seealso cref="TeiItemComposer" />
 [Tag("it.vedph.item-composer.tei.fs")]
-public sealed class FSTeiItemComposer : TeiItemComposer
+public sealed class FSTeiItemComposer : TeiItemComposer, IItemComposer
 {
     private FSTeiItemComposerOptions? _options;
 

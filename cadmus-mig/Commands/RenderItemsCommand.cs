@@ -10,7 +10,6 @@ using Spectre.Console.Cli;
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Cadmus.Migration.Cli.Commands;
@@ -33,18 +32,16 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
         AnsiConsole.WriteLine($"Composer key: {settings.ComposerKey}\n");
     }
 
-    private static CadmusMigCliContextService GetContextService(string dbName)
+    private static AppContextService GetContextService(string dbName)
     {
         ArgumentNullException.ThrowIfNull(dbName);
 
-        return new CadmusMigCliContextService(
+        return new AppContextService(
             new CadmusMigCliContextServiceConfig
             {
                 ConnectionString = string.Format(CultureInfo.InvariantCulture,
                     ConfigurationService.Configuration!
                         .GetConnectionString("Default")!, dbName),
-                LocalDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                    "Assets")
             });
     }
 
@@ -57,7 +54,7 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
             ConfigurationService.Configuration!.GetConnectionString("Default")!,
             settings.DatabaseName);
 
-        CadmusMigCliContextService contextService =
+        AppContextService contextService =
             GetContextService(settings.DatabaseName);
 
         // load rendering config
@@ -67,7 +64,7 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
         // get preview factory from its provider
         AnsiConsole.WriteLine("Building preview factory...");
         ICadmusPreviewFactoryProvider? provider =
-            CadmusMigCliContextService.GetPreviewFactoryProvider(
+            AppContextService.GetPreviewFactoryProvider(
                 settings.PreviewFactoryProviderTag);
         if (provider == null)
         {
@@ -81,7 +78,7 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
         // get the Cadmus repository from the specified plugin
         AnsiConsole.WriteLine("Building repository factory...");
         ICadmusRepository repository = contextService.GetCadmusRepository(
-            settings.RepositoryProviderTag!)
+            settings.RepositoryProviderTag)
             ?? throw new InvalidOperationException(
                 "Unable to create Cadmus repository");
 

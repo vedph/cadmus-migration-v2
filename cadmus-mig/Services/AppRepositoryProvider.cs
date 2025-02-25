@@ -6,18 +6,15 @@ using Cadmus.Mongo;
 using System;
 using System.Reflection;
 using Cadmus.Philology.Parts;
-using Fusi.Tools.Configuration;
 
 namespace Cadmus.Migration.Cli.Services;
 
 /// <summary>
-/// Standard repository provider using the core general and philology parts
+/// CLI app repository provider using the core general and philology parts
 /// from Cadmus.
-/// Tag: <c>repository-provider.standard</c>.
 /// </summary>
 /// <seealso cref="IRepositoryProvider" />
-[Tag("repository-provider.standard")]
-public sealed class StandardRepositoryProvider : IRepositoryProvider
+internal sealed class AppRepositoryProvider : IRepositoryProvider
 {
     private readonly IPartTypeProvider _partTypeProvider;
 
@@ -27,21 +24,21 @@ public sealed class StandardRepositoryProvider : IRepositoryProvider
     public string ConnectionString { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StandardRepositoryProvider"/>
+    /// Initializes a new instance of the <see cref="AppRepositoryProvider"/>
     /// class.
     /// </summary>
     /// <exception cref="ArgumentNullException">configuration</exception>
-    public StandardRepositoryProvider()
+    public AppRepositoryProvider()
     {
         ConnectionString = "";
         TagAttributeToTypeMap map = new();
-        map.Add(new[]
-        {
+        map.Add(
+        [
             // Cadmus.General.Parts
             typeof(NotePart).GetTypeInfo().Assembly,
             // Cadmus.Philology.Parts
             typeof(ApparatusLayerFragment).GetTypeInfo().Assembly,
-        });
+        ]);
 
         _partTypeProvider = new StandardPartTypeProvider(map);
     }

@@ -10,14 +10,10 @@ namespace Cadmus.Migration.Cli.Services;
 /// <summary>
 /// CLI context service.
 /// </summary>
-public sealed class CadmusMigCliContextService
+internal sealed class AppContextService(CadmusMigCliContextServiceConfig config)
 {
-    private readonly CadmusMigCliContextServiceConfig _config;
-
-    public CadmusMigCliContextService(CadmusMigCliContextServiceConfig config)
-    {
-        _config = config ?? throw new ArgumentNullException(nameof(config));
-    }
+    private readonly CadmusMigCliContextServiceConfig _config = config
+        ?? throw new ArgumentNullException(nameof(config));
 
     /// <summary>
     /// Gets the preview factory provider with the specified plugin tag
@@ -46,6 +42,14 @@ public sealed class CadmusMigCliContextService
     /// found.</exception>
     public ICadmusRepository GetCadmusRepository(string? tag)
     {
+        if (tag == null)
+        {
+            return new AppRepositoryProvider()
+            {
+                ConnectionString = _config.ConnectionString!
+            }.CreateRepository();
+        }
+
         IRepositoryProvider? provider = PluginFactoryProvider
             .GetFromTag<IRepositoryProvider>(tag);
         if (provider == null)
@@ -61,7 +65,7 @@ public sealed class CadmusMigCliContextService
 }
 
 /// <summary>
-/// Configuration for <see cref="CadmusMigCliContextService"/>.
+/// Configuration for <see cref="AppContextService"/>.
 /// </summary>
 public class CadmusMigCliContextServiceConfig
 {
@@ -69,10 +73,4 @@ public class CadmusMigCliContextServiceConfig
     /// Gets or sets the connection string to the database.
     /// </summary>
     public string? ConnectionString { get; set; }
-
-    /// <summary>
-    /// Gets or sets the local directory to use when loading resources
-    /// from the local file system.
-    /// </summary>
-    public string? LocalDirectory { get; set; }
 }
