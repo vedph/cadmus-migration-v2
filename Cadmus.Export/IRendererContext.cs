@@ -1,4 +1,5 @@
-﻿using Cadmus.Core.Storage;
+﻿using Cadmus.Core;
+using Cadmus.Core.Storage;
 using Fusi.Tools;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,16 @@ namespace Cadmus.Export;
 /// <seealso cref="IHasDataDictionary" />
 public interface IRendererContext : IHasDataDictionary
 {
+    /// <summary>
+    /// Gets or sets the item being rendered.
+    /// </summary>
+    IItem? Item { get; set; }
+
+    /// <summary>
+    /// Gets the layer part type IDs which are selected for rendering.
+    /// </summary>
+    HashSet<string> LayerPartTypeIds { get; }
+
     /// <summary>
     /// Gets the layer IDs dictionary, where keys are block layer ID
     /// prefixes (i.e. part type ID + <c>:</c> + role ID, like
