@@ -7,7 +7,7 @@ namespace Cadmus.Export.Suppliers;
 
 /// <summary>
 /// Flag renderer context supplier. This inspects the item's flags from
-/// the received context, and for each flag bitvalue set and mapped in its
+/// the received context, and for each flag bitvalue on/off and mapped in its
 /// configuration it supplies a name=value pair to the context data.
 /// <para>Tag: <c>renderer-context-supplier.flag</c>.</para>
 /// </summary>
@@ -16,7 +16,49 @@ namespace Cadmus.Export.Suppliers;
 public sealed class FlagRendererContextSupplier : IRendererContextSupplier,
     IConfigurable<FlagRendererContextSupplierOptions>
 {
-    private readonly Dictionary<int, Tuple<string, string>> _map = [];
+    private readonly Dictionary<int, Tuple<string, string?>> _on = [];
+    private readonly Dictionary<int, Tuple<string, string?>> _off = [];
+
+    private static int? ParseMappingKey(string key)
+    {
+        int n;
+        if (key.StartsWith('H') || key.StartsWith('h'))
+        {
+            if (!int.TryParse(key[1..], NumberStyles.HexNumber,
+                CultureInfo.InvariantCulture, out n))
+            {
+                return null;
+            }
+        }
+        else
+        {
+            if (!int.TryParse(key, out n)) return null;
+        }
+        return n;
+    }
+
+    private static Tuple<string, string?>? ParseMappingValue(string value)
+    {
+        int i = value.IndexOf('=');
+        if (i == -1) return Tuple.Create(value, (string?)null);
+
+        string n = value[..i];
+        string v = value[(i + 1)..];
+        return Tuple.Create(n, (string?)v);
+    }
+
+    private static void ParseMappings(IDictionary<string, string> mappings,
+        Dictionary<int, Tuple<string, string?>> dct)
+    {
+        foreach (var kvp in mappings)
+        {
+            int? n = ParseMappingKey(kvp.Key);
+            if (n == null) continue;
+
+            Tuple<string, string?>? nv = ParseMappingValue(kvp.Value);
+            if (nv != null) dct[n.Value] = nv;
+        }
+    }
 
     /// <summary>
     /// Configures this supplier with the specified options.
@@ -27,30 +69,11 @@ public sealed class FlagRendererContextSupplier : IRendererContextSupplier,
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        _map.Clear();
-        if (options.Mappings == null) return;
+        _on.Clear();
+        _off.Clear();
 
-        foreach (var kvp in options.Mappings)
-        {
-            int n;
-            if (kvp.Key.StartsWith('H') || kvp.Key.StartsWith('h'))
-            {
-                if (!int.TryParse(kvp.Key[1..], NumberStyles.HexNumber,
-                    CultureInfo.InvariantCulture, out n))
-                {
-                    continue;
-                }
-            }
-            else
-            {
-                if (!int.TryParse(kvp.Key, out n)) continue;
-            }
-            int i = kvp.Value.IndexOf('=');
-            if (i == -1) continue;
-            string name = kvp.Value[..i];
-            string value = kvp.Value[(i + 1)..];
-            _map[n] = Tuple.Create(name, value);
-        }
+        if (options.On != null) ParseMappings(options.On, _on);
+        if (options.Off != null) ParseMappings(options.Off, _off);
     }
 
     /// <summary>
@@ -64,12 +87,25 @@ public sealed class FlagRendererContextSupplier : IRendererContextSupplier,
 
         if (context.Item == null || context.Item.Flags == 0) return;
 
-        foreach (int n in _map.Keys)
+        // on
+        foreach (int n in _on.Keys)
         {
             if ((context.Item.Flags & n) == n)
             {
-                Tuple<string, string> pair = _map[n];
-                context.Data[pair.Item1] = pair.Item2;
+                Tuple<string, string?> pair = _on[n]!;
+                if (pair.Item2 == null) context.Data.Remove(pair.Item1);
+                else context.Data[pair.Item1] = pair.Item2;
+            }
+        }
+
+        // off
+        foreach (int n in _off.Keys)
+        {
+            if ((context.Item.Flags & n) == 0)
+            {
+                Tuple<string, string?> pair = _off[n]!;
+                if (pair.Item2 == null) context.Data.Remove(pair.Item1);
+                else context.Data[pair.Item1] = pair.Item2;
             }
         }
     }
@@ -81,9 +117,20 @@ public sealed class FlagRendererContextSupplier : IRendererContextSupplier,
 public class FlagRendererContextSupplierOptions
 {
     /// <summary>
-    /// Gets or sets the flag to pair mappings. Keys are flags (decimal values,
-    /// or hexadecimal values prefixed by H), values are the corresponding
-    /// name=value pair as a string with <c>=</c> as separator.
+    /// Gets or sets the flag to pair mappings for "on" states of flags.
+    /// Keys are flags (decimal values, or hexadecimal values prefixed by H or h),
+    /// values are the corresponding name=value pair as a string with <c>=</c>
+    /// as separator. If the value is only the name (without = and the value),
+    /// the pair is removed from the context data when present.
     /// </summary>
-    public IDictionary<string, string>? Mappings { get; set; }
+    public IDictionary<string, string>? On { get; set; }
+
+    /// <summary>
+    /// Gets or sets the flag to pair mappings for "off" states of flags.
+    /// Keys are flags (decimal values, or hexadecimal values prefixed by H or h),
+    /// values are the corresponding name=value pair as a string with <c>=</c>
+    /// as separator. If the value is only the name (without = and the value),
+    /// the pair is removed from the context data when present.
+    /// </summary>
+    public IDictionary<string, string>? Off { get; set; }
 }

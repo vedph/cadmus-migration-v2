@@ -8,7 +8,7 @@ namespace Cadmus.Export.Test.Suppliers;
 public sealed class FlagRendererContextSupplierTest
 {
     [Fact]
-    public void GetFlagRendererContext_MappedFlags_SuppliesPairs()
+    public void GetFlagRendererContext_On_SuppliesPairs()
     {
         RendererContext context = new()
         {
@@ -20,7 +20,7 @@ public sealed class FlagRendererContextSupplierTest
         FlagRendererContextSupplier supplier = new();
         supplier.Configure(new FlagRendererContextSupplierOptions
         {
-            Mappings = new Dictionary<string, string>()
+            On = new Dictionary<string, string>()
             {
                 ["1"] = "alpha=one",
                 ["4"] = "beta=four",
@@ -40,5 +40,69 @@ public sealed class FlagRendererContextSupplierTest
         // beta=four
         Assert.True(context.Data.ContainsKey("beta"));
         Assert.Equal("four", context.Data["beta"]);
+    }
+
+    [Fact]
+    public void GetFlagRendererContext_Off_SuppliesPairs()
+    {
+        RendererContext context = new()
+        {
+            Item = new Item()
+            {
+                Flags = 0x0001
+            }
+        };
+        FlagRendererContextSupplier supplier = new();
+        supplier.Configure(new FlagRendererContextSupplierOptions
+        {
+            Off = new Dictionary<string, string>()
+            {
+                ["4"] = "beta=four",
+                ["h10"] = "gamma=sixteen",
+            }
+        });
+
+        supplier.Supply(context);
+
+        // gamma=sixteen
+        Assert.True(context.Data.ContainsKey("gamma"));
+        Assert.Equal("sixteen", context.Data["gamma"]);
+
+        // beta=four
+        Assert.True(context.Data.ContainsKey("beta"));
+        Assert.Equal("four", context.Data["beta"]);
+    }
+
+    [Fact]
+    public void GetFlagRendererContext_Delta_RemovesEntry()
+    {
+        RendererContext context = new()
+        {
+            Item = new Item()
+            {
+                Flags = 0x0001 | 0x0004
+            },
+        };
+        context.Data["alpha"] = "one";
+        context.Data["beta"] = "four";
+
+        FlagRendererContextSupplier supplier = new();
+        supplier.Configure(new FlagRendererContextSupplierOptions
+        {
+            On = new Dictionary<string, string>()
+            {
+                ["1"] = "alpha=ONE",
+                ["4"] = "beta",
+            }
+        });
+
+        supplier.Supply(context);
+
+        // alpha set to ONE
+        Assert.True(context.Data.ContainsKey("alpha"));
+        Assert.Equal("ONE", context.Data["alpha"]);
+
+        // beta removed
+        Assert.False(context.Data.ContainsKey("beta"));
     }
 }
