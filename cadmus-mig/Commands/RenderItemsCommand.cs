@@ -104,7 +104,7 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
         }
 
         // render items
-        AnsiConsole.WriteLine("Rendering items...");
+        AnsiConsole.MarkupLine("[cyan]Rendering items...[/]");
 
         composer.Open();
         foreach (string id in collector.GetIds())

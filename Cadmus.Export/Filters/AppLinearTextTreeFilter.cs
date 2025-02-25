@@ -150,7 +150,7 @@ public sealed class AppLinearTextTreeFilter : ITextTreeFilter
                                 setKey,
                                 new TextSpanFeature(
                                     F_APP_E_VARIANT,
-                                    entry.Value!),
+                                    entry.Value ?? ""),
                                 source);
                         }
                         break;

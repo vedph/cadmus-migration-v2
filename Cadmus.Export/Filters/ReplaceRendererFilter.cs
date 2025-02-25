@@ -39,9 +39,9 @@ public sealed class ReplaceRendererFilter : IRendererFilter,
             foreach (var o in options.Replacements)
             {
                 if (o.IsPattern)
-                    _replacer.AddExpression(o.Source!, o.Target!, o.Repetitions);
+                    _replacer.AddExpression(o.Source!, o.Target ?? "", o.Repetitions);
                 else
-                    _replacer.AddLiteral(o.Source!, o.Target!, o.Repetitions);
+                    _replacer.AddLiteral(o.Source!, o.Target ?? "", o.Repetitions);
             }
         }
     }
