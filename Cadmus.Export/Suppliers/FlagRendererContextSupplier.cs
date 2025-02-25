@@ -35,8 +35,11 @@ public sealed class FlagRendererContextSupplier : IRendererContextSupplier,
             int n;
             if (kvp.Key.StartsWith('H') || kvp.Key.StartsWith('h'))
             {
-                if (!int.TryParse(kvp.Value[1..], NumberStyles.HexNumber,
-                    CultureInfo.InvariantCulture, out n)) continue;
+                if (!int.TryParse(kvp.Key[1..], NumberStyles.HexNumber,
+                    CultureInfo.InvariantCulture, out n))
+                {
+                    continue;
+                }
             }
             else
             {
