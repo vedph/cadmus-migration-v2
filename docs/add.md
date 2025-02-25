@@ -206,16 +206,16 @@ At this stage, we're done with the tree and we can move to ▶️ step (6) for r
     <app>
       <lem wit="#O1">illuc</lem>
       <rdg wit="#O #G #R">illud</rdg>
-      <rdg id="var1" resp="#Fruterius">
-        illic
-        <note>(†1566) 1605a 388</note>
-      </rdg>
-      <witDetail target="#var1" resp="#Fruterius">p.c.</witDetail>
+      <rdg id="seg1" resp="#Fruterius">illic</rdg>
+      <witDetail target="#seg1" resp="#Fruterius">(†1566) 1605a 388</witDetail>
     </app>
     unde negant redire
     <app>
       <lem wit="#O #G">quemquam</lem>
-      <rdg wit="#R">umquam</rdg>
+      <rdg wit="#R">
+        umquam
+        <note>some note</note>
+      </rdg>
     </app>
 </p>
 ```

@@ -95,6 +95,11 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                     break;
             }
         }
+
+        if (wit.Length > 0)
+            seg.SetAttributeValue("wit", wit.ToString());
+        if (resp.Length > 0)
+            seg.SetAttributeValue("resp", resp.ToString());
     }
 
     /// <summary>
@@ -153,7 +158,14 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                     XElement seg = (features.Any(f => f.Name ==
                         AppLinearTextTreeFilter.F_APP_E_VARIANT))
                         ? new XElement(_options.ResolvePrefixedName("tei:rdg"))
-                        : new XElement(_options.ResolvePrefixedName("tei:lem"));
+                        {
+                            Value = features.First(f => f.Name ==
+                                AppLinearTextTreeFilter.F_APP_E_VARIANT).Value
+                        }
+                        : new XElement(_options.ResolvePrefixedName("tei:lem"))
+                        {
+                            Value = node.Data.Text!
+                        };
 
                     EnrichSegment(features, seg, context);
                     app.Add(seg);
