@@ -1,5 +1,7 @@
 # Addenda
 
+The rendering process is designed to be modular and fully customizable, so that we will be able to reuse software components to fit different encoding strategies. So, even for the simplest cases a full-blown customizable rendering pipeline is used. For trivial renderings this might seem as an overkill, but its purpose is right to make the system capable of any type of output, from the most simple to the most complex, using a unified modular approach.
+
 ## Overview
 
 The general flow for text rendition is:
@@ -17,61 +19,152 @@ The factory used to configure the process is based on a JSON configuration file 
 
 ```json
 {
-    "TextTreeFilters": [
-        {
-            "Keys": ["..."],
-            "Id": "...",
-            "Options": {}
-        }
-    ],
-    "RendererFilters": [
-        {
-            "Keys": ["..."],
-            "Id": "...",
-            "Options": {}
-        }
-    ],
-    "JsonRenderers": [
-        {
-            "Keys": ["..."],
-            "Id": "...",
-            "Options": {}
-        }
-    ],
-    "TextPartFlatteners": [
-        {
-            "Keys": ["..."],
-            "Id": "...",
-            "Options": {}
-        }
-    ],
-    "TextTreeRenderers": [
-        {
-            "Keys": ["..."],
-            "Id": "...",
-            "Options": {
-                "FilterKeys": ["..."]
-            }
-        }
-    ],
-    "ItemComposers": [
-        {
-            "Keys": ["..."],
-            "Id": "...",
-            "Options": {
-                "TextPartFlattenerKey": "...",
-                "TextTreeFilterKeys": ["..."],
-                "TextTreeRendererKey": "...",
-                "JsonRendererKeys": ["..."]
-            }
-        }
-    ],
-    "ItemIdCollector": {
-        "Id": "...",
-        "Options": {}
+  "ItemIdCollector": {
+    "Id": "...",
+    "Options": {}
+  },
+  "TextTreeFilters": [
+    {
+      "Keys": ["..."],
+      "Id": "...",
+      "Options": {}
     }
+  ],
+  "RendererFilters": [
+    {
+      "Keys": ["..."],
+      "Id": "...",
+      "Options": {}
+    }
+  ],
+  "JsonRenderers": [
+    {
+      "Keys": ["..."],
+      "Id": "...",
+      "Options": {}
+    }
+  ],
+  "TextPartFlatteners": [
+    {
+      "Keys": ["..."],
+      "Id": "...",
+      "Options": {}
+    }
+  ],
+  "TextTreeRenderers": [
+    {
+      "Keys": ["..."],
+      "Id": "...",
+      "Options": {
+        "FilterKeys": ["..."]
+      }
+    }
+  ],
+  "ItemComposers": [
+    {
+      "Keys": ["..."],
+      "Id": "...",
+      "Options": {
+        "TextPartFlattenerKey": "...",
+        "TextTreeFilterKeys": ["..."],
+        "TextTreeRendererKey": "...",
+        "JsonRendererKeys": ["..."]
+      }
+    }
+  ]
 }
 ```
+
+As an example, consider this configuration, targeting a [project](https://github.com/vedph/cadmus-sidon-app) using just a single apparatus layer to be rendered into TEI with embedded `app` elements:
+
+```json
+{
+  "ItemIdCollector": {
+    "Id": "it.vedph.item-id-collector.mongo",
+    "Options": {
+      "FacetId": "text",
+      "Flags": 8,
+      "FlagMatching": 2
+    }
+  },
+  "TextTreeFilters": [
+    {
+      "Keys": "app-linear",
+      "Id": "text-tree-filter.apparatus-linear"
+    }
+  ],
+  "RendererFilters": [
+    {
+      "Keys": "nl-appender",
+      "Id": "it.vedph.renderer-filter.appender",
+      "Options": {
+        "Text": "\r\n"
+      }
+    },
+    {
+      "Keys": "ns-remover",
+      "Id": "it.vedph.renderer-filter.replace",
+      "Options": {
+        "Replacements": [
+          {
+            "Source": " xmlns=\"http://www.tei-c.org/ns/1.0\"",
+            "Target": "",
+            "Repetitions": 1
+          }
+        ]
+      }
+    }
+  ],
+  "TextPartFlatteners": [
+    {
+      "Keys": "it.vedph.token-text",
+      "Id": "it.vedph.text-flattener.token"
+    }
+  ],
+  "TextTreeRenderers": [
+    {
+      "Keys": "tei",
+      "Id": "text-tree-renderer.tei-app-linear",
+      "Options": {
+        "FilterKeys": ["nl-appender", "ns-remover"],
+        "ZeroVariantType": "omissio"
+      }
+    }
+  ],
+  "ItemComposers": [
+    {
+      "Keys": "default",
+      "Id": "it.vedph.item-composer.tei.fs",
+      "Options": {
+        "TextPartFlattenerKey": "it.vedph.token-text",
+        "TextTreeFilterKeys": ["app-linear"],
+        "TextTreeRendererKey": "tei",
+        "TextHead": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">\n  <teiHeader>\n    <fileDesc>\n      <titleStmt>\n        <title>Sidonius</title>\n      </titleStmt>\n      <publicationStmt>\n        <p>Not published.</p>\n      </publicationStmt>\n      <sourceDesc>\n        <p>Undisclosed.</p>\n      </sourceDesc>\n    </fileDesc>\n  </teiHeader>\n  <text>\n    <body>\n",
+        "TextTail": "</body>\n  </text>\n</TEI>",
+        "OutputDirectory": "c:\\users\\dfusi\\Desktop\\sidon"
+      }
+    }
+  ]
+}
+```
+
+In this configuration, from top to bottom (the order of sections is free):
+
+- the item ID collector is the component used to collect the identifiers of all the items which will be rendered, in their order. This applies some filters:
+  - get only text items.
+  - get only prose items (flag with value 8=poetic must be clear).
+- two text tree filters, applied after the text has been transformed into a tree:
+  - one named `block-linear` is used to split nodes at every occurrence of a newline character. This ensures that TEI block elements will be rendered correctly.
+  - another named `app-linear` is used inject apparatus metadata into tree nodes representing the text during the rendering process.
+- there are 2 renderer filters applied after TEI rendering has completed:
+  - the one named `nl-appender` just appends a newline to each rendered item, so the text is more readable.
+  - the one named `ns-remover` removes the redundant namespace attribute from the rendered blocks. When rendering a TEI fragment with namespaces, like in TEI, its top level element(s) always get the default namespace; otherwise, an incorrect XML fragment would be emitted. As we are going to provide the default TEI namespace once at the document's root, these namespaces can be removed, because they would be redundant.
+- the text part flattener named `it.vedph.token-text` is used to flatten the layers on a text. In this case it will just use the apparatus layer, which is the only one. Once text is flattened, it will be converted into an at least initially linear tree, where each portion of text is represented by a node, and is child of the previous portion.
+- the text tree renderer with name `tei` is used to render the tree into TEI according to the desired format. In this case we use a renderer designed to handle a linear tree with apparatus, and we add a couple of filters after it completes (`nl-appender` to add a newline, `ns-remover` to remove redundant namespace attributes). Also, we specify that in case the variant is zero (=omission), there should be a `@type` attribute on the `rdg` element with value equal to `omissio`.
+- the item composer, here named `default`, is the component orchestrating the rendering process. It uses a component designed to render TEI with inline apparatus elements. Besides its components (flattener, tree filters, tree renderer) it has some parameters which define:
+  - the portion of markup to prepend to the generated document (`TextHead`). This is a simple markup including the opening root tag and a TEI header skeleton.
+  - the portion of markup to append to the generated document (`TextTail`), which closes the tags opened in the head.
+  - the output directory for saving the generated document(s).
 
 ## Building Trees
 
@@ -161,7 +254,7 @@ root --> 1[qu]
 5 --> 6[_XX]
 ```
 
->The tree structure may seem an overcomplication when dealing with a single linear branch, but it is really useful when rendering more complex data. See below for more.
+>The tree structure may seem an overcomplication when dealing with a single linear branch, but it is really useful when rendering more complex data. For instance, we might be able to transform a linear tree into a binary branching tree, and adopt a parallel segmentation strategy. See below for more.
 
 Note that here a node contains text with a LF character, which is used to mark the end of the original line. Typically this is adjusted in the next step so that such nodes are split.
 

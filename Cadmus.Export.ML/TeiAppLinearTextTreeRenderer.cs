@@ -169,6 +169,13 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                             Value = node.Data.Text!
                         };
 
+                    // corner case: a zero-variant can have a type attribute
+                    if (seg.Name.LocalName == "rdg" && seg.Value.Length == 0 &&
+                        _options.ZeroVariantType != null)
+                    {
+                        seg.SetAttributeValue("type", _options.ZeroVariantType);
+                    }
+
                     EnrichSegment(features, seg, context);
                     app.Add(seg);
 
@@ -250,6 +257,13 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
     /// indented. This can be useful for diagnostic purposes.
     /// </summary>
     public bool IsIndented { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value for the type attribute to add to <c>rdg</c>
+    /// elements for zero-variants, i.e. variants with no text meaning an
+    /// omission. If null, no attribute will be added. The default is null.
+    /// </summary>
+    public string? ZeroVariantType { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the
