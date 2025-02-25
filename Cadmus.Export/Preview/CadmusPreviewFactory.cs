@@ -16,6 +16,13 @@ namespace Cadmus.Export.Preview;
 /// <remarks>The JSON configuration has the following sections:
 /// <list type="bullet">
 /// <item>
+/// <term><c>TextTreeFilters</c></term>
+/// <description>List of text tree filters, each named with a key, and having
+/// its component ID and eventual options. The key is an arbitrary string,
+/// used in the scope of the configuration to reference each filter from
+/// other sections.</description>
+/// </item>
+/// <item>
 /// <term><c>RendererFilters</c></term>
 /// <description>List of renderer filters, each named with a key, and having
 /// its component ID and eventual options. The key is an arbitrary string,
@@ -42,8 +49,8 @@ namespace Cadmus.Export.Preview;
 /// from other sections.</description>
 /// </item>
 /// <item>
-/// <term><c>TextBlockRenderers</c></term>
-/// <description>List of text block renderers, each named with a key, and
+/// <term><c>TextTreeRenderers</c></term>
+/// <description>List of text tree renderers, each named with a key, and
 /// having its component ID and eventual options. The key is an arbitrary
 /// string, used in the scope of the configuration to reference each filter
 /// from other sections.</description>
@@ -54,10 +61,9 @@ namespace Cadmus.Export.Preview;
 /// its component ID and eventual options. The key is an arbitrary string,
 /// not used elsewhere in the context of the configuration. It is used as
 /// an argument for UI which process data export. Each composer can have
-/// among its options a <c>TextPartFlattenerKey</c> and a
-/// <c>TextBlockRendererKey</c>, referencing the corresponding components
-/// by their key, and a <c>JsonRendererKeys</c> array, referencing the
-/// corresponding JSON renderers by their key.</description>
+/// among its options a <c>TextPartFlattenerKey</c>, a <c>TextTreeFilterKeys</c>,
+/// a <c>TextBlockRendererKey</c> and a <c>JsonRendererKeys</c>, referencing
+/// the corresponding components by their key.</description>
 /// </item>
 /// <item>
 /// <term><c>ItemIdCollector</c></term>
@@ -236,25 +242,13 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
     /// <summary>
     /// Gets the text tree renderer with the specified key.
     /// </summary>
-    /// <param name="key">The key.</param>
+    /// <param name="key">The key of the requested renderer.</param>
     /// <returns>Renderer or null if not found.</returns>
     public ITextTreeRenderer? GetTextTreeRenderer(string key)
     {
-        return GetComponents<ITextTreeRenderer>("TextTreeRenderers",
-            null, [key]).FirstOrDefault();
-    }
-
-    /// <summary>
-    /// Gets the text block renderer with the specified key.
-    /// </summary>
-    /// <param name="key">The key of the requested renderer.</param>
-    /// <returns>Renderer or null if not found.</returns>
-    [Obsolete]
-    public ITextTreeRenderer? GetTextBlockRenderer(string key)
-    {
         IList<ComponentFactoryConfigEntry> entries =
             ComponentFactoryConfigEntry.ReadComponentEntries(
-            Configuration, "TextBlockRenderers");
+            Configuration, "TextTreeRenderers");
 
         ComponentFactoryConfigEntry? entry =
             entries.FirstOrDefault(e => e.Keys?.Contains(key) == true);
@@ -286,14 +280,15 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
     }
 
     /// <summary>
-    /// Gets the text tree filters matching any of the specified keys.
-    /// Filters are listed under section <c>TextTreeFilters</c>, each with
-    /// one or more keys.
+    /// Gets the text tree filter with the specified key.
     /// </summary>
-    /// <param name="keys">The keys.</param>
-    /// <returns>Dictionary with keys and filters.</returns>
-    public IList<ITextTreeFilter> GetTextTreeFilters(IList<string> keys) =>
-        GetRequiredComponents<ITextTreeFilter>("TextTreeFilters", null, keys);
+    /// <param name="key">The key.</param>
+    /// <returns>Filter or null if not found.</returns>
+    public ITextTreeFilter? GetTextTreeFilter(string key)
+    {
+        return GetComponents<ITextTreeFilter>("TextTreeFilters",
+            null, [key]).FirstOrDefault();
+    }
 
     /// <summary>
     /// Gets the JSON renderer filters matching any of the specified keys.
@@ -341,13 +336,25 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
             composer.TextPartFlattener = GetTextPartFlattener(cKey);
         }
 
-        // add text block renderer if specified in Options:TextBlockRendererKey
+        // add text tre filters if specified in Options:TextTreeFilterKeys
         section = Configuration.GetSection(
-            entry.OptionsPath + ":TextBlockRendererKey");
+            entry.OptionsPath + ":TextTreeFilterKeys");
+        if (section.Exists())
+        {
+            foreach (string cKey in section.Get<string[]>()!)
+            {
+                ITextTreeFilter? filter = GetTextTreeFilter(cKey);
+                if (filter != null) composer.TextTreeFilters.Add(filter);
+            }
+        }
+
+        // add text tree renderer if specified in Options:TextTreeRendererKey
+        section = Configuration.GetSection(
+        entry.OptionsPath + ":TextTreeRendererKey");
         if (section.Exists())
         {
             string cKey = section.Get<string>()!;
-            composer.TextTreeRenderer = GetTextBlockRenderer(cKey);
+            composer.TextTreeRenderer = GetTextTreeRenderer(cKey);
         }
 
         // add renderers if specified in Options.JsonRendererKeys

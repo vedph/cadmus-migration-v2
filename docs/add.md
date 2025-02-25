@@ -17,6 +17,13 @@ The factory used to configure the process is based on a JSON configuration file 
 
 ```json
 {
+    "TextTreeFilters": [
+        {
+            "Keys": ["..."],
+            "Id": "...",
+            "Options": {}
+        }
+    ],
     "RendererFilters": [
         {
             "Keys": ["..."],
@@ -42,14 +49,9 @@ The factory used to configure the process is based on a JSON configuration file 
         {
             "Keys": ["..."],
             "Id": "...",
-            "Options": {}
-        }
-    ],
-    "TextBlockRenderers": [
-        {
-            "Keys": ["..."],
-            "Id": "...",
-            "Options": {}
+            "Options": {
+                "FilterKeys": ["..."]
+            }
         }
     ],
     "ItemComposers": [
@@ -58,7 +60,9 @@ The factory used to configure the process is based on a JSON configuration file 
             "Id": "...",
             "Options": {
                 "TextPartFlattenerKey": "...",
-                "TextBlockRendererKey": "..."
+                "TextTreeFilterKeys": ["..."],
+                "TextTreeRendererKey": "...",
+                "JsonRendererKeys": ["..."]
             }
         }
     ],
