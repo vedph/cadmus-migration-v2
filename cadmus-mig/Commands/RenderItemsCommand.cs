@@ -106,10 +106,13 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
         // render items
         AnsiConsole.MarkupLine("[cyan]Rendering items...[/]");
 
+        int n = 0;
         composer.Open();
         foreach (string id in collector.GetIds())
         {
-            AnsiConsole.WriteLine(" - " + id);
+            if (++n > settings.MaxItems && settings.MaxItems > 0) break;
+
+            AnsiConsole.WriteLine($" - {n}: " + id);
             IItem? item = repository.GetItem(id, true);
             if (item != null)
             {
@@ -162,4 +165,8 @@ public class RenderItemsCommandSettings : CommandSettings
     [CommandOption("--composer|-c")]
     [Description("The key of the item composer to use (default='default').")]
     public string ComposerKey { get; set; } = "default";
+
+    [CommandOption("--max|-m")]
+    [Description("The maximum number of items to render (0=all).")]
+    public int MaxItems { get; set; }
 }
