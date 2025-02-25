@@ -33,6 +33,11 @@ public abstract class ItemComposer
     private string? _lastGroupId;
 
     /// <summary>
+    /// Gets or sets the context suppliers.
+    /// </summary>
+    public IList<IRendererContextSupplier> ContextSuppliers { get; set; }
+
+    /// <summary>
     /// Gets or sets the optional text part flattener.
     /// </summary>
     public ITextPartFlattener? TextPartFlattener { get; set; }
@@ -79,6 +84,7 @@ public abstract class ItemComposer
     /// </summary>
     protected ItemComposer()
     {
+        ContextSuppliers = [];
         TextTreeFilters = [];
         JsonRenderers = new Dictionary<string, IJsonRenderer>();
         Context = new RendererContext();
@@ -337,6 +343,10 @@ public abstract class ItemComposer
         Context.Data[M_ITEM_FACET] = item.FacetId;
         if (item.GroupId != null) Context.Data[M_ITEM_GROUP] = item.GroupId;
         Context.Data[M_ITEM_FLAGS] = item.Flags;
+
+        // apply renderer context suppliers
+        foreach (IRendererContextSupplier supplier in ContextSuppliers)
+            supplier.Supply(Context);
 
         if (item.GroupId != _lastGroupId)
         {

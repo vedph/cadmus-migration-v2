@@ -16,6 +16,13 @@ namespace Cadmus.Export.Preview;
 /// <remarks>The JSON configuration has the following sections:
 /// <list type="bullet">
 /// <item>
+/// <term><c>RendererContextSuppliers</c></term>
+/// <description>List of renderer context suppliers, each named with a key,
+/// and having its component ID and eventual options. The key is an arbitrary
+/// string, used in the scope of the configuration to reference each filter from
+/// other sections.</description>
+/// </item>
+/// <item>
 /// <term><c>TextTreeFilters</c></term>
 /// <description>List of text tree filters, each named with a key, and having
 /// its component ID and eventual options. The key is an arbitrary string,
@@ -142,6 +149,7 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
         // from all the assemblies
         foreach (Type it in new[]
         {
+            typeof(IRendererContextSupplier),
             typeof(IJsonRenderer),
             typeof(ITextTreeRenderer),
             typeof(ITextPartFlattener),
@@ -207,6 +215,17 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
             return [.. GetRendererFilters(keys)];
         }
         return [];
+    }
+
+    /// <summary>
+    /// Gets the renderer context supplier with the specified key.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <returns>The supplier or null if not found.</returns>
+    public IRendererContextSupplier? GetRendererContextSupplier(string key)
+    {
+        return GetComponents<IRendererContextSupplier>("RendererContextSuppliers",
+            null, [key]).FirstOrDefault();
     }
 
     /// <summary>
@@ -327,8 +346,21 @@ public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
             entry.Tag!, entry.OptionsPath);
         if (composer == null) return null;
 
-        // add text part flattener if specified in Options:TextPartFlattenerKey
+        // add renderer context suppliers if specified in Options:RendererContextSupplierKeys
         IConfigurationSection section = Configuration.GetSection(
+            entry.OptionsPath + ":RendererContextSupplierKeys");
+        if (section.Exists())
+        {
+            foreach (string sKey in section.Get<string[]>()!)
+            {
+                IRendererContextSupplier? supplier =
+                    GetRendererContextSupplier(sKey);
+                if (supplier != null) composer.ContextSuppliers.Add(supplier);
+            }
+        }
+
+        // add text part flattener if specified in Options:TextPartFlattenerKey
+        section = Configuration.GetSection(
             entry.OptionsPath + ":TextPartFlattenerKey");
         if (section.Exists())
         {

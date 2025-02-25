@@ -21,6 +21,11 @@ namespace Cadmus.Export;
 public interface IItemComposer
 {
     /// <summary>
+    /// Gets or sets the renderer context suppliers.
+    /// </summary>
+    IList<IRendererContextSupplier> ContextSuppliers { get; set; }
+
+    /// <summary>
     /// Gets or sets the optional text part flattener. This is used for text
     /// rendition when a part contains a base text and a set of layer parts.
     /// </summary>
