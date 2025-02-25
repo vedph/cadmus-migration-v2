@@ -143,8 +143,10 @@ public sealed class AppLinearTextTreeFilter : ITextTreeFilter
                         break;
 
                     case ApparatusEntryType.Replacement:
-                        // if not accepted add a variant
-                        if (!entry.IsAccepted)
+                        // if not accepted add a variant unless equal to the base
+                        // text (in the case where users added replacements with
+                        // self rather than note as apparatus entries)
+                        if (!entry.IsAccepted && node.Data.Text != entry.Value)
                         {
                             node.Data.AddFeatureToSet(
                                 setKey,
