@@ -79,15 +79,11 @@ As an example, consider this configuration, targeting a [project](https://github
 
 ```json
 {
-  "ItemIdCollector": {
-    "Id": "it.vedph.item-id-collector.mongo",
-    "Options": {
-      "FacetId": "text",
-      "Flags": 8,
-      "FlagMatching": 2
-    }
-  },
   "TextTreeFilters": [
+    {
+      "Keys": "block-linear",
+      "Id": "text-tree-filter.block-linear"
+    },
     {
       "Keys": "app-linear",
       "Id": "text-tree-filter.apparatus-linear"
@@ -137,14 +133,22 @@ As an example, consider this configuration, targeting a [project](https://github
       "Id": "it.vedph.item-composer.tei.fs",
       "Options": {
         "TextPartFlattenerKey": "it.vedph.token-text",
-        "TextTreeFilterKeys": ["app-linear"],
+        "TextTreeFilterKeys": ["block-linear", "app-linear"],
         "TextTreeRendererKey": "tei",
-        "TextHead": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">\n  <teiHeader>\n    <fileDesc>\n      <titleStmt>\n        <title>Sidonius</title>\n      </titleStmt>\n      <publicationStmt>\n        <p>Not published.</p>\n      </publicationStmt>\n      <sourceDesc>\n        <p>Undisclosed.</p>\n      </sourceDesc>\n    </fileDesc>\n  </teiHeader>\n  <text>\n    <body>\n",
-        "TextTail": "</body>\n  </text>\n</TEI>",
+        "TextHead": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">\n  <teiHeader>\n    <fileDesc>\n      <titleStmt>\n        <title>Sidonius</title>\n      </titleStmt>\n      <publicationStmt>\n        <p>Not published.</p>\n      </publicationStmt>\n      <sourceDesc>\n        <p>Undisclosed.</p>\n      </sourceDesc>\n    </fileDesc>\n  </teiHeader>\n  <text>\n    <body>\n      <div>\n",
+        "TextTail": "      </div>\n    </body>\n  </text>\n</TEI>",
         "OutputDirectory": "c:\\users\\dfusi\\Desktop\\sidon"
       }
     }
-  ]
+  ],
+  "ItemIdCollector": {
+    "Id": "it.vedph.item-id-collector.mongo",
+    "Options": {
+      "FacetId": "text",
+      "Flags": 8,
+      "FlagMatching": 2
+    }
+  }
 }
 ```
 
