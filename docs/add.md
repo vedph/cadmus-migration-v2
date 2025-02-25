@@ -143,7 +143,12 @@ As an example, consider this configuration, targeting a [project](https://github
       "Id": "text-tree-renderer.tei-app-linear",
       "Options": {
         "FilterKeys": ["nl-appender", "ns-remover"],
-        "ZeroVariantType": "omissio"
+        "ZeroVariantType": "omissio",
+        "BlockElements": {
+          "default": "tei:p",
+          "poetry": "tei:l",
+          "prose": "tei:p"
+        }
       }
     }
   ],
