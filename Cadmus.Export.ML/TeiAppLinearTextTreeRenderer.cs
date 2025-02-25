@@ -3,6 +3,7 @@ using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
+using MongoDB.Driver;
 using Proteus.Text.Xml;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         // witDetail
         XElement witDetail = new(_options.ResolvePrefixedName("tei:witDetail"),
             detail);
+        seg.Add(witDetail);
 
         // @target=segID
         int targetId = GetNextIdFor(CONTEXT_SEG_IDKEY, context);
@@ -197,11 +199,19 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             return true;
         });
 
-        return string.Concat(
-            root.Nodes().Select(node => node.ToString(_options.Indented
+        if (_options.IsRootIncluded)
+        {
+            return root.ToString(_options.IsIndented
                 ? SaveOptions.OmitDuplicateNamespaces
                 : SaveOptions.OmitDuplicateNamespaces |
-                  SaveOptions.DisableFormatting)));
+                  SaveOptions.DisableFormatting);
+        }
+
+        return string.Concat(root.Nodes().Select(
+            node => node.ToString(_options.IsIndented
+            ? SaveOptions.OmitDuplicateNamespaces
+            : SaveOptions.OmitDuplicateNamespaces |
+                SaveOptions.DisableFormatting)));
     }
 }
 
@@ -213,10 +223,19 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
 {
     /// <summary>
     /// Gets or sets the name of the root element. The default is <c>tei:div</c>.
-    /// This is not rendered in output, but it is used as the root of the XML
-    /// fragment built by the renderer.
+    /// This is usually not rendered in output, but it is used as the root of
+    /// the XML fragment built by the renderer.
     /// </summary>
     public string RootElement { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the <see cref="RootElement"/>
+    /// should be included in the output. The default is <c>false</c>.
+    /// </summary>
+    /// <value>
+    ///   <c>true</c> if this instance is root included; otherwise, <c>false</c>.
+    /// </value>
+    public bool IsRootIncluded { get; set; }
 
     /// <summary>
     /// Gets or sets the block element name(s). The default name is "tei:p" under
@@ -232,7 +251,7 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
     /// Gets or sets a value indicating whether the XML output should be
     /// indented. This can be useful for diagnostic purposes.
     /// </summary>
-    public bool Indented { get; set; }
+    public bool IsIndented { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the
