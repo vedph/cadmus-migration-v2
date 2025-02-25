@@ -105,12 +105,9 @@ internal sealed class RenderItemsCommand : ICommand
         // get the Cadmus repository from the specified plugin
         ColorConsole.WriteInfo("Building repository factory...");
         ICadmusRepository repository = contextService.GetCadmusRepository(
-            _options.RepositoryProviderTag!);
-        if (repository == null)
-        {
-            throw new InvalidOperationException(
+            _options.RepositoryProviderTag!)
+            ?? throw new InvalidOperationException(
                 "Unable to create Cadmus repository");
-        }
 
         // create the preview item composer
         ColorConsole.WriteInfo("Creating item composer...");

@@ -16,9 +16,7 @@ public sealed class StandardPreviewFactoryProvider : ICadmusPreviewFactoryProvid
     {
         return new HostBuilder()
             .ConfigureServices((hostContext, services) =>
-            {
-                CadmusPreviewFactory.ConfigureServices(services, assemblies);
-            })
+                CadmusPreviewFactory.ConfigureServices(services, assemblies))
             // extension method from Fusi library
             .AddInMemoryJson(config)
             .Build();

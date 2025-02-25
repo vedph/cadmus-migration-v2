@@ -66,7 +66,12 @@ namespace Cadmus.Export.Preview;
 /// </item>
 /// </list>
 /// </remarks>
-public class CadmusPreviewFactory : ComponentFactory
+/// <remarks>
+/// Initializes a new instance of the <see cref="CadmusPreviewFactory" />
+/// class.
+/// </remarks>
+/// <param name="host">The host.</param>
+public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
 {
     /// <summary>
     /// The name of the connection string property to be supplied
@@ -81,15 +86,6 @@ public class CadmusPreviewFactory : ComponentFactory
     /// in its configuration.
     /// </summary>
     public string? ConnectionString { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CadmusPreviewFactory" />
-    /// class.
-    /// </summary>
-    /// <param name="host">The host.</param>
-    public CadmusPreviewFactory(IHost host) : base(host)
-    {
-    }
 
     /// <summary>
     /// Overrides the options.
@@ -128,11 +124,11 @@ public class CadmusPreviewFactory : ComponentFactory
         ArgumentNullException.ThrowIfNull(services);
 
         // https://simpleinjector.readthedocs.io/en/latest/advanced.html?highlight=batch#batch-registration
-        Assembly[] assemblies = new[]
-        {
+        Assembly[] assemblies =
+        [
             // Cadmus.Export
             typeof(XsltJsonRenderer).Assembly
-        };
+        ];
         if (additionalAssemblies?.Length > 0)
             assemblies = assemblies.Concat(additionalAssemblies).ToArray();
 
@@ -143,6 +139,8 @@ public class CadmusPreviewFactory : ComponentFactory
             typeof(IJsonRenderer),
             typeof(ITextTreeRenderer),
             typeof(ITextPartFlattener),
+            typeof(ITextTreeFilter),
+            typeof(ITextTreeRenderer),
             typeof(IRendererFilter),
             typeof(IItemComposer),
             typeof(IItemIdCollector),
@@ -157,7 +155,7 @@ public class CadmusPreviewFactory : ComponentFactory
 
     private HashSet<string> CollectKeys(string collectionPath)
     {
-        HashSet<string> keys = new();
+        HashSet<string> keys = [];
         foreach (var entry in
             ComponentFactoryConfigEntry.ReadComponentEntries(
             Configuration, collectionPath)
@@ -194,15 +192,15 @@ public class CadmusPreviewFactory : ComponentFactory
     public HashSet<string> GetComposerKeys()
         => CollectKeys("ItemComposers");
 
-    private IList<IRendererFilter> GetFilters(string path)
+    private List<IRendererFilter> GetRendererFilters(string path)
     {
         IConfigurationSection filterKeys = Configuration.GetSection(path);
         if (filterKeys.Exists())
         {
-            string[] keys = filterKeys.Get<string[]>() ?? Array.Empty<string>();
-            return GetRendererFilters(keys).ToList();
+            string[] keys = filterKeys.Get<string[]>() ?? [];
+            return [.. GetRendererFilters(keys)];
         }
-        return Array.Empty<IRendererFilter>();
+        return [];
     }
 
     /// <summary>
@@ -226,7 +224,7 @@ public class CadmusPreviewFactory : ComponentFactory
         if (renderer == null) return null;
 
         // add filters if specified in Options:FilterKeys
-        foreach (IRendererFilter filter in GetFilters(
+        foreach (IRendererFilter filter in GetRendererFilters(
             entry.OptionsPath + ":FilterKeys"))
         {
             renderer.Filters.Add(filter);
@@ -236,10 +234,22 @@ public class CadmusPreviewFactory : ComponentFactory
     }
 
     /// <summary>
+    /// Gets the text tree renderer with the specified key.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <returns>Renderer or null if not found.</returns>
+    public ITextTreeRenderer? GetTextTreeRenderer(string key)
+    {
+        return GetComponents<ITextTreeRenderer>("TextTreeRenderers",
+            null, [key]).FirstOrDefault();
+    }
+
+    /// <summary>
     /// Gets the text block renderer with the specified key.
     /// </summary>
     /// <param name="key">The key of the requested renderer.</param>
     /// <returns>Renderer or null if not found.</returns>
+    [Obsolete]
     public ITextTreeRenderer? GetTextBlockRenderer(string key)
     {
         IList<ComponentFactoryConfigEntry> entries =
@@ -255,7 +265,7 @@ public class CadmusPreviewFactory : ComponentFactory
         if (renderer == null) return null;
 
         // add filters if specified in Options:FilterKeys
-        foreach (IRendererFilter filter in GetFilters(
+        foreach (IRendererFilter filter in GetRendererFilters(
             entry.OptionsPath + ":FilterKeys"))
         {
             renderer.Filters.Add(filter);
@@ -272,8 +282,18 @@ public class CadmusPreviewFactory : ComponentFactory
     public ITextPartFlattener? GetTextPartFlattener(string key)
     {
         return GetComponents<ITextPartFlattener>("TextPartFlatteners",
-            null, new[] { key }).FirstOrDefault();
+            null, [key]).FirstOrDefault();
     }
+
+    /// <summary>
+    /// Gets the text tree filters matching any of the specified keys.
+    /// Filters are listed under section <c>TextTreeFilters</c>, each with
+    /// one or more keys.
+    /// </summary>
+    /// <param name="keys">The keys.</param>
+    /// <returns>Dictionary with keys and filters.</returns>
+    public IList<ITextTreeFilter> GetTextTreeFilters(IList<string> keys) =>
+        GetRequiredComponents<ITextTreeFilter>("TextTreeFilters", null, keys);
 
     /// <summary>
     /// Gets the JSON renderer filters matching any of the specified keys.
@@ -284,7 +304,7 @@ public class CadmusPreviewFactory : ComponentFactory
     /// an array of strings.
     /// </summary>
     /// <param name="keys">The desired keys.</param>
-    /// <returns>Dictionary with keys and renderers.</returns>
+    /// <returns>Dictionary with keys and filters.</returns>
     public IList<IRendererFilter> GetRendererFilters(IList<string> keys) =>
         GetRequiredComponents<IRendererFilter>("RendererFilters", null, keys);
 

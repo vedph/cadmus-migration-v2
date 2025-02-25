@@ -1,5 +1,74 @@
 # Addenda
 
+## Overview
+
+The general flow for text rendition is:
+
+1. open the output via the item composer.
+2. use an item collector to get the ID of one item at a time from a data source, applying the required filters.
+3. for each ID, get the item and use the item composer to:
+   1. get the text part and collect the desired layers parts from the received item.
+   2. flatten layers (via an instance of `ITextPartFlattener`) and merge the resulting text ranges.
+   3. build a linear tree from these ranges.
+   4. apply optional tree filters (`ITextTreeFilter`).
+   5. render the tree into a string (`ITextTreeRenderer`) and variously use the result to build a specific output.
+
+The factory used to configure the process is based on a JSON configuration file whose template is like this:
+
+```json
+{
+    "RendererFilters": [
+        {
+            "Keys": ["..."],
+            "Id": "...",
+            "Options": {}
+        }
+    ],
+    "JsonRenderers": [
+        {
+            "Keys": ["..."],
+            "Id": "...",
+            "Options": {}
+        }
+    ],
+    "TextPartFlatteners": [
+        {
+            "Keys": ["..."],
+            "Id": "...",
+            "Options": {}
+        }
+    ],
+    "TextTreeRenderers": [
+        {
+            "Keys": ["..."],
+            "Id": "...",
+            "Options": {}
+        }
+    ],
+    "TextBlockRenderers": [
+        {
+            "Keys": ["..."],
+            "Id": "...",
+            "Options": {}
+        }
+    ],
+    "ItemComposers": [
+        {
+            "Keys": ["..."],
+            "Id": "...",
+            "Options": {
+                "TextPartFlattenerKey": "...",
+                "TextBlockRendererKey": "..."
+            }
+        }
+    ],
+    "ItemIdCollector": {
+        "Id": "...",
+        "Options": {}
+    }
+}
+```
+
 ## Building Trees
 
 An item is rendered via an item composer, which implements the `IItemComposer` interface. Text items are the most complex for rendering, so let us consider them first.
