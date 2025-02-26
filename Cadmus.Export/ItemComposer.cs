@@ -170,10 +170,7 @@ public abstract class ItemComposer
         ItemNumber = 0;
 
         // reset context
-        Context.Item = null;
-        Context.Data.Clear();
-        Context.LayerIds.Clear();
-        Context.FragmentIds.Clear();
+        Context.Clear();
 
         // set output
         Output = output ?? new ItemComposition();
