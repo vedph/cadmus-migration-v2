@@ -24,6 +24,11 @@ public interface IRendererContext : IHasDataDictionary
     HashSet<string> LayerPartTypeIds { get; }
 
     /// <summary>
+    /// Gets the identifier maps used in this context.
+    /// </summary>
+    IDictionary<string, IdMap> IdMaps { get; }
+
+    /// <summary>
     /// Gets the layer IDs dictionary, where keys are block layer ID
     /// prefixes (i.e. part type ID + <c>:</c> + role ID, like
     /// <c>it.vedph.token-text-layer:fr.it.vedph.comment</c>), and

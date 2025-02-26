@@ -1,0 +1,90 @@
+﻿using Fusi.Tools.Data;
+using System;
+using System.Collections.Concurrent;
+using System.Threading;
+
+namespace Cadmus.Export;
+
+/// <summary>
+/// A map of IDs between source and target. Sources are data like a fragment,
+/// composed by a prefix (for the fragment, this is the layer part ID) and a
+/// suffix (for the fragment, the fragment index). The target ID is just a
+/// number. This class allows to map a source ID to a target ID, and vice versa.
+/// </summary>
+public class IdMap
+{
+    private readonly Trie _sourceMap = new();
+    private readonly ConcurrentDictionary<int, string> _targetMap = new();
+    private int _maxId;
+
+    /// <summary>
+    /// Gets the count of the entries in this map.
+    /// </summary>
+    public int Count => _targetMap.Count;
+
+    /// <summary>
+    /// Resets this map.
+    /// </summary>
+    /// <param name="seed">if set to <c>true</c>, also reset the seed.</param>
+    public void Reset(bool seed = false)
+    {
+        if (seed) _maxId = 0;
+        _sourceMap.Clear();
+        _targetMap.Clear();
+    }
+
+    /// <summary>
+    /// Maps the source identifier into a unique number.
+    /// </summary>
+    /// <param name="prefix">The prefix. This usually corresponds to a GUID,
+    /// e.g. a layer part ID for fragments, a text part ID for text segments,
+    /// etc.
+    /// </param>
+    /// <param name="suffix">The suffix. This usually is a scoped identifier
+    /// in the context of the prefix, e.g. the fragment index in its layer part,
+    /// the node ID in a linear tree representing an item's base text, etc.</param>
+    /// <returns>The number.</returns>
+    /// <exception cref="ArgumentNullException">prefix or suffix</exception>
+    public int MapSourceId(string prefix, string suffix)
+    {
+        ArgumentNullException.ThrowIfNull(prefix);
+        ArgumentNullException.ThrowIfNull(suffix);
+
+        string key = prefix + "_" + suffix;
+
+        lock (_sourceMap)
+        {
+            TrieNode? id = _sourceMap.Get(key);
+            if (id == null)
+            {
+                int newId = Interlocked.Increment(ref _maxId);
+                _sourceMap.Add(key, newId);
+                _targetMap[newId] = key;
+                return newId;
+            }
+
+            return (int)id.Data!;
+        }
+    }
+
+    /// <summary>
+    /// Gets the source identifier from its mapped unique number.
+    /// </summary>
+    /// <param name="id">The mapped number.</param>
+    /// <returns>The source identifier or null if not found.</returns>
+    public string? GetSourceId(int id)
+    {
+        return _targetMap.TryGetValue(id, out string? key) ? key : null;
+    }
+
+    /// <summary>
+    /// Converts to string.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="string" /> that represents this instance.
+    /// </returns>
+    public override string ToString()
+    {
+        return "IdMap: " + Count;
+    }
+}
