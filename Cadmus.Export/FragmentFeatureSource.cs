@@ -94,4 +94,30 @@ public partial record FragmentFeatureSource
             index,
             m.Groups["s"].Success ? m.Groups["s"].Value : null);
     }
+
+    /// <summary>
+    /// Parses the index of the fragment. The fragment index is the number
+    /// after the <c>@</c> (and before the first non-digit character past it,
+    /// if there is a suffix) in the source string.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <returns>Fragment index.</returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="FormatException">Invalid feature source format or
+    /// Invalid index in feature source.</exception>
+    public static int ParseFragmentIndex(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        Match m = ParseRegex().Match(text);
+        if (!m.Success)
+            throw new FormatException($"Invalid feature source format: \"{text}\"");
+
+        if (!int.TryParse(m.Groups["i"].Value, out int index))
+        {
+            throw new FormatException(
+                $"Invalid index in feature source: \"{m.Groups["i"].Value}\"");
+        }
+
+        return index;
+    }
 }

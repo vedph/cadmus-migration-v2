@@ -1,8 +1,10 @@
 ﻿using Cadmus.Core;
 using Cadmus.Core.Storage;
 using Fusi.Tools;
+using Fusi.Tools.Data;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Cadmus.Export;
 
@@ -11,6 +13,9 @@ namespace Cadmus.Export;
 /// </summary>
 public class RendererContext : DataDictionary, IRendererContext
 {
+    private readonly Trie _idMap = new();
+    private int _maxId;
+
     /// <summary>
     /// Gets or sets the item being rendered.
     /// </summary>
@@ -20,6 +25,34 @@ public class RendererContext : DataDictionary, IRendererContext
     /// Gets the layer part type IDs which are selected for rendering.
     /// </summary>
     public HashSet<string> LayerPartTypeIds { get; } = [];
+
+    /// <summary>
+    /// Gets the numeric ID for the specified fragment identifier, storing
+    /// the mapping in the context. If the fragment ID is already mapped,
+    /// its ID is returned; otherwise a new ID is assigned and returned.
+    /// </summary>
+    /// <param name="layerPartId">The layer part instance identifier.</param>
+    /// <param name="fragmentId">The fragment identifier.</param>
+    /// <returns>ID.</returns>
+    /// <exception cref="ArgumentNullException">fragmentId</exception>
+    public int GetFragmentIdFor(string layerPartId, string fragmentId)
+    {
+        ArgumentNullException.ThrowIfNull(layerPartId);
+        ArgumentNullException.ThrowIfNull(fragmentId);
+
+        // build a global trie key (partId_fragmentIndex)
+        int i = FragmentFeatureSource.ParseFragmentIndex(fragmentId);
+        string key = $"{layerPartId}_{i}";
+
+        // if the fragment ID is already mapped, return its ID
+        TrieNode? node = _idMap.Get(key);
+        if (node != null) return (int)node.Data!;
+
+        // add a new node for fragmentId mapped to a new ID
+        Interlocked.Increment(ref _maxId);
+        _idMap.Add(key, new FragmentIdPayload(layerPartId, fragmentId, _maxId));
+        return _maxId;
+    }
 
     /// <summary>
     /// Gets the layer IDs dictionary, where keys are block layer ID
