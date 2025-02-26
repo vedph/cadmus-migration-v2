@@ -35,6 +35,9 @@
       <HashCode>ACAAAACAAAAACAIEAABAAAAAAAAAAAAAAQAACAAAAhA=</HashCode>
       <FileName>TextSpanPayload.cs</FileName>
     </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Range" />
+    </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Property Name="FeatureSets" />
     </ShowAsCollectionAssociation>
@@ -47,6 +50,16 @@
     <TypeIdentifier>
       <HashCode>AAAAAAAAAgAAAAQEAAABAAAAAAAAAAAAAAAAAAAAABA=</HashCode>
       <FileName>TextSpanFeatureSet.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Cadmus.Export.FragmentTextRange">
+    <Position X="9.5" Y="7.25" Width="1.75" />
+    <Members>
+      <Method Name="ToString" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAIAgAAAAiAAAAAEAAAAIAAAAAAAAAAAAAAACAAQAAA=</HashCode>
+      <FileName>FragmentTextRange.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="Cadmus.Export.IItemComposer">

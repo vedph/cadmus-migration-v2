@@ -7,7 +7,7 @@ public sealed class FrLinkRendererFilterTest
     private static IRendererContext GetContext()
     {
         RendererContext context = new();
-        context.FragmentIds["typex|roley0"] = "1_2_3";
+        context.FragmentIds["typex:roley@0"] = "1_2_3";
         context.FragmentIds["typez1"] = "2_4_6";
         return context;
     }
@@ -40,7 +40,7 @@ public sealed class FrLinkRendererFilterTest
     {
         FrLinkRendererFilter filter = new();
 
-        string? result = filter.Apply("hello #[typex|roley0]# world",
+        string? result = filter.Apply("hello #[typex:roley@0]# world",
             GetContext());
 
         Assert.NotNull(result);

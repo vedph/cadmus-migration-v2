@@ -1,5 +1,6 @@
 ﻿using DevLab.JmesPath;
 using Fusi.Tools.Configuration;
+using Fusi.Xml;
 using Fusi.Xml.Extras.Render;
 using Newtonsoft.Json;
 using System;
@@ -73,7 +74,10 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
                     _options.DefaultNsPrefix);
             }
         }
-        else _wrappedEntryNames = null;
+        else
+        {
+            _wrappedEntryNames = null;
+        }
     }
 
     /// <summary>
@@ -173,7 +177,10 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
                 xml = xdoc.ToString(SaveOptions.DisableFormatting |
                     SaveOptions.OmitDuplicateNamespaces);
             }
-            else xml = doc.OuterXml;
+            else
+            {
+                xml = doc.OuterXml;
+            }
 
             // transform via XSLT
             return _transformer.Transform(xml);

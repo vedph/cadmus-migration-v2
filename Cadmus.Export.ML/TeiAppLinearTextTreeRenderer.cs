@@ -135,11 +135,11 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     }
 
     /// <summary>
-    /// Renders the specified JSON code.
+    /// Renders the specified tree.
     /// </summary>
-    /// <param name="tree">The root node of the text tree.</param>
-    /// <param name="context">The renderer context.</param>
-    /// <returns>Rendered output.</returns>
+    /// <param name="tree">The tree.</param>
+    /// <param name="context">The rendering context.</param>
+    /// <returns>Rendition.</returns>
     /// <exception cref="ArgumentNullException">tree or context</exception>
     protected override string DoRender(TreeNode<TextSpanPayload> tree,
         IRendererContext context)
