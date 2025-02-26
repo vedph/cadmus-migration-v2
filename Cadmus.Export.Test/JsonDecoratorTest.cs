@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
+﻿using Xunit;
 
 namespace Cadmus.Export.Test;
 
@@ -32,7 +27,7 @@ public sealed class JsonDecoratorTest
             "\"typeId\":\"type\"," +
             "\"roleId\":\"role\"," +
             "\"fragments\":[" +
-            "{\"location\":\"1.1\",\"text\":\"alpha\",\"_key\":\"type|role0\"}," +
-            "{\"location\":\"1.2\",\"text\":\"beta\",\"_key\":\"type|role1\"}]}}", json);
+            "{\"location\":\"1.1\",\"text\":\"alpha\",\"_key\":\"type:role@0\"}," +
+            "{\"location\":\"1.2\",\"text\":\"beta\",\"_key\":\"type:role@1\"}]}}", json);
     }
 }

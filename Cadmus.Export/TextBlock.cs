@@ -8,6 +8,7 @@ namespace Cadmus.Export;
 /// consumed by frontend tools in the Cadmus bricks library
 /// (see https://github.com/vedph/cadmus-bricks-shell/tree/master/projects/myrmidon/cadmus-text-block-view).
 /// </summary>
+[Obsolete]
 public class TextBlock
 {
     /// <summary>

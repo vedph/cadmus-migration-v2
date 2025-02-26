@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Cadmus.Export;
 
 /// <summary>
 /// A row of <see cref="TextBlock"/>'s.
 /// </summary>
+[Obsolete]
 public class TextBlockRow
 {
     /// <summary>

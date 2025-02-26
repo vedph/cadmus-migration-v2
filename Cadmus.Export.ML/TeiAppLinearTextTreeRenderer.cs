@@ -331,13 +331,17 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
 
     /// <summary>
     /// Gets or sets the head code template to be rendered at the start of the
-    /// each group of items.
+    /// each group of items. Its value can include placeholders in curly braces,
+    /// corresponding to any of the metadata keys defined in the item composer's
+    /// context.
     /// </summary>
     public string? GroupHeadTemplate { get; set; }
 
     /// <summary>
     /// Gets or sets the tail code template to be rendered at the end of each
-    /// group of items.
+    /// group of items. Its value can include placeholders in curly braces,
+    /// corresponding to any of the metadata keys defined in the item composer's
+    /// context.
     /// </summary>
     public string? GroupTailTemplate { get; set; }
 
