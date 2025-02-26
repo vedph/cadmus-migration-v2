@@ -250,9 +250,9 @@ que bixit|annos XX
 112345555555555666
 ```
 
-▶️ (3) **assign text values** to each merged range. This is trivial as it just means getting substrings from the whole text, as delimited by each range.
+▶️ (3) **assign text values** to each merged range (via `ItemComposer`). This is trivial as it just means getting substrings from the whole text, as delimited by each range.
 
-▶️ (4) **build a text tree**: this tree is built from a blank root node, having in a single branch descendant nodes corresponding to the merged ranges. The first range is child of the blank root node, and each following range is child of the previous one.
+▶️ (4) **build a text tree**: this tree is built (via `ItemComposer`) starting from a blank root node, having in a single branch descendant nodes corresponding to the merged ranges. The first range is child of the blank root node, and each following range is child of the previous one.
 
 Each node has _payload_ data with this model:
 

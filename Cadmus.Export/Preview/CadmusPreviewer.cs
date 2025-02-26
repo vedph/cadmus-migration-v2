@@ -16,7 +16,6 @@ public sealed class CadmusPreviewer
 {
     private readonly ICadmusRepository? _repository;
     private readonly CadmusPreviewFactory _factory;
-    private TextBlockBuilder? _blockBuilder;
     // cache
     private readonly Dictionary<string, IJsonRenderer> _jsonRenderers;
     private readonly Dictionary<string, ITextPartFlattener> _flatteners;
@@ -291,9 +290,9 @@ public sealed class CadmusPreviewer
 
         // get the flattener for that type ID
         ITextPartFlattener? flattener;
-        if (_flatteners.ContainsKey(typeId))
+        if (_flatteners.TryGetValue(typeId, out ITextPartFlattener? value))
         {
-            flattener = _flatteners[typeId];
+            flattener = value;
         }
         else
         {

@@ -226,6 +226,61 @@ public abstract class ItemComposer
     }
 
     /// <summary>
+    /// Maps the non printable ASCII characters in the specified text to
+    /// the corresponding Unicode control pictures or other iconic symbols.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    /// <param name="mapSpace">if set to <c>true</c> include also space in
+    /// mapping.</param>
+    /// <param name="uniCtlPicturesOnly">if set to <c>true</c> use Unicode
+    /// control pictures only (range U+2400-).</param>
+    /// <returns>Mapped string or null when a null was received.</returns>
+    public static string? MapNonPrintables(string? text,
+        bool mapSpace = false, bool uniCtlPicturesOnly = false)
+    {
+        if (text == null) return null;
+
+        StringBuilder sb = new(text.Length);
+        foreach (char c in text)
+        {
+            if (c < 32 || c == 127)
+            {
+                char u = c == 0x7f ? '\u2421' : (char)(c - 32 + 0x2400);
+                if (c != ' ' && uniCtlPicturesOnly)
+                {
+                    sb.Append(u);
+                    continue;
+                }
+
+                switch (c)
+                {
+                    case ' ':
+                        if (mapSpace) sb.Append(mapSpace ? '\u00B7' : ' ');
+                        else sb.Append(' ');
+                        break;
+                    case '\t':
+                        sb.Append('\u2192');
+                        break;
+                    case '\r':
+                        sb.Append('\u23CE');
+                        break;
+                    case '\n':
+                        sb.Append('\u21B5');
+                        break;
+                    default:
+                        sb.Append(u);
+                        break;
+                }
+            }
+            else
+            {
+                sb.Append(c);
+            }
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
     /// Builds a tree from the received ranges. The tree has a blank root node,
     /// and each range is a child of the previous one.
     /// </summary>
@@ -241,10 +296,13 @@ public abstract class ItemComposer
 
         TreeNode<TextSpanPayload> root = new();
         TreeNode<TextSpanPayload> node = root;
+        int n = 0;
         foreach (FragmentTextRange range in ranges)
         {
             TreeNode<TextSpanPayload> child = new()
             {
+                Id = $"{++n}",
+                Label = MapNonPrintables(range.Text),
                 Data = new TextSpanPayload(range)
                 {
                     IsBeforeEol = range.End + 1 < text.Length &&
