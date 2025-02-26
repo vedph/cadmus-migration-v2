@@ -34,7 +34,7 @@
 		<PackageReference Include="Cadmus.Mongo" Version="8.0.6" />
 		<PackageReference Include="Cadmus.Philology.Parts" Version="9.0.3" />
 		<PackageReference Include="Fusi.Microsoft.Extensions.Configuration.InMemoryJson" Version="4.0.0" />
-		<PackageReference Include="Fusi.Tools.Configuration" Version="6.0.0" />
+		<PackageReference Include="Fusi.Tools.Configuration" Version="6.0.1" />
 		<PackageReference Include="Fusi.Xml" Version="5.0.0" />
 		<PackageReference Include="Fusi.Xml.Extras" Version="5.0.0" />
 		<PackageReference Include="JmesPath.Net" Version="1.0.330" />
