@@ -80,13 +80,6 @@ public sealed class TeiStandoffTextTreeRenderer : TextTreeRenderer,
         return sb.ToString();
     }
 
-    //private static string GetLayerIdPrefix(string id)
-    //{
-    //    int i = id.Length;
-    //    while (i > 0 && (id[i - 1] >= '0' && id[i - 1] <= '9')) i--;
-    //    return id[0..i];
-    //}
-
     private void RenderRowText(int y, TextBlockRow row, StringBuilder text,
         IRendererContext context)
     {
