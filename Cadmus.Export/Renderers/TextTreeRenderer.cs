@@ -4,7 +4,7 @@ using Cadmus.Core;
 using Cadmus.Export.Filters;
 using Fusi.Tools.Data;
 
-namespace Cadmus.Export;
+namespace Cadmus.Export.Renderers;
 
 /// <summary>
 /// Base class for <see cref="ITextTreeRenderer"/> implementations.

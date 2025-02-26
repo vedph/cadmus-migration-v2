@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
 using System.Linq;
+using Cadmus.Export.Renderers;
 
 namespace Cadmus.Export.ML;
 

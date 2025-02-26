@@ -1,8 +1,6 @@
-﻿using Cadmus.Export.Filters;
-using Fusi.Tools.Configuration;
-using System.Collections.Generic;
+﻿using Fusi.Tools.Configuration;
 
-namespace Cadmus.Export;
+namespace Cadmus.Export.Renderers;
 
 /// <summary>
 /// Null JSON renderer. This just returns the received JSON, and can be
@@ -20,7 +18,7 @@ public sealed class NullJsonRenderer : JsonRenderer, IJsonRenderer
     /// </summary>
     public NullJsonRenderer()
     {
-        Filters = new List<IRendererFilter>();
+        Filters = [];
     }
 
     /// <summary>
@@ -30,8 +28,5 @@ public sealed class NullJsonRenderer : JsonRenderer, IJsonRenderer
     /// <param name="context">The optional renderer context.</param>
     /// <returns>Rendered output.</returns>
     protected override string DoRender(string json,
-        IRendererContext? context = null)
-    {
-        return json ?? "";
-    }
+        IRendererContext? context = null) => json ?? "";
 }

@@ -1,4 +1,5 @@
 ﻿using Cadmus.Export.Filters;
+using Cadmus.Export.Renderers;
 using Cadmus.General.Parts;
 using System.Collections.Generic;
 using System.Linq;

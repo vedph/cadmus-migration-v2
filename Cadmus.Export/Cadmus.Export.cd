@@ -11,13 +11,12 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAgQAAQAAABAACAAAQEAAAQAAABAAAEAAAAKACBAAEE=</HashCode>
+      <HashCode>AAgQAAQAAABAACAAAQEAAAQAAABAAAEAAAAKACAAAEE=</HashCode>
       <FileName>Preview\CadmusPreviewer.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
       <Field Name="_repository" />
       <Field Name="_factory" />
-      <Field Name="_blockBuilder" />
     </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Field Name="_jsonRenderers" />
@@ -27,14 +26,13 @@
   <Class Name="Cadmus.Export.Preview.CadmusPreviewFactory">
     <Position X="0.5" Y="0.5" Width="2" />
     <Members>
-      <Method Name="CadmusPreviewFactory" Hidden="true" />
       <Method Name="CollectKeys" Hidden="true" />
     </Members>
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>EAAAAAAAAAACAAAAAAAAAgUAAAYAAAAEACAACCAANAE=</HashCode>
+      <HashCode>EAAAAAAAAAAIAAAAAAAAAgUAAAYAAAAkACEACCAAJAE=</HashCode>
       <FileName>Preview\CadmusPreviewFactory.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -82,71 +80,19 @@
       <Method Name="GetIndexFromPoint" Hidden="true" />
       <Method Name="GetRangeFromLoc" Hidden="true" />
       <Method Name="LocateTokenEnd" Hidden="true" />
-      <Method Name="TokenTextPartFlattener" Hidden="true" />
     </Members>
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAEAAQAAABAAAAAgCAAAAAgAAAAAACQAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAEAAQAAAAAAAAAQAAAAAAgAAAAAAAQAAA=</HashCode>
       <FileName>TokenTextPartFlattener.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
-  <Class Name="Cadmus.Export.TokenTextPartFlattenerOptions">
-    <Position X="3" Y="8" Width="2" />
-    <Compartments>
-      <Compartment Name="Methods" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>TokenTextPartFlattener.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Cadmus.Export.XsltJsonRenderer">
-    <Position X="7" Y="4.5" Width="1.75" />
-    <Members>
-      <Method Name="XsltJsonRenderer" Hidden="true" />
-    </Members>
-    <Compartments>
-      <Compartment Name="Fields" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAQAQAAAAAABAAAAAAAAAgAAEgAAAgAAAAAA=</HashCode>
-      <FileName>XsltJsonRenderer.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsAssociation>
-      <Field Name="_transformer" />
-    </ShowAsAssociation>
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="Fusi.Xml.Extras.Render.XsltTransformer" Collapsed="true">
     <Position X="7" Y="6.75" Width="1.75" />
     <TypeIdentifier />
-  </Class>
-  <Class Name="Cadmus.Export.NullJsonRenderer">
-    <Position X="9.25" Y="4.5" Width="1.75" />
-    <Members>
-      <Method Name="NullJsonRenderer" Hidden="true" />
-    </Members>
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
-      <FileName>NullJsonRenderer.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
-  <Class Name="Cadmus.Export.JsonRenderer">
-    <Position X="8" Y="2" Width="1.5" />
-    <Members>
-      <Method Name="JsonRenderer" Hidden="true" />
-    </Members>
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAgAAAABAAAAAAAAA=</HashCode>
-      <FileName>JsonRenderer.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsCollectionAssociation>
-      <Property Name="Filters" />
-    </ShowAsCollectionAssociation>
   </Class>
   <Class Name="Cadmus.Export.MongoItemIdCollector">
     <Position X="13.5" Y="11.5" Width="2" />
@@ -172,37 +118,13 @@
       <FileName>MongoItemIdCollector.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Cadmus.Export.PlainTextBlockRenderer">
-    <Position X="5.25" Y="10" Width="2" />
-    <Members>
-      <Method Name="PlainTextBlockRenderer" Hidden="true" />
-    </Members>
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAQAAAAAAAABAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
-      <FileName>PlainTextBlockRenderer.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsAssociation>
-      <Field Name="_options" />
-    </ShowAsAssociation>
-    <Lollipop Position="0.2" />
-  </Class>
-  <Class Name="Cadmus.Export.PlainTextBlockRendererOptions">
-    <Position X="8.25" Y="10" Width="1.5" />
-    <Compartments>
-      <Compartment Name="Methods" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAIA=</HashCode>
-      <FileName>PlainTextBlockRenderer.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="Cadmus.Export.RendererContext">
     <Position X="13" Y="7" Width="1.5" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AgAAgAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AgAAgAIACAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>RendererContext.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -224,7 +146,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AQAKAYgIEgoAIAAQAjAMEACAiAAAAABAAIEAABCICAQ=</HashCode>
+      <HashCode>AQAKAYgIEgoAIAAQAjAMEACAiAAAAABCAIEAABCICAQ=</HashCode>
       <FileName>ItemComposer.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -377,14 +299,14 @@
   <Interface Name="Cadmus.Export.ITextTreeRenderer">
     <Position X="7" Y="8" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAABAAAACAAgAIAAAAAAAAAABAAAAAAAAA=</HashCode>
       <FileName>ITextTreeRenderer.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Cadmus.Export.ITextPartFlattener">
     <Position X="0.75" Y="5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>ITextPartFlattener.cs</FileName>
     </TypeIdentifier>
   </Interface>
@@ -395,7 +317,7 @@
   <Interface Name="Cadmus.Export.IItemComposer">
     <Position X="10.5" Y="7" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAIAAEgIAIAAAAAAIAACAAAAAAAAAAAAAABCACAA=</HashCode>
+      <HashCode>AAAAAIAAEgIAIAAAAAAIAACAgAAAAAACAAAAABCACAA=</HashCode>
       <FileName>IItemComposer.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>

@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace Cadmus.Export;
+namespace Cadmus.Export.Renderers;
 
 /// <summary>
 /// XSLT based JSON renderer. This is one of the most customizable renderers,

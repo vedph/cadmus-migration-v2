@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Cadmus.Export.Filters;
 
-namespace Cadmus.Export;
+namespace Cadmus.Export.Renderers;
 
 /// <summary>
 /// Base class for <see cref="IJsonRenderer"/>'s.
@@ -11,15 +11,7 @@ public abstract class JsonRenderer
     /// <summary>
     /// Gets the optional filters to apply after the renderer completes.
     /// </summary>
-    public IList<IRendererFilter> Filters { get; init; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="JsonRenderer"/> class.
-    /// </summary>
-    protected JsonRenderer()
-    {
-        Filters = new List<IRendererFilter>();
-    }
+    public IList<IRendererFilter> Filters { get; init; } = [];
 
     /// <summary>
     /// Renders the specified JSON code.
