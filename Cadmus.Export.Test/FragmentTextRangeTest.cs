@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Cadmus.Export.Test;
 
-public sealed class MergedTextRangeSetTest
+public sealed class FragmentTextRangeTest
 {
     private static List<FragmentTextRange> GetRangesWithSingleFr()
     {

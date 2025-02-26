@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Xml.Linq;
 using Xunit;
 
-namespace Cadmus.Export.Test;
+namespace Cadmus.Export.Test.Renderers;
 
 public sealed class XsltJsonRendererTest
 {
