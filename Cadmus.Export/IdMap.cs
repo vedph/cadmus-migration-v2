@@ -36,34 +36,30 @@ public class IdMap
     /// <summary>
     /// Maps the source identifier into a unique number.
     /// </summary>
-    /// <param name="prefix">The prefix. This usually corresponds to a GUID,
-    /// e.g. a layer part ID for fragments, a text part ID for text segments,
-    /// etc.
+    /// <param name="id">The source ID. This usually corresponds to a GUID
+    /// prefix, e.g. a layer part ID for fragments, a text part ID for text segments,
+    /// etc.; plus a suffix which is a scoped identifier in the context of the prefix,
+    /// separated by an underscore, e.g. the fragment index in its layer part,
+    /// or the node ID in a linear tree representing an item's base text.</param>
     /// </param>
-    /// <param name="suffix">The suffix. This usually is a scoped identifier
-    /// in the context of the prefix, e.g. the fragment index in its layer part,
-    /// the node ID in a linear tree representing an item's base text, etc.</param>
     /// <returns>The number.</returns>
     /// <exception cref="ArgumentNullException">prefix or suffix</exception>
-    public int MapSourceId(string prefix, string suffix)
+    public int MapSourceId(string id)
     {
-        ArgumentNullException.ThrowIfNull(prefix);
-        ArgumentNullException.ThrowIfNull(suffix);
-
-        string key = prefix + "_" + suffix;
+        ArgumentNullException.ThrowIfNull(id);
 
         lock (_sourceMap)
         {
-            TrieNode? id = _sourceMap.Get(key);
-            if (id == null)
+            TrieNode? node = _sourceMap.Get(id);
+            if (node == null)
             {
                 int newId = Interlocked.Increment(ref _maxId);
-                _sourceMap.Add(key, newId);
-                _targetMap[newId] = key;
+                _sourceMap.Add(id, newId);
+                _targetMap[newId] = id;
                 return newId;
             }
 
-            return (int)id.Data!;
+            return (int)node.Data!;
         }
     }
 

@@ -13,7 +13,7 @@ public sealed class IdMapTest
     {
         IdMap map = new();
 
-        int id = map.MapSourceId("prefix", "suffix");
+        int id = map.MapSourceId("prefix_suffix");
 
         Assert.Equal(1, id);
         Assert.Equal(1, map.Count);
@@ -23,9 +23,9 @@ public sealed class IdMapTest
     public void Map_ReturnsSameId_WhenAlreadyMapped()
     {
         IdMap map = new();
-        int id1 = map.MapSourceId("prefix", "suffix");
+        int id1 = map.MapSourceId("prefix_suffix");
 
-        int id2 = map.MapSourceId("prefix", "suffix");
+        int id2 = map.MapSourceId("prefix_suffix");
 
         Assert.Equal(id1, id2);
         Assert.Equal(1, map.Count);
@@ -36,9 +36,9 @@ public sealed class IdMapTest
     {
         IdMap map = new();
 
-        int id1 = map.MapSourceId("prefix1", "suffix1");
-        int id2 = map.MapSourceId("prefix1", "suffix2");
-        int id3 = map.MapSourceId("prefix2", "suffix1");
+        int id1 = map.MapSourceId("prefix1_suffix1");
+        int id2 = map.MapSourceId("prefix1_suffix2");
+        int id3 = map.MapSourceId("prefix2_suffix1");
 
         Assert.Equal(1, id1);
         Assert.Equal(2, id2);
@@ -60,7 +60,7 @@ public sealed class IdMapTest
     public void GetSourceId_ReturnsSourceKey_WhenIdExists()
     {
         IdMap map = new();
-        int id = map.MapSourceId("prefix", "suffix");
+        int id = map.MapSourceId("prefix_suffix");
 
         string? source = map.GetSourceId(id);
 
@@ -71,7 +71,7 @@ public sealed class IdMapTest
     public void Reset_ClearsMap()
     {
         IdMap map = new();
-        map.MapSourceId("prefix", "suffix");
+        map.MapSourceId("prefix_suffix");
         Assert.Equal(1, map.Count);
 
         map.Reset();
@@ -84,38 +84,29 @@ public sealed class IdMapTest
     public void Reset_WithSeed_ResetsCounter()
     {
         IdMap map = new();
-        map.MapSourceId("prefix1", "suffix1");
+        map.MapSourceId("prefix1_suffix1");
 
         map.Reset(seed: true);
-        int newId = map.MapSourceId("prefix2", "suffix2");
+        int newId = map.MapSourceId("prefix2_suffix2");
 
         Assert.Equal(1, newId);
     }
 
     [Fact]
-    public void MapSourceId_ThrowsArgumentNullException_WhenPrefixIsNull()
+    public void MapSourceId_ThrowsArgumentNullException_WhenIdIsNull()
     {
         IdMap map = new();
 
         Assert.Throws<ArgumentNullException>(() =>
-            map.MapSourceId(null!, "suffix"));
-    }
-
-    [Fact]
-    public void MapSourceId_ThrowsArgumentNullException_WhenSuffixIsNull()
-    {
-        IdMap map = new();
-
-        Assert.Throws<ArgumentNullException>(() =>
-            map.MapSourceId("prefix", null!));
+            map.MapSourceId(null!));
     }
 
     [Fact]
     public void ToString_ReturnsExpectedFormat()
     {
         IdMap map = new();
-        map.MapSourceId("prefix1", "suffix1");
-        map.MapSourceId("prefix2", "suffix2");
+        map.MapSourceId("prefix1_suffix1");
+        map.MapSourceId("prefix2_suffix2");
 
         string result = map.ToString();
 
@@ -130,7 +121,7 @@ public sealed class IdMapTest
         const string prefix = "prefix";
 
         Task<int>[] tasks = [.. Enumerable.Range(0, iterationCount)
-            .Select(i => Task.Run(() => map.MapSourceId(prefix, i.ToString())))];
+            .Select(i => Task.Run(() => map.MapSourceId($"{prefix}_{i}")))];
 
         await Task.WhenAll(tasks);
 
