@@ -157,8 +157,13 @@ public abstract class ItemComposer
     /// a new one.</param>
     /// <remarks>This base implementation resets the internal state and
     /// <see cref="Context"/>, and sets <see cref="Output"/>.</remarks>
+    /// <exception cref="InvalidOperationException">text tree renderer not set
+    /// </exception>
     public virtual void Open(ItemComposition? output = null)
     {
+        if (TextTreeRenderer == null)
+            throw new InvalidOperationException("Text tree renderer not set");
+
         // reset state
         _externalOutput = output != null;
         _lastGroupId = null;
@@ -172,6 +177,10 @@ public abstract class ItemComposer
 
         // set output
         Output = output ?? new ItemComposition();
+
+        // render head
+        string head = TextTreeRenderer.RenderHead(Context);
+        if (!string.IsNullOrEmpty(head)) WriteOutput("head", head);
     }
 
     /// <summary>
@@ -341,8 +350,10 @@ public abstract class ItemComposer
         Context.Data[M_ITEM_ID] = item.Id;
         Context.Data[M_ITEM_TITLE] = item.Title;
         Context.Data[M_ITEM_FACET] = item.FacetId;
-        if (item.GroupId != null) Context.Data[M_ITEM_GROUP] = item.GroupId;
         Context.Data[M_ITEM_FLAGS] = item.Flags;
+
+        if (item.GroupId != null) Context.Data[M_ITEM_GROUP] = item.GroupId;
+        else Context.Data.Remove(M_ITEM_GROUP);
 
         // apply renderer context suppliers
         foreach (IRendererContextSupplier supplier in ContextSuppliers)
@@ -368,6 +379,10 @@ public abstract class ItemComposer
     /// </remarks>
     public virtual void Close()
     {
+        // render tail
+        string tail = TextTreeRenderer!.RenderTail(Context);
+        if (!string.IsNullOrEmpty(tail)) WriteOutput("tail", tail);
+
         if (!_externalOutput && Output != null)
         {
             Output.Dispose();

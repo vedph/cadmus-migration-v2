@@ -1,8 +1,10 @@
-﻿using Cadmus.Export.Filters;
+﻿using Cadmus.Core;
+using Cadmus.Export.Filters;
 using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
+using Fusi.Tools.Text;
 using MongoDB.Driver;
 using Proteus.Text.Xml;
 using System;
@@ -23,6 +25,9 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     ITextTreeRenderer,
     IConfigurable<AppLinearTextTreeRendererOptions>
 {
+    private int _group;
+    private string? _pendingGroupId;
+
     /// <summary>
     /// The context block type data key to retrieve it from the context data.
     /// </summary>
@@ -44,6 +49,30 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     public void Configure(AppLinearTextTreeRendererOptions options)
     {
         _options = options ?? new AppLinearTextTreeRendererOptions();
+    }
+
+    /// <summary>
+    /// Resets the state of this renderer. This is called once before
+    /// starting the rendering process.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    public override void Reset(IRendererContext context)
+    {
+        _group = 0;
+        _pendingGroupId = null;
+    }
+
+    /// <summary>
+    /// Called when items group has changed.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="prevGroupId">The previous group identifier.</param>
+    /// <param name="context">The context.</param>
+    public override void OnGroupChanged(IItem item, string? prevGroupId,
+        IRendererContext context)
+    {
+        _group++;
+        _pendingGroupId = item.GroupId;
     }
 
     private void AddWitDetail(string segName, string? segId, string detail,
@@ -204,19 +233,53 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             return true;
         });
 
-        if (_options.IsRootIncluded)
-        {
-            return root.ToString(_options.IsIndented
+        string xml = _options.IsRootIncluded
+            ? root.ToString(_options.IsIndented
                 ? SaveOptions.OmitDuplicateNamespaces
                 : SaveOptions.OmitDuplicateNamespaces |
-                  SaveOptions.DisableFormatting);
-        }
-
-        return string.Concat(root.Nodes().Select(
+                  SaveOptions.DisableFormatting)
+            : string.Concat(root.Nodes().Select(
             node => node.ToString(_options.IsIndented
             ? SaveOptions.OmitDuplicateNamespaces
             : SaveOptions.OmitDuplicateNamespaces |
                 SaveOptions.DisableFormatting)));
+
+        // if there is a pending group ID:
+        // - if there is a current group, prepend tail.
+        // - prepend head.
+        if (_pendingGroupId != null)
+        {
+            if (_group > 0 && !string.IsNullOrEmpty(_options.GroupTailTemplate))
+            {
+                xml = TextTemplate.FillTemplate(
+                    _options.GroupTailTemplate, context.Data) + xml;
+            }
+            if (!string.IsNullOrEmpty(_options.GroupHeadTemplate))
+            {
+                xml = TextTemplate.FillTemplate(
+                    _options.GroupHeadTemplate, context.Data) + xml;
+            }
+        }
+
+        return xml;
+    }
+
+    /// <summary>
+    /// Renders the tail of the output. This is called by the item composer
+    /// once when ending the rendering process and can be used to output
+    /// specific content at the document's end.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <returns>Tail content.</returns>
+    public override string RenderTail(IRendererContext context)
+    {
+        // close a group if any
+        if (_group > 0 && !string.IsNullOrEmpty(_options.GroupTailTemplate))
+        {
+            return TextTemplate.FillTemplate(
+                _options.GroupTailTemplate, context.Data);
+        }
+        return "";
     }
 }
 
@@ -264,6 +327,18 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
     /// omission. If null, no attribute will be added. The default is null.
     /// </summary>
     public string? ZeroVariantType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the head code template to be rendered at the start of the
+    /// each group of items.
+    /// </summary>
+    public string? GroupHeadTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the tail code template to be rendered at the end of each
+    /// group of items.
+    /// </summary>
+    public string? GroupTailTemplate { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the
