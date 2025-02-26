@@ -2,6 +2,7 @@
 using Cadmus.Core.Storage;
 using Fusi.Tools;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Cadmus.Export;
@@ -11,6 +12,8 @@ namespace Cadmus.Export;
 /// </summary>
 public class RendererContext : DataDictionary, IRendererContext
 {
+    private readonly ConcurrentDictionary<string, int> _counters = [];
+
     /// <summary>
     /// Gets or sets the item being rendered.
     /// </summary>
@@ -34,11 +37,24 @@ public class RendererContext : DataDictionary, IRendererContext
     /// seeds.</param>
     public virtual void Clear(bool seeds = false)
     {
-        foreach (IdMap map in IdMaps.Values) map.Reset(seeds);
-
         Item = null;
         Data.Clear();
+
+        foreach (IdMap map in IdMaps.Values) map.Reset(seeds);
+        _counters.Clear();
         LayerPartTypeIds.Clear();
+    }
+
+    /// <summary>
+    /// Gets the next autonumber identifier for the specified key.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <returns>The next autonumber ID.</returns>
+    /// <exception cref="ArgumentNullException">key</exception>
+    public int GetNextIdFor(string key)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        return _counters.AddOrUpdate(key, 1, (_, v) => v + 1);
     }
 
     /// <summary>

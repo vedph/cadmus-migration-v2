@@ -64,29 +64,6 @@ public abstract class TextTreeRenderer : IHasRendererFilters
     }
 
     /// <summary>
-    /// Gets the next identifier for the specified key. The identifier is
-    /// used to build progressively unique identifiers for some rendered
-    /// elements.
-    /// </summary>
-    /// <param name="key">The identifier key.</param>
-    /// <param name="context">The context to use.</param>
-    /// <returns>ID value.</returns>
-    protected static int GetNextIdFor(string key, IRendererContext context)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(context);
-
-        if (!context.Data.TryGetValue(key, out object? value))
-        {
-            context.Data[key] = 1;
-            return 1;
-        }
-        int id = (int)value;
-        context.Data[key] = id + 1;
-        return id;
-    }
-
-    /// <summary>
     /// Renders the specified JSON code.
     /// </summary>
     /// <param name="tree">The root node of the text tree.</param>

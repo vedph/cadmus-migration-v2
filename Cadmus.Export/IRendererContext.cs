@@ -58,4 +58,18 @@ public interface IRendererContext : IHasDataDictionary
     /// extracting text from a fragment's location.
     /// </summary>
     ICadmusRepository? Repository { get; set; }
+
+    /// <summary>
+    /// Clears this context.
+    /// </summary>
+    /// <param name="seeds">if set to <c>true</c> also reset the ID maps
+    /// seeds.</param>
+    void Clear(bool seeds = false);
+
+    /// <summary>
+    /// Gets the next autonumber identifier for the specified key.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <returns>The next autonumber ID.</returns>
+    int GetNextIdFor(string key);
 }

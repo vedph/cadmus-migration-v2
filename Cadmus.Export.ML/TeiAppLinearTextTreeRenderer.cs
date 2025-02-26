@@ -38,9 +38,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     /// The key used in the rendering context to keep track of unique identifiers
     /// for segments like <c>lem</c> and <c>rdg</c>.
     /// </summary>
-    public const string CONTEXT_SEG_IDKEY = "seg";
+    public const string CONTEXT_SEG_IDKEY = "text-tree-renderer.tei-app-linear:seg";
 
-    private readonly XNamespace TEI_NS = "http://www.tei-c.org/ns/1.0";
     private AppLinearTextTreeRendererOptions _options = new();
 
     /// <summary>
@@ -80,11 +79,11 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         XElement seg, IRendererContext context)
     {
         // witDetail
-        XElement witDetail = new(TEI_NS + "witDetail", detail);
+        XElement witDetail = new(NamespaceOptions.TEI + "witDetail", detail);
         seg.Add(witDetail);
 
         // @target=segID
-        int targetId = GetNextIdFor(CONTEXT_SEG_IDKEY, context);
+        int targetId = context.GetNextIdFor(CONTEXT_SEG_IDKEY);
         seg.SetAttributeValue(_options.ResolvePrefixedName("xml:id"),
             $"seg{targetId}");
         witDetail.SetAttributeValue("target", $"#seg{targetId}");
@@ -176,7 +175,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             if (node.Data?.HasFeaturesFromFragment(prefix) == true)
             {
                 // app
-                XElement app = new(TEI_NS + "app");
+                XElement app = new(NamespaceOptions.TEI + "app");
                 block.Add(app);
 
                 // for each set (entry) in key order (e000, e001, ...)
@@ -189,12 +188,12 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                     // if there a variant, it's a rdg, else it's a lem
                     XElement seg = (features.Any(f => f.Name ==
                         AppLinearTextTreeFilter.F_APP_E_VARIANT))
-                        ? new XElement(TEI_NS + "rdg")
+                        ? new XElement(NamespaceOptions.TEI + "rdg")
                         {
                             Value = features.First(f => f.Name ==
                                 AppLinearTextTreeFilter.F_APP_E_VARIANT).Value
                         }
-                        : new XElement(TEI_NS + "lem")
+                        : new XElement(NamespaceOptions.TEI + "lem")
                         {
                             Value = node.Data.Text!
                         };
@@ -214,7 +213,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                         f => f.Name == AppLinearTextTreeFilter.F_APP_E_NOTE);
                     if (noteFeature != null)
                     {
-                        XElement note = new(TEI_NS + "note", noteFeature.Value);
+                        XElement note = new(NamespaceOptions.TEI + "note",
+                            noteFeature.Value);
                         app.Add(note);
                     }
                 } // entry
