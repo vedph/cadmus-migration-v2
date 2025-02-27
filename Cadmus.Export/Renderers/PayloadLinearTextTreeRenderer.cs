@@ -14,11 +14,11 @@ namespace Cadmus.Export.Renderers;
 /// This is used for single branch trees and the output is typically targeted
 /// to frontend UI components which should render rows of blocks (or just blocks)
 /// of text with links to fragments.
-/// <para>Tag: <c>text-tree-renderer.payload-linear</c>.</para>
+/// <para>Tag: <c>it.vedph.text-tree-renderer.payload-linear</c>.</para>
 /// </summary>
 /// <seealso cref="TextTreeRenderer" />
 /// <seealso cref="ITextTreeRenderer" />
-[Tag("text-tree-renderer.payload-linear")]
+[Tag("it.vedph.text-tree-renderer.payload-linear")]
 public sealed class PayloadLinearTextTreeRenderer : TextTreeRenderer,
     ITextTreeRenderer, IConfigurable<PayloadLinearTextTreeRendererOptions>
 {

@@ -11,9 +11,9 @@ namespace Cadmus.Import.Proteus;
 
 /// <summary>
 /// Mongo-based Cadmus entry set exporter.
-/// <para>Tag: <c>entry-set-exporter.cadmus.mongo</c>.</para>
+/// <para>Tag: <c>it.vedph.entry-set-exporter.cadmus.mongo</c>.</para>
 /// </summary>
-[Tag("entry-set-exporter.cadmus.mongo")]
+[Tag("it.vedph.entry-set-exporter.cadmus.mongo")]
 public sealed class MongoEntrySetExporter : MongoConsumerBase, IEntrySetExporter,
     IConfigurable<MongoEntrySetExporterOptions>
 {

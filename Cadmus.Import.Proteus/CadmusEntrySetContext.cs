@@ -11,9 +11,9 @@ namespace Cadmus.Import.Proteus;
 /// Cadmus entry set context. This adds a list of imported items to the
 /// base <see cref="EntrySetContext"/>, so that importers can collect items
 /// and their parts.
-/// <para>Tag: <c>entry-set-context.cadmus</c>.</para>
+/// <para>Tag: <c>it.vedph.entry-set-context.cadmus</c>.</para>
 /// </summary>
-[Tag("entry-set-context.cadmus")]
+[Tag("it.vedph.entry-set-context.cadmus")]
 public class CadmusEntrySetContext : EntrySetContext
 {
     /// <summary>

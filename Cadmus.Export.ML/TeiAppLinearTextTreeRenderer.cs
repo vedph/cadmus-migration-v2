@@ -19,10 +19,10 @@ namespace Cadmus.Export.ML;
 
 /// <summary>
 /// TEI linear text tree with single apparatus layer renderer.
-/// <para>Tag: <c>text-tree-renderer.tei-app-linear</c>.</para>
+/// <para>Tag: <c>it.vedph.text-tree-renderer.tei-app-linear</c>.</para>
 /// </summary>
 /// <seealso cref="ITextTreeRenderer" />
-[Tag("text-tree-renderer.tei-app-linear")]
+[Tag("it.vedph.text-tree-renderer.tei-app-linear")]
 public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     ITextTreeRenderer,
     IConfigurable<AppLinearTextTreeRendererOptions>

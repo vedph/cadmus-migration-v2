@@ -13,10 +13,10 @@ namespace Cadmus.Export.Filters;
 /// A text tree filter which uses the apparatus part of the item (with
 /// <see cref="ApparatusLayerFragment"/>s), if any, to modify text and features
 /// of a linear tree.
-/// <para>Tag: <c>text-tree-filter.apparatus-linear</c>.</para>
+/// <para>Tag: <c>it.vedph.text-tree-filter.apparatus-linear</c>.</para>
 /// </summary>
 /// <seealso cref="ITextTreeFilter" />
-[Tag("text-tree-filter.apparatus-linear")]
+[Tag("it.vedph.text-tree-filter.apparatus-linear")]
 public sealed class AppLinearTextTreeFilter : ITextTreeFilter
 {
     /// <summary>

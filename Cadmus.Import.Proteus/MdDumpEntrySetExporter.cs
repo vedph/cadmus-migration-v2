@@ -16,9 +16,9 @@ namespace Cadmus.Import.Proteus;
 /// <summary>
 /// Markdown dump entry set exporter. This exporter dumps the entry set
 /// into a set of output files.
-/// <para>Tag: <c>entry-set-exporter.cadmus.md-dump</c>.</para>
+/// <para>Tag: <c>it.vedph.entry-set-exporter.cadmus.md-dump</c>.</para>
 /// </summary>
-[Tag("entry-set-exporter.cadmus.md-dump")]
+[Tag("it.vedph.entry-set-exporter.cadmus.md-dump")]
 public sealed class MdDumpEntrySetExporter : IEntrySetExporter,
     IConfigurable<MdDumpEntrySetExporterOptions>
 {
@@ -27,7 +27,6 @@ public sealed class MdDumpEntrySetExporter : IEntrySetExporter,
     private MdDumpEntrySetExporterOptions _options;
     private TextWriter? _writer;
     private DecodedEntryDumper? _dumper;
-    // private readonly JsonSerializerOptions _jsonOptions;
     private readonly JsonSerializerSettings _jsonSettings;
 
     /// <summary>
@@ -37,12 +36,6 @@ public sealed class MdDumpEntrySetExporter : IEntrySetExporter,
     public MdDumpEntrySetExporter()
     {
         _options = new();
-        //_jsonOptions = new JsonSerializerOptions
-        //{
-        //    WriteIndented = true,
-        //    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        //    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        //};
         _jsonSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
@@ -132,8 +125,6 @@ public sealed class MdDumpEntrySetExporter : IEntrySetExporter,
 
                     if (_options.JsonParts)
                     {
-                        //string json = JsonSerializer.Serialize((object)part,
-                        //    _jsonOptions);
                         string json = JsonConvert.SerializeObject(part,
                             _jsonSettings);
                         _writer.WriteLine();

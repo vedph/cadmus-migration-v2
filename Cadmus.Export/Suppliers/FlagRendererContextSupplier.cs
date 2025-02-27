@@ -9,10 +9,10 @@ namespace Cadmus.Export.Suppliers;
 /// Flag renderer context supplier. This inspects the item's flags from
 /// the received context, and for each flag bitvalue on/off and mapped in its
 /// configuration it supplies a name=value pair to the context data.
-/// <para>Tag: <c>renderer-context-supplier.flag</c>.</para>
+/// <para>Tag: <c>it.vedph.renderer-context-supplier.flag</c>.</para>
 /// </summary>
 /// <seealso cref="IRendererContextSupplier" />
-[Tag("renderer-context-supplier.flag")]
+[Tag("it.vedph.renderer-context-supplier.flag")]
 public sealed class FlagRendererContextSupplier : IRendererContextSupplier,
     IConfigurable<FlagRendererContextSupplierOptions>
 {

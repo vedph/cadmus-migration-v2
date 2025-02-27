@@ -13,9 +13,10 @@ namespace Cadmus.Export.Filters;
 /// a new node with text past LF is added if this text is not empty, and this
 /// new right-half node becomes the child of the left-half node and the parent
 /// of what was the child of the original node.
+/// <para>Tag: <c>it.vedph.text-tree-filter.block-linear</c>.</para>
 /// </summary>
 /// <seealso cref="ITextTreeFilter" />
-[Tag("text-tree-filter.block-linear")]
+[Tag("it.vedph.text-tree-filter.block-linear")]
 public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
 {
     private static TreeNode<TextSpanPayload> SplitNode(
