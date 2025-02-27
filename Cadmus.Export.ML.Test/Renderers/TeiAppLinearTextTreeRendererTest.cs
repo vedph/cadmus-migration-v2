@@ -1,10 +1,11 @@
 ﻿using Cadmus.Core;
 using Cadmus.Export.Filters;
+using Cadmus.Export.ML.Renderers;
 using Cadmus.Export.Test.Filters;
 using Fusi.Tools.Data;
 using Xunit;
 
-namespace Cadmus.Export.ML.Test;
+namespace Cadmus.Export.ML.Test.Renderers;
 
 public sealed class TeiAppLinearTextTreeRendererTest
 {

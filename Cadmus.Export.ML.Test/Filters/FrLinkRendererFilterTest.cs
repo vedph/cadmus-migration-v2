@@ -1,6 +1,7 @@
-﻿using Xunit;
+﻿using Cadmus.Export.ML.Filters;
+using Xunit;
 
-namespace Cadmus.Export.ML.Test;
+namespace Cadmus.Export.ML.Test.Filters;
 
 public sealed class FrLinkRendererFilterTest
 {

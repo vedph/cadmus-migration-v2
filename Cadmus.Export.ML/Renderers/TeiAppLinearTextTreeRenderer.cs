@@ -15,7 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace Cadmus.Export.ML;
+namespace Cadmus.Export.ML.Renderers;
 
 /// <summary>
 /// TEI linear text tree with single apparatus layer renderer.
@@ -184,8 +184,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                         node.Data.FeatureSets[entryKey].Features;
 
                     // if there a variant, it's a rdg, else it's a lem
-                    XElement lemOrRdg = (features.Any(f => f.Name ==
-                        AppLinearTextTreeFilter.F_APP_E_VARIANT))
+                    XElement lemOrRdg = features.Any(f => f.Name ==
+                        AppLinearTextTreeFilter.F_APP_E_VARIANT)
                         ? new XElement(NamespaceOptions.TEI + "rdg")
                         {
                             Value = features.First(f => f.Name ==

@@ -5,14 +5,13 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
-using System.Linq;
 using Cadmus.Export.Renderers;
 using Proteus.Core.Text;
 using Fusi.Tools.Data;
 using Cadmus.General.Parts;
 using Cadmus.Core;
 
-namespace Cadmus.Export.ML;
+namespace Cadmus.Export.ML.Renderers;
 
 /// <summary>
 /// JSON renderer for standoff TEI apparatus layer part. This works in tandem
@@ -22,7 +21,7 @@ namespace Cadmus.Export.ML;
 /// <seealso cref="JsonRenderer" />
 /// <seealso cref="IJsonRenderer" />
 [Tag("it.vedph.json-renderer.tei-off.apparatus")]
-public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
+public sealed class TeiOffApparatusJsonRenderer : MLJsonRenderer,
     IJsonRenderer, IConfigurable<AppLinearTextTreeRendererOptions>
 {
     private readonly JsonSerializerOptions _jsonOptions;
@@ -52,56 +51,6 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
     public void Configure(AppLinearTextTreeRendererOptions options)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
-    }
-
-    private static (TreeNode<TextSpanPayload> First, TreeNode<TextSpanPayload> Last)?
-        FindFragmentBounds(string prefix, TreeNode<TextSpanPayload> tree)
-    {
-        // find the first and last nodes having any fragment ID starting with prefix
-        TreeNode<TextSpanPayload>? firstNode = null;
-        TreeNode<TextSpanPayload>? lastNode = null;
-
-        tree.Traverse(node =>
-        {
-            if (node.Data == null) return true;
-            if (node.Data.Range.FragmentIds.Any(s => s.StartsWith(prefix)))
-            {
-                if (firstNode == null)
-                {
-                    firstNode = node;
-                }
-                else
-                {
-                    lastNode = node;
-                    return false;
-                }
-            }
-            return true;
-        });
-
-        return lastNode != null? (firstNode!, lastNode!) : null;
-    }
-
-    private void AddLocToElement(string textPartId,
-        TreeNode<TextSpanPayload> first,
-        TreeNode<TextSpanPayload> last,
-        XElement element)
-    {
-        if (first == last)
-        {
-            int id = _context!.MapSourceId("seg", $"{textPartId}_{first}");
-            element.SetAttributeValue("loc", $"seg{id}");
-        }
-        else
-        {
-            int firstId = _context!.MapSourceId("seg", $"{textPartId}_{first}");
-            int lastId = _context!.MapSourceId("seg", $"{textPartId}_{last}");
-
-            XElement loc = new(NamespaceOptions.TEI + "loc",
-                new XAttribute("spanFrom", $"seg{firstId}"),
-                new XAttribute("spanTo", $"seg{lastId}"));
-            element.Add(loc);
-        }
     }
 
     private void AddWitDetail(string attrName, string? witOrResp, string sourceId,
@@ -183,7 +132,8 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
             app.SetAttributeValue("type", fr.Tag);
 
         // div/app @loc="segID" or loc @spanFrom/spanTo
-        AddLocToElement(textPartId, bounds.Value.First, bounds.Value.Last, app);
+        AddTeiLocToElement(textPartId, bounds.Value.First, bounds.Value.Last, app,
+            _context!);
 
         // for each entry
         int entryIndex = 0;

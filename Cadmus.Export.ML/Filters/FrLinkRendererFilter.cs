@@ -3,7 +3,7 @@ using Fusi.Tools.Configuration;
 using System;
 using System.Text;
 
-namespace Cadmus.Export.ML;
+namespace Cadmus.Export.ML.Filters;
 
 /// <summary>
 /// Fragments links renderer filter. This filter replaces all the fragment
