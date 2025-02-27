@@ -36,6 +36,7 @@ Proteus-based components for importing Cadmus items and parts from sources handl
   - to generate an approximate (richer) equivalent of blocks from linear trees `PayloadLinearTextTreeRenderer` will be used. This will imply refactoring the UI portion consuming blocks.
   - for TEI, a new set of components allow for simple TEI with linear trees with apparatus. Another set of components is planned to replace standoff-TEI with different strategies. Standoff will still be derived from trees, variously filtered, fragmented into ranges linked to zero or more layer fragments. The corresponding standoff entries, rendered by JSON renderers as before, will be referred to the text via a range of ranges: from the first range to the last one connected to each specific layer fragment. To this end we can use a `loc` child element like `<loc spanFrom="#a" spanTo="#c"/>`.
   - the CLI tool infrastructure has been modernized.
+  - component tags have been uniformed to always have the prefix `it.vedph.`.
 
 ---
 
