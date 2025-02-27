@@ -143,7 +143,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
 
         // get the block name
         string blockType = "default";
-        if (context.Data.TryGetValue(XmlTextTreeRendererOptions.CONTEXT_BLOCK_TYPE_KEY,
+        if (context.Data.TryGetValue(
+            XmlTextTreeRendererOptions.CONTEXT_BLOCK_TYPE_KEY,
             out object? value))
         {
             blockType = value as string ?? "default";

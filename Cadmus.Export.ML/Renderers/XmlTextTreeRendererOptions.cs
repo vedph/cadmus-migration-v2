@@ -2,7 +2,7 @@
 using Proteus.Text.Xml;
 using System.Collections.Generic;
 
-namespace Cadmus.Export.ML;
+namespace Cadmus.Export.ML.Renderers;
 
 /// <summary>
 /// Base class for XML text tree renderers options. Usually an XML tree renderer

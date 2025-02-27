@@ -22,7 +22,7 @@ public abstract class MLJsonRenderer : JsonRenderer
     /// <param name="tree">The text tree root node.</param>
     /// <returns>Tuple with first and last node, which might be the same if
     /// the text spans for a single node.</returns>
-    protected static (TreeNode<TextSpanPayload> First, TreeNode<TextSpanPayload> Last)?
+    public static (TreeNode<TextSpanPayload> First, TreeNode<TextSpanPayload> Last)?
         FindFragmentBounds(string prefix, TreeNode<TextSpanPayload> tree)
     {
         // find the first and last nodes having any fragment ID starting with prefix
@@ -62,7 +62,7 @@ public abstract class MLJsonRenderer : JsonRenderer
     /// <param name="context">The rendering context.</param>
     /// <exception cref="ArgumentNullException">any of the arguments is null
     /// </exception>
-    protected static void AddTeiLocToElement(string textPartId,
+    public static void AddTeiLocToElement(string textPartId,
         TreeNode<TextSpanPayload> first,
         TreeNode<TextSpanPayload> last,
         XElement element,
