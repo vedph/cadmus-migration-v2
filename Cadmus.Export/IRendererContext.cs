@@ -1,7 +1,6 @@
 ﻿using Cadmus.Core;
 using Cadmus.Core.Storage;
 using Fusi.Tools;
-using System;
 using System.Collections.Generic;
 
 namespace Cadmus.Export;
@@ -27,29 +26,6 @@ public interface IRendererContext : IHasDataDictionary
     /// Gets the identifier maps used in this context.
     /// </summary>
     IDictionary<string, IdMap> IdMaps { get; }
-
-    /// <summary>
-    /// Gets the layer IDs dictionary, where keys are block layer ID
-    /// prefixes (i.e. part type ID + <c>:</c> + role ID, like
-    /// <c>it.vedph.token-text-layer:fr.it.vedph.comment</c>), and
-    /// values are target IDs. This mapping is used to build fragment IDs
-    /// by mapping each layer to a number unique in the context of each
-    /// item. The mapping lasts for all the duration of the item composition
-    /// procedure.
-    /// </summary>
-    [Obsolete]
-    IDictionary<string, int> LayerIds { get; }
-
-    /// <summary>
-    /// Gets the fragment IDs dictionary, where keys are block layer IDs
-    /// (i.e. part type ID + <c>:</c> + role ID + fragment index, like
-    /// <c>it.vedph.token-text-layer:fr.it.vedph.comment0</c>), and
-    /// values are the corresponding target elements IDs (i.e.
-    /// item number + layer ID + row number + fragment index). The mapping
-    /// is scoped to each item.
-    /// </summary>
-    [Obsolete]
-    IDictionary<string, string> FragmentIds { get; }
 
     /// <summary>
     /// Gets or sets the optional Cadmus repository to be consumed by
@@ -84,6 +60,14 @@ public interface IRendererContext : IHasDataDictionary
     /// <param name="id">The identifier to map.</param>
     /// <returns>Numeric ID.</returns>
     int MapSourceId(string map, string id);
+
+    /// <summary>
+    /// Gets the mapped ID for the specified source ID.
+    /// </summary>
+    /// <param name="map">The ID of the map to use.</param>
+    /// <param name="id">The identifier to find the mapped ID of.</param>
+    /// <returns>Numeric ID or null if not found.</returns>
+    int? GetMappedId(string map, string id);
 
     /// <summary>
     /// Gets the source identifier from its mapped unique number.

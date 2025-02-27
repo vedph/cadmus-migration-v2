@@ -64,6 +64,18 @@ public class IdMap
     }
 
     /// <summary>
+    /// Gets the mapped ID for the specified source ID.
+    /// </summary>
+    /// <param name="id">The identifier to find the mapped ID of.</param>
+    /// <returns>Numeric ID or null if not found.</returns>
+    /// <exception cref="ArgumentNullException">map or id</exception>
+    public int? GetMappedId(string id)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+        return _sourceMap.Get(id)?.Data as int?;
+    }
+
+    /// <summary>
     /// Gets the source identifier from its mapped unique number.
     /// </summary>
     /// <param name="id">The mapped number.</param>

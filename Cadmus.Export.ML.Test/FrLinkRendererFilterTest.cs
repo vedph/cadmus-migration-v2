@@ -4,11 +4,11 @@ namespace Cadmus.Export.ML.Test;
 
 public sealed class FrLinkRendererFilterTest
 {
-    private static IRendererContext GetContext()
+    private static RendererContext GetContext()
     {
         RendererContext context = new();
-        context.FragmentIds["typex:roley@0"] = "1_2_3";
-        context.FragmentIds["typez1"] = "2_4_6";
+        context.MapSourceId("seg", "it.vedph.token-text:fr.it.vedph.apparatus@0");
+        context.MapSourceId("seg", "it.vedph.token-text:fr.it.vedph.apparatus@1");
         return context;
     }
 
@@ -24,15 +24,27 @@ public sealed class FrLinkRendererFilterTest
     }
 
     [Fact]
-    public void Apply_TagsWithoutMatch_Ok()
+    public void Apply_TagsWithoutMatch_Copied()
     {
         FrLinkRendererFilter filter = new();
 
-        string? result = filter.Apply("hello #[typeunknown1]# world",
+        string? result = filter.Apply("hello #[unknown]# world",
             GetContext());
 
         Assert.NotNull(result);
-        Assert.Equal("hello typeunknown1 world", result);
+        Assert.Equal("hello unknown world", result);
+    }
+
+    [Fact]
+    public void Apply_TagsWithoutMatchWithOmit_Omitted()
+    {
+        FrLinkRendererFilter filter = new();
+
+        string? result = filter.Apply("hello #[unknown]# world",
+            GetContext());
+
+        Assert.NotNull(result);
+        Assert.Equal("hello  world", result);
     }
 
     [Fact]
@@ -40,10 +52,11 @@ public sealed class FrLinkRendererFilterTest
     {
         FrLinkRendererFilter filter = new();
 
-        string? result = filter.Apply("hello #[typex:roley@0]# world",
+        string? result = filter.Apply(
+            "hello #[seg/it.vedph.token-text:fr.it.vedph.apparatus@0]# world",
             GetContext());
 
         Assert.NotNull(result);
-        Assert.Equal("hello 1_2_3 world", result);
+        Assert.Equal("hello seg1 world", result);
     }
 }

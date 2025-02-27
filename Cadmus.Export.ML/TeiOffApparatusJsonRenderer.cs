@@ -15,51 +15,9 @@ using Cadmus.Core;
 namespace Cadmus.Export.ML;
 
 /// <summary>
-/// JSON renderer for standoff TEI apparatus layer part.
-/// This provides apparatus fragments entries rendition. Typically, the
-/// TEI apparatus is encoded inside a <c>standOff</c> element in <c>body</c>.
-/// The <c>@type</c> attribute of this element contains the apparatus layer
-/// part role ID (=fragment's type ID).
-/// <para>In <c>standOff</c> there is a <c>div</c> for each item, with
-/// <c>@xml:id</c> equal to the item's ID.</para>
-/// <para>In this <c>div</c>, each fragment is another <c>div</c> with
-/// an optional <c>@type</c> attribute equal to the fragment's tag, when
-/// present.</para>
-/// <para>Each entry in the fragment is an <c>app</c> entry with these
-/// properties (I add to each its corresponding XML rendition):</para>
-/// <list type="bullet">
-/// <item>
-/// <term>type</term>
-/// <description>a <c>rdg</c> child element or a <c>note</c> child element
-/// according to the type.</description>
-/// </item>
-/// <item>
-/// <term>value</term>
-/// <description>the value of <c>rdg</c>/<c>note</c>.</description>
-/// </item>
-/// <item>
-/// <term>tag</term>
-/// <description><c>@type</c> of <c>rdg</c>/<c>note</c>.</description>
-/// </item>
-/// <item>
-/// <term>note</term>
-/// <description>append to <c>note</c> if existing, else add child <c>note</c>
-/// with this content.</description>
-/// </item>
-/// <item>
-/// <term>witnesses</term>
-/// <description><c>@wit</c> of <c>rdg</c>/<c>note</c>.</description>
-/// </item>
-/// <item>
-/// <term>authors</term>
-/// <description><c>@source</c> of <c>rdg</c>/<c>note</c>.</description>
-/// </item>
-/// </list>
-/// <item>
-/// <term>not rendered</term>
-/// <description>normValue, isAccepted, groupId.</description>
-/// </item>
-/// <para>Tag: <c>it.vedph.json-renderer.tei-off.apparatus</c>.</para>
+/// JSON renderer for standoff TEI apparatus layer part. This works in tandem
+/// with <see cref="TeiOffLinearTextTreeRenderer"/>, whose task is building the
+/// base text referenced by the apparatus entries.
 /// </summary>
 /// <seealso cref="JsonRenderer" />
 /// <seealso cref="IJsonRenderer" />

@@ -49,18 +49,6 @@ public abstract class TeiStandoffItemComposer : ItemComposer
         };
     }
 
-    private string BuildLayerIdPrefix(IPart part)
-    {
-        string id = part.TypeId;
-        if (!string.IsNullOrEmpty(part.RoleId)) id += "|" + part.RoleId;
-
-        // save layer ID (1-N)
-        if (!Context.LayerIds.ContainsKey(id))
-            Context.LayerIds[id] = ++_nextLayerId;
-
-        return id;
-    }
-
     /// <summary>
     /// Composes the output from the specified item.
     /// </summary>
@@ -81,11 +69,10 @@ public abstract class TeiStandoffItemComposer : ItemComposer
         // render layers
         foreach (IPart layerPart in GetLayerParts(Context.Item))
         {
-            string id = BuildLayerIdPrefix(layerPart);
+            string id = TextSpanPayload.GetTagAttributeValue(layerPart)!;
 
             if (JsonRenderers.TryGetValue(id, out IJsonRenderer? value))
             {
-                Context.Data[M_LAYER_ID] = Context.LayerIds[id];
                 string json = JsonSerializer.Serialize<object>(layerPart,
                     _jsonOptions);
                 result = value.Render(json, Context);

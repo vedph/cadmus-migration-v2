@@ -9,7 +9,7 @@ namespace Cadmus.Export.ML.Test;
 
 public sealed class TeiStandoffItemComposerTest
 {
-    private static IItem GetItem()
+    private static Item GetItem()
     {
         Item item = new()
         {

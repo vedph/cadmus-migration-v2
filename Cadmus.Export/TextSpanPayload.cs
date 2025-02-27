@@ -87,6 +87,27 @@ public class TextSpanPayload(FragmentTextRange range)
     }
 
     /// <summary>
+    /// Gets the tag attribute of the first item of the Fragments property
+    /// of the layerPart, if any.
+    /// </summary>
+    /// <param name="layerPart">The layer part.</param>
+    /// <returns>Tag attribute value or null if no fragments in part.</returns>
+    public static string? GetTagForPartFragment(IPart layerPart)
+    {
+        // get Fragments array with reflection
+        var fragmentsProp = layerPart.GetType().GetProperty("Fragments");
+        if (fragmentsProp == null) return null;
+
+        // get the first item if any
+        IEnumerable<ITextLayerFragment>? fragments =
+            (IEnumerable<ITextLayerFragment>?)fragmentsProp.GetValue(layerPart);
+        var fr = fragments?.FirstOrDefault();
+
+        // return its tag attribute
+        return fr != null? GetTagAttributeValue(fr) : null;
+    }
+
+    /// <summary>
     /// Gets the fragment ID prefix used in text tree nodes to link fragments.
     /// This is a string like "it.vedph.token-text-layer:fr.it.vedph.comment@".
     /// </summary>
@@ -94,10 +115,12 @@ public class TextSpanPayload(FragmentTextRange range)
     /// <param name="layerFragment">The layer fragment.</param>
     /// <returns>Prefix.</returns>
     public static string GetFragmentPrefixFor(IPart layerPart,
-        ITextLayerFragment layerFragment)
+        ITextLayerFragment layerFragment = null)
     {
         return GetTagAttributeValue(layerPart) + ":" +
-               GetTagAttributeValue(layerFragment) + "@";
+               (layerFragment != null
+                ? GetTagAttributeValue(layerFragment)
+                : GetTagForPartFragment(layerPart)) + "@";
     }
 
     /// <summary>

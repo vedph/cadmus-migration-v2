@@ -65,10 +65,10 @@ The factory used to configure the process is based on a JSON configuration file 
       "Keys": ["..."],
       "Id": "...",
       "Options": {
+        "ContextSupplierKeys": ["..."],
         "TextPartFlattenerKey": "...",
         "TextTreeFilterKeys": ["..."],
         "TextTreeRendererKey": "...",
-        "JsonRendererKeys": ["..."]
       }
     }
   ]

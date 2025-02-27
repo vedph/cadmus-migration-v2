@@ -32,6 +32,14 @@ public class RendererContext : DataDictionary, IRendererContext
         new Dictionary<string, IdMap>();
 
     /// <summary>
+    /// Gets or sets the optional Cadmus repository to be consumed by
+    /// components using this context. Typically this is required by
+    /// some filters, like the one resolving thesauri IDs, or the one
+    /// extracting text from a fragment's location.
+    /// </summary>
+    public ICadmusRepository? Repository { get; set; }
+
+    /// <summary>
     /// Clears this context.
     /// </summary>
     /// <param name="seeds">if set to <c>true</c> also reset the ID maps
@@ -57,6 +65,7 @@ public class RendererContext : DataDictionary, IRendererContext
     public int GetNextIdFor(string categoryKey)
     {
         ArgumentNullException.ThrowIfNull(categoryKey);
+
         return _counters.AddOrUpdate(categoryKey, 1, (_, v) => v + 1);
     }
 
@@ -68,10 +77,30 @@ public class RendererContext : DataDictionary, IRendererContext
     /// <param name="map">The ID of the map to use.</param>
     /// <param name="id">The identifier to map.</param>
     /// <returns>Numeric ID.</returns>
+    /// <exception cref="ArgumentNullException">map or id</exception>
     public int MapSourceId(string map, string id)
     {
+        ArgumentNullException.ThrowIfNull(map);
+        ArgumentNullException.ThrowIfNull(id);
+
         if (!IdMaps.ContainsKey(map)) IdMaps[map] = new IdMap();
         return IdMaps[map].MapSourceId(id);
+    }
+
+    /// <summary>
+    /// Gets the mapped ID for the specified source ID.
+    /// </summary>
+    /// <param name="map">The ID of the map to use.</param>
+    /// <param name="id">The identifier to find the mapped ID of.</param>
+    /// <returns>Numeric ID or null if not found.</returns>
+    /// <exception cref="ArgumentNullException">map or id</exception>
+    public int? GetMappedId(string map, string id)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        ArgumentNullException.ThrowIfNull(id);
+
+        if (!IdMaps.TryGetValue(map, out IdMap? value)) return null;
+        return value?.GetMappedId(id);
     }
 
     /// <summary>
@@ -80,8 +109,11 @@ public class RendererContext : DataDictionary, IRendererContext
     /// <param name="map">The ID of the map to use.</param>
     /// <param name="id">The mapped number.</param>
     /// <returns>The source identifier or null if not found.</returns>
+    /// <exception cref="ArgumentNullException">map</exception>
     public string? GetSourceId(string map, int id)
     {
+        ArgumentNullException.ThrowIfNull(map);
+
         if (!IdMaps.ContainsKey(map)) IdMaps[map] = new IdMap();
         return IdMaps[map].GetSourceId(id);
     }
@@ -94,46 +126,5 @@ public class RendererContext : DataDictionary, IRendererContext
     {
         return Item?.Parts.FirstOrDefault(p =>
             p.RoleId == PartBase.BASE_TEXT_ROLE_ID);
-    }
-
-    /// <summary>
-    /// Gets the layer IDs dictionary, where keys are block layer ID
-    /// prefixes (i.e. part type ID + <c>:</c> + role ID, like
-    /// <c>it.vedph.token-text-layer:fr.it.vedph.comment</c>), and
-    /// values are target IDs. This mapping is used to build fragment IDs
-    /// by mapping each layer to a number unique in the context of each
-    /// item. The mapping lasts for all the duration of the item composition
-    /// procedure.
-    /// </summary>
-    [Obsolete]
-    public IDictionary<string, int> LayerIds { get; }
-
-    /// <summary>
-    /// Gets the fragment IDs dictionary, where keys are block layer IDs
-    /// (i.e. part type ID + <c>:</c> + role ID + fragment index, like
-    /// <c>it.vedph.token-text-layer:fr.it.vedph.comment0</c>), and
-    /// values are the corresponding target elements IDs (i.e.
-    /// item number + layer ID + row number + fragment index). The mapping
-    /// is scoped to each item.
-    /// </summary>
-    [Obsolete]
-    public IDictionary<string, string> FragmentIds { get; }
-
-    /// <summary>
-    /// Gets or sets the optional Cadmus repository to be consumed by
-    /// components using this context. Typically this is required by
-    /// some filters, like the one resolving thesauri IDs, or the one
-    /// extracting text from a fragment's location.
-    /// </summary>
-    public ICadmusRepository? Repository { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RendererContext"/>
-    /// class.
-    /// </summary>
-    public RendererContext()
-    {
-        LayerIds = new Dictionary<string, int>();
-        FragmentIds = new Dictionary<string, string>();
     }
 }

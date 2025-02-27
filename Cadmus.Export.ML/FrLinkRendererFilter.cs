@@ -7,10 +7,11 @@ namespace Cadmus.Export.ML;
 
 /// <summary>
 /// Fragments links renderer filter. This filter replaces all the fragment
-/// keys delimited between a specified pair of opening and closing tags,
-/// replacing them with a target ID got from the rendering context.
-/// For instance, a key like <c>it.vedph.token-text-layer:fr.it.vedph.comment</c>
-/// is mapped to a target ID like <c>1_2_3</c>.
+/// keys delimited between a specified pair of opening and closing tags
+/// with a target ID got from the rendering context.
+/// For instance, a key like (map/layerTypeId:roleId@fragmentIndex) as
+/// <c>seg/it.vedph.token-text-layer:fr.it.vedph.apparatus@0</c>
+/// is mapped to a target ID like <c>seg123</c>.
 /// <para>Tag: <c>it.vedph.renderer-filter.fr-link</c>.</para>
 /// </summary>
 [Tag("it.vedph.renderer-filter.fr-link")]
@@ -38,6 +39,17 @@ public sealed class FrLinkRendererFilter : IRendererFilter,
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
+    private static (string map, string sourceId) ParseKey(string key)
+    {
+        // a key has form map/layerTypeId:roleId@fragmentIndex
+        // optionally followed by a suffix after the fragmentIndex
+        // up to the end of the key
+        int i = key.IndexOf('/');
+        return i == -1
+            ? ((string map, string sourceId))("", key)
+            : ((string map, string sourceId))(key[..i], key[(i + 1)..]);
+    }
+
     /// <summary>
     /// Applies this filter to the specified text.
     /// </summary>
@@ -63,10 +75,17 @@ public sealed class FrLinkRendererFilter : IRendererFilter,
 
             // extract and resolve key if possible
             string key = text[j..i];
-            if (context.FragmentIds.TryGetValue(key, out string? value))
-                sb.Append(value);
-            else
+            (string map, string sourceId) = ParseKey(key);
+
+            int? id = context.GetMappedId(map, sourceId);
+            if (id != null)
+            {
+                sb.Append(map).Append(id);
+            }
+            else if (!_options.OmitUnresolved)
+            {
                 sb.Append(key);
+            }
 
             // move past closing tag
             if (i < text.Length) i += _options.TagClose.Length;
@@ -95,6 +114,12 @@ public class FrLinkRendererFilterOptions
     /// Gets or sets the tag closing the fragment key to be mapped.
     /// </summary>
     public string TagClose { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to omit unresolved keys
+    /// rather than passing them though.
+    /// </summary>
+    public bool OmitUnresolved { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the
