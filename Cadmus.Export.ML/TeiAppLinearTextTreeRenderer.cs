@@ -65,28 +65,28 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         _pendingGroupId = item.GroupId;
     }
 
-    private void AddWitDetail(string segName, string? segId, string detail,
-        XElement seg, IRendererContext context)
+    private void AddWitDetail(string segName, string? witOrResp, string sourceId,
+        string detail, XElement seg, IRendererContext context)
     {
         // witDetail
         XElement witDetail = new(NamespaceOptions.TEI + "witDetail", detail);
         seg.Add(witDetail);
 
         // @target=segID
-        int targetId = context.GetNextIdFor(
-            XmlTextTreeRendererOptions.CONTEXT_SEG_IDKEY);
+        int targetId = context.MapSourceId("seg", sourceId);
         seg.SetAttributeValue(_options.ResolvePrefixedName("xml:id"),
             $"seg{targetId}");
         witDetail.SetAttributeValue("target", $"#seg{targetId}");
 
         // @wit or @resp
-        witDetail.SetAttributeValue(segName, $"#{segId}");
+        if (witOrResp != null)
+            witDetail.SetAttributeValue(segName, $"#{witOrResp}");
     }
 
     private void EnrichSegment(IList<TextSpanFeature> features, XElement seg,
-        IRendererContext context)
+        string sourceId, IRendererContext context)
     {
-        string? prevSeg = null;
+        string? prevWitOrResp = null;
         StringBuilder wit = new();
         StringBuilder resp = new();
 
@@ -97,22 +97,22 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                 case AppLinearTextTreeFilter.F_APP_E_WITNESS:
                     if (wit.Length > 0) wit.Append(' ');
                     wit.Append('#').Append(feature.Value);
-                    prevSeg = feature.Value;
+                    prevWitOrResp = feature.Value;
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_WITNESS_NOTE:
-                    AddWitDetail("wit", prevSeg, feature.Value, seg,
+                    AddWitDetail("wit", prevWitOrResp, sourceId, feature.Value, seg,
                         context);
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_AUTHOR:
                     if (resp.Length > 0) resp.Append(' ');
                     resp.Append('#').Append(feature.Value);
-                    prevSeg = feature.Value;
+                    prevWitOrResp = feature.Value;
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_AUTHOR_NOTE:
-                    AddWitDetail("resp", prevSeg, feature.Value, seg,
+                    AddWitDetail("resp", prevWitOrResp, sourceId, feature.Value, seg,
                         context);
                     break;
             }
@@ -151,9 +151,14 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         XName blockName = _options.ResolvePrefixedName(
             _options.BlockElements[blockType]);
 
+        // get layer part
+        IPart? layerPart = context.Item!.Parts.FirstOrDefault(p =>
+            p.TypeId == "it.vedph.token-text-layer" &&
+            p.RoleId == "fr.it.vedph.apparatus");
+
         // calculate the apparatus fragment ID prefix
-        string prefix = TextSpanPayload.GetFragmentPrefixFor(
-            new TokenTextLayerPart<ApparatusLayerFragment>(),
+        string prefix = TextSpanPayload.GetFragmentPrefixFor(layerPart
+            ?? new TokenTextLayerPart<ApparatusLayerFragment>(),
             new ApparatusLayerFragment());
 
         // create root element
@@ -164,7 +169,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         // traverse nodes and build the XML (each node corresponds to a fragment)
         tree.Traverse(node =>
         {
-            if (node.Data?.HasFeaturesFromFragment(prefix) == true)
+            if (layerPart != null &&
+                node.Data?.HasFeaturesFromFragment(prefix) == true)
             {
                 // app
                 XElement app = new(NamespaceOptions.TEI + "app");
@@ -189,6 +195,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                         {
                             Value = node.Data.Text!
                         };
+                    app.Add(seg);
 
                     // corner case: a zero-variant can have a type attribute
                     if (seg.Name.LocalName == "rdg" && seg.Value.Length == 0 &&
@@ -197,8 +204,11 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                         seg.SetAttributeValue("type", _options.ZeroVariantType);
                     }
 
-                    EnrichSegment(features, seg, context);
-                    app.Add(seg);
+                    // build the source ID for this entry
+                    string sourceId = $"{layerPart.Id}_{int.Parse(entryKey[1..])}";
+
+                    // enrich the segment with witnesses and authors
+                    EnrichSegment(features, seg, sourceId, context);
 
                     // if there is a note, add a note child element
                     TextSpanFeature? noteFeature = features.FirstOrDefault(
