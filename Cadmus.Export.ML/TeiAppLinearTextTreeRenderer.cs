@@ -66,25 +66,26 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     }
 
     private void AddWitDetail(string segName, string? witOrResp, string sourceId,
-        string detail, XElement seg, IRendererContext context)
+        string detail, XElement lemOrRdg, IRendererContext context)
     {
         // witDetail
         XElement witDetail = new(NamespaceOptions.TEI + "witDetail", detail);
-        seg.Add(witDetail);
+        lemOrRdg.Add(witDetail);
 
-        // @target=segID
-        int targetId = context.MapSourceId("seg", sourceId);
-        seg.SetAttributeValue(_options.ResolvePrefixedName("xml:id"),
-            $"seg{targetId}");
-        witDetail.SetAttributeValue("target", $"#seg{targetId}");
+        // @target=lem/rdg ID
+        string local = lemOrRdg.Name.LocalName;
+        int targetId = context.MapSourceId(local, sourceId);
+        lemOrRdg.SetAttributeValue(_options.ResolvePrefixedName("xml:id"),
+            $"{local}{targetId}");
+        witDetail.SetAttributeValue("target", $"#{local}{targetId}");
 
         // @wit or @resp
         if (witOrResp != null)
             witDetail.SetAttributeValue(segName, $"#{witOrResp}");
     }
 
-    private void EnrichSegment(IList<TextSpanFeature> features, XElement seg,
-        string sourceId, IRendererContext context)
+    private void EnrichLemOrRdg(IList<TextSpanFeature> features,
+        XElement lemOrRdg, string sourceId, IRendererContext context)
     {
         string? prevWitOrResp = null;
         StringBuilder wit = new();
@@ -101,8 +102,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_WITNESS_NOTE:
-                    AddWitDetail("wit", prevWitOrResp, sourceId, feature.Value, seg,
-                        context);
+                    AddWitDetail("wit", prevWitOrResp, sourceId, feature.Value,
+                        lemOrRdg, context);
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_AUTHOR:
@@ -112,16 +113,16 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                     break;
 
                 case AppLinearTextTreeFilter.F_APP_E_AUTHOR_NOTE:
-                    AddWitDetail("resp", prevWitOrResp, sourceId, feature.Value, seg,
-                        context);
+                    AddWitDetail("resp", prevWitOrResp, sourceId, feature.Value,
+                        lemOrRdg, context);
                     break;
             }
         }
 
         if (wit.Length > 0)
-            seg.SetAttributeValue("wit", wit.ToString());
+            lemOrRdg.SetAttributeValue("wit", wit.ToString());
         if (resp.Length > 0)
-            seg.SetAttributeValue("resp", resp.ToString());
+            lemOrRdg.SetAttributeValue("resp", resp.ToString());
     }
 
     /// <summary>
@@ -156,6 +157,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         if (textPart == null) return "";    // should not happen
 
         // calculate the apparatus fragment ID prefix
+        // (like "it.vedph.token-text-layer:fr.it.vedph.comment@")
         string prefix = TextSpanPayload.GetFragmentPrefixFor(
             new TokenTextLayerPart<ApparatusLayerFragment>(),
             new ApparatusLayerFragment());
@@ -182,7 +184,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                         node.Data.FeatureSets[entryKey].Features;
 
                     // if there a variant, it's a rdg, else it's a lem
-                    XElement seg = (features.Any(f => f.Name ==
+                    XElement lemOrRdg = (features.Any(f => f.Name ==
                         AppLinearTextTreeFilter.F_APP_E_VARIANT))
                         ? new XElement(NamespaceOptions.TEI + "rdg")
                         {
@@ -193,20 +195,20 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                         {
                             Value = node.Data.Text!
                         };
-                    app.Add(seg);
+                    app.Add(lemOrRdg);
 
                     // corner case: a zero-variant can have a type attribute
-                    if (seg.Name.LocalName == "rdg" && seg.Value.Length == 0 &&
+                    if (lemOrRdg.Name.LocalName == "rdg" && lemOrRdg.Value.Length == 0 &&
                         _options.ZeroVariantType != null)
                     {
-                        seg.SetAttributeValue("type", _options.ZeroVariantType);
+                        lemOrRdg.SetAttributeValue("type", _options.ZeroVariantType);
                     }
 
                     // build the source ID for this entry: textPartId_nodeId
                     string sourceId = $"{textPart.Id}_{node.Id}";
 
-                    // enrich the segment with witnesses and authors
-                    EnrichSegment(features, seg, sourceId, context);
+                    // enrich lem/rdg with witnesses and authors
+                    EnrichLemOrRdg(features, lemOrRdg, sourceId, context);
 
                     // if there is a note, add a note child element
                     TextSpanFeature? noteFeature = features.FirstOrDefault(

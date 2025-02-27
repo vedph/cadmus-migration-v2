@@ -9,6 +9,9 @@ using System.Linq;
 using Cadmus.Export.Renderers;
 using Proteus.Core.Text;
 using Fusi.Tools.Data;
+using Cadmus.General.Parts;
+using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 
 namespace Cadmus.Export.ML;
 
@@ -120,6 +123,65 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
+    private static (TreeNode<TextSpanPayload> First, TreeNode<TextSpanPayload> Last)?
+        FindFragmentBounds(string prefix, TreeNode<TextSpanPayload> tree)
+    {
+        // find the first and last nodes having any fragment ID starting with prefix
+        TreeNode<TextSpanPayload>? firstNode = null;
+        TreeNode<TextSpanPayload>? lastNode = null;
+
+        tree.Traverse(node =>
+        {
+            if (node.Data == null) return true;
+            if (node.Data.Range.FragmentIds.Any(s => s.StartsWith(prefix)))
+            {
+                if (firstNode == null)
+                {
+                    firstNode = node;
+                }
+                else
+                {
+                    lastNode = node;
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        return lastNode != null? (firstNode!, lastNode!) : null;
+    }
+
+    private static void AddLoc(IRendererContext context, int frIndex,
+        TreeNode<TextSpanPayload> tree, XElement target)
+    {
+        // calculate the apparatus fragment ID prefix
+        // (like "it.vedph.token-text-layer:fr.it.vedph.comment@INDEX")
+        string prefix = TextSpanPayload.GetFragmentPrefixFor(
+            new TokenTextLayerPart<ApparatusLayerFragment>(),
+            new ApparatusLayerFragment()) + frIndex;
+
+        var bounds = FindFragmentBounds(prefix, tree);
+        if (bounds == null) return;
+
+        string firstSourceId = bounds.Value.First.Id!;
+        string lastSourceId = bounds.Value.Last.Id!;
+
+        int firstId = context.MapSourceId("seg", firstSourceId);
+        int lastId = context.MapSourceId("seg", lastSourceId);
+
+        if (firstId == lastId)
+        {
+            target.SetAttributeValue("loc", firstSourceId);
+        }
+        else
+        {
+            XElement loc = new(NamespaceOptions.TEI + "loc",
+                new XAttribute("spanFrom", firstSourceId),
+                new XAttribute("spanTo", lastSourceId));
+            target.Add(loc);
+        }
+    }
+
     /// <summary>
     /// Renders the specified JSON code.
     /// </summary>
@@ -129,9 +191,16 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
     /// fragments to get source IDs targeting the various portions of the
     /// text.</param>
     /// <returns>Rendered output.</returns>
+    /// <exception cref="InvalidOperationException">null tree</exception>
     protected override string DoRender(string json,
         IRendererContext context, TreeNode<TextSpanPayload>? tree = null)
     {
+        if (tree == null)
+        {
+            throw new InvalidOperationException("Text tree is required " +
+                "for rendering standoff apparatus");
+        }
+
         // read fragments array
         JsonNode? root = JsonNode.Parse(json);
         if (root == null) return "";
@@ -148,48 +217,38 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
             $"item{context.Item!.Id}"));
 
         // process each fragment
-        int frIndex = 0;
-        foreach (ApparatusLayerFragment fr in fragments)
+        for (int frIndex = 0; frIndex < fragments.Length; frIndex++)
         {
+            ApparatusLayerFragment fr = fragments[frIndex];
+
             // div @type="TAG"
             XElement frDiv = new(NamespaceOptions.TEI + "div");
             if (!string.IsNullOrEmpty(fr.Tag))
                 frDiv.SetAttributeValue("type", fr.Tag);
             itemDiv.Add(frDiv);
 
-            // app @loc="segID"
-            // the target block ID must be fetched from the fragment IDs
-            // map in context; to get the ID for this fragment, we rely
-            // on the current layer ID, get its prefix, and use this to
-            // build the map's key (prefix + fragment index). This is done
-            // once and reused for each entry in the fragment, as all the
-            // entries in it refer to the same location.
-            int layerId = (int)context.Data[TeiStandoffItemComposer.M_LAYER_ID];
-            string layerPrefix = context.LayerIds.First(
-                p => p.Value == layerId).Key;
-            string frKey = $"{layerPrefix}{frIndex}";
-            string loc = context.FragmentIds[frKey];
-
             int n = 0;
             foreach (ApparatusEntry entry in fr.Entries)
             {
                 // div/app @n="INDEX + 1"
                 XElement app = new(NamespaceOptions.TEI + "app",
-                    new XAttribute("n", ++n),
-                    new XAttribute("loc", "#" + loc));
+                    new XAttribute("n", ++n));
+
+                // div/app @loc="segID" or loc @spanFrom/spanTo
+                AddLoc(context, frIndex, tree, app);
                 frDiv.Add(app);
 
-                // app @type="TAG"
+                // div/app @type="TAG"
                 if (!string.IsNullOrEmpty(entry.Tag))
                     app.SetAttributeValue("type", entry.Tag);
 
-                // div/rdg or div/note with value[+note]
+                // div/app/rdg or div/app/note with value[+note]
                 XElement rdgOrNote = new(NamespaceOptions.TEI +
                     (entry.Type == ApparatusEntryType.Note? "note" : "rdg"),
                     BuildValue(entry));
                 app.Add(rdgOrNote);
 
-                // @wit
+                // rdg/note @wit
                 if (entry.Witnesses?.Count > 0)
                 {
                     rdgOrNote.SetAttributeValue("wit",
@@ -197,7 +256,7 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
                                          select $"#{av.Value}"));
                 }
 
-                // @source
+                // rdg/note @source
                 if (entry.Authors?.Count > 0)
                 {
                     rdgOrNote.SetAttributeValue("source",
@@ -205,12 +264,10 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
                                          select $"#{av.Value}"));
                 }
             }
-            frIndex++;
         }
 
-        return itemDiv.ToString(SaveOptions.OmitDuplicateNamespaces)
-            // remove default TEI namespace
-            .Replace(" xmlns=\"http://www.tei-c.org/ns/1.0\"", "")
-            + Environment.NewLine;
+        return itemDiv.ToString(_options.IsIndented
+            ? SaveOptions.OmitDuplicateNamespaces
+            : SaveOptions.DisableFormatting | SaveOptions.OmitDuplicateNamespaces);
     }
 }
