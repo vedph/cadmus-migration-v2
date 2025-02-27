@@ -23,10 +23,12 @@ Before illustrating these examples, let us recap the standard [apparatus](https:
     - note (`app.e.author.note`)
   - note (`app.e.note`)
 
+The apparatus model essentially represents variants as edit operations on the base text. So, a variant like `illic` for the base text `illuc` is represented as a replacement operation (type=replacement). When instead we just want to add metadata, e.g. to list the witnesses for `illuc`, the lemma accepted in the reconstructed text, we use a note type. In this case the value is null (when it is an empty string, this is a zero variant, i.e. an omission or deletion).
+
 ## Linear Single Layer
 
-- tree: linear
-- layers: single (=apparatus only)
+- tree: linear;
+- layers: single (=apparatus only).
 
 In this approach we just have selected a _single_ layer, the apparatus. So, merging just projects the apparatus ranges on the whole text; the text is segmented only according to the apparatus fragments.
 
@@ -40,13 +42,20 @@ illuc unde negant redire quemquam
 AAAAA....................BBBBBBBB
 ```
 
-Here we have 2 fragments in the apparatus layer part, one (A) with 3 entries, and another (B) with 2:
+Here we have 2 fragments in the apparatus layer part, one (A) with 3 entries, and another (B) with 2. For brevity I am quoting the fragments with A and B and their entries with their index (0, 1, etc.):
 
-- A0: note: witnesses=`O1`, accepted.
-- A1: replacement: value=`illud`, witnesses=`O G R`.
-- A2: replacement: value=`illic`, authors=`Fruterius` with note=`(†1566) 1605a 388`.
-- B0: note: witnesses=`O G`, accepted.
-- B1: replacement: value=`umquam`, witnesses=`R`, note=`some note`.
+- A0:
+  - note entry: witnesses=`O1`, accepted.
+- A1:
+  - replacement entry: value=`illud`, witnesses=`O G R`.
+- A2:
+  - replacement entry: value=`illic`, authors=`Fruterius` with note=`(†1566) 1605a 388`.
+- B0:
+  - note entry: witnesses=`O G`, accepted.
+- B1:
+  - replacement entry: value=`umquam`, witnesses=`R`, note=`some note`.
+
+>To keep things simpler, in this example each fragment has a single entry, but we could well have many of them.
 
 The merged ranges would be:
 
@@ -89,6 +98,8 @@ Given that we have a single layer, we won't need to add or delete nodes, but jus
       - `app.e.variant`=`umquam`
       - `app.e.witness`=`R`
       - `app.e.note`=`some note`
+
+This is a generic process I designate with "featurization": some essential features of the model are projected into this more flat model, with a grouping level and many features in each group. This approach can be used when projecting metadata into tree nodes from different and even heterogeneous sources.
 
 At this stage, we're done with the tree and we can move to ▶️ step (6) for rendering it. Rendition depends on the desired output format; for this example, let's keep things simple and say that we want a TEI text fragment like this (witnesses and other attributes are fake data assumed to be in the fragments, and text is indented for more readability):
 
