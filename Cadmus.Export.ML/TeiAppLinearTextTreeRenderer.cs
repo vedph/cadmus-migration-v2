@@ -7,6 +7,7 @@ using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 using Fusi.Tools.Text;
 using MongoDB.Driver;
+using Proteus.Core.Text;
 using Proteus.Text.Xml;
 using System;
 using System.Collections.Generic;
@@ -288,39 +289,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
 /// Options for <see cref="TeiAppLinearTextTreeRenderer"/>.
 /// </summary>
 /// <seealso cref="XmlTextFilterOptions" />
-public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
+public class AppLinearTextTreeRendererOptions : XmlTextTreeRendererOptions
 {
-    /// <summary>
-    /// Gets or sets the name of the root element. The default is <c>tei:div</c>.
-    /// This is usually not rendered in output, but it is used as the root of
-    /// the XML fragment built by the renderer.
-    /// </summary>
-    public string RootElement { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the <see cref="RootElement"/>
-    /// should be included in the output. The default is <c>false</c>.
-    /// </summary>
-    /// <value>
-    ///   <c>true</c> if this instance is root included; otherwise, <c>false</c>.
-    /// </value>
-    public bool IsRootIncluded { get; set; }
-
-    /// <summary>
-    /// Gets or sets the block element name(s). The default name is "tei:p" under
-    /// a <c>default</c> key, other names can be specified for conditional
-    /// element names (e.g. when dealing with poetry rather than prose).
-    /// If you need to specify a namespaced name, use the format "prefix:name"
-    /// and define the prefix in the <see cref="XmlTextFilterOptions.Namespaces"/>
-    /// property.
-    /// </summary>
-    public IDictionary<string, string> BlockElements { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the XML output should be
-    /// indented. This can be useful for diagnostic purposes.
-    /// </summary>
-    public bool IsIndented { get; set; }
 
     /// <summary>
     /// Gets or sets the value for the type attribute to add to <c>rdg</c>
@@ -344,18 +314,4 @@ public class AppLinearTextTreeRendererOptions : XmlTextFilterOptions
     /// context.
     /// </summary>
     public string? GroupTailTemplate { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the
-    /// <see cref="AppLinearTextTreeRendererOptions"/> class.
-    /// </summary>
-    public AppLinearTextTreeRendererOptions()
-    {
-        DefaultNsPrefix = "tei";
-        RootElement = "tei:div";
-        BlockElements = new Dictionary<string, string>
-        {
-            ["default"] = "tei:p"
-        };
-    }
 }

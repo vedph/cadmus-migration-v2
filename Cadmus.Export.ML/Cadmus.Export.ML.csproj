@@ -24,7 +24,7 @@
 		<PackageReference Include="Cadmus.Philology.Parts" Version="9.0.3" />
 		<PackageReference Include="Fusi.Xml.Extras" Version="5.0.0" />
 		<PackageReference Include="JmesPath.Net" Version="1.0.330" />
-		<PackageReference Include="Proteus.Text.Xml" Version="6.0.3" />
+		<PackageReference Include="Proteus.Text.Xml" Version="6.0.4" />
 	</ItemGroup>
 
 	<ItemGroup>

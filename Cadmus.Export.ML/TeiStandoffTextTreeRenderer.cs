@@ -10,9 +10,9 @@ namespace Cadmus.Export.ML;
 
 /// <summary>
 /// Standoff TEI text tree renderer.
-/// <para>Tag: <c>it.vedph.text-block-renderer.tei-standoff</c>.</para>
+/// <para>Tag: <c>it.vedph.text-tree-renderer.tei-standoff</c>.</para>
 /// </summary>
-[Tag("it.vedph.text-block-renderer.tei-standoff")]
+[Tag("it.vedph.text-tree-renderer.tei-standoff")]
 public sealed class TeiStandoffTextTreeRenderer : TextTreeRenderer,
     ITextTreeRenderer,
     IConfigurable<TeiStandoffTextBlockRendererOptions>

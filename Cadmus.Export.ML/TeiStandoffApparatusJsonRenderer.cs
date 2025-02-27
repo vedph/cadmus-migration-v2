@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 using System.Xml.Linq;
 using System.Linq;
 using Cadmus.Export.Renderers;
+using Proteus.Core.Text;
 
 namespace Cadmus.Export.ML;
 

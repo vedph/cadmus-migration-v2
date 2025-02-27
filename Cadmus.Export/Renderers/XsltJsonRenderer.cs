@@ -3,6 +3,7 @@ using Fusi.Tools.Configuration;
 using Fusi.Xml;
 using Fusi.Xml.Extras.Render;
 using Newtonsoft.Json;
+using Proteus.Core.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,11 +66,11 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
 
             foreach (var p in _options.WrappedEntryNames)
             {
-                XName key = NamespaceOptions.PrefixedNameToXName(p.Key,
+                XName key = NamespaceOptions.ResolvePrefixedName(p.Key,
                     nsmgr,
                     _options.DefaultNsPrefix);
                 _wrappedEntryNames[key] =
-                    NamespaceOptions.PrefixedNameToXName(p.Value,
+                    NamespaceOptions.ResolvePrefixedName(p.Value,
                     nsmgr,
                     _options.DefaultNsPrefix);
             }
