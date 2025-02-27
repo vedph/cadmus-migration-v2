@@ -5,15 +5,13 @@ parent: Migration
 nav_order: 1
 ---
 
-# Data Rendition
+# Rendering Architecture
 
-- [Data Rendition](#data-rendition)
+- [Rendering Architecture](#rendering-architecture)
   - [Flow](#flow)
     - [Non-Textual](#non-textual)
     - [Textual](#textual)
-    - [Higher Level Components](#higher-level-components)
-  - [JSON Rendering and Other Techs](#json-rendering-and-other-techs)
-    - [Example](#example)
+      - [Building Trees](#building-trees)
 
 The easiest form of data export in Cadmus is based on rendering data, for both exporting data into files and providing a frontend interface with "previews", i.e. views which summarize structured data for human readers. For instance, in the former case you can export standoff TEI documents from text items with layers; in the latter case, you can view a compact and human-friendly data summary inside the editor itself.
 
@@ -51,13 +49,18 @@ It all starts from the Cadmus **database**, including items with their parts. So
 
 When exporting into files, usually the entry point is represented by an **item ID collector**, which collects the IDs of all the matching items in their order. This is used to filter and order the items for export; currently, we just have a single [builtin collector](collectors).
 
-From items data, two different processes are defined for rendering layered texts and any other part. Layered texts require a more complex pipeline, because additional logic is required to flatten multiple layers of structured annotations into some target format, like TEI, HTML, etc. An **item composer** orchestrates all the components used in these pipelines.
+Data are thus processed one item after another. Each item is handled by an **item composer**, which orchestrates all the components used in the rendering pipelines. Additionally, a simple data model, the rendering context, is shared across most of the components. The general flow is thus:
+
+1. the item collector provides item IDs filtered and sorted as required.
+2. for each ID, the corresponding item is loaded.
+3. optionally, one or more context suppliers are used to inject from the item additional metadata into the rendering context.
+4. according to the rendering type, textual or non-textual, two different branches are followed. Layered texts in fact require a more complex pipeline, because additional logic is required to flatten multiple layers of structured annotations into some target format, like TEI, HTML, etc.
 
 ### Non-Textual
 
 This rendering uses a single part as its source, and renders some of its data using a **JSON renderer** component.
 
-A JSON renderer component takes JSON (representing any Cadmus data object: part, fragment, or item), and renders it into some text-based format, like HTML, XML, etc. In Figure 1, you can see that a JSON renderer picked from a set of available renderers can be used to produce some text-based output from a Cadmus part, whatever its type.
+A JSON renderer component gets some JSON code representing any Cadmus data object (part, fragment, or item), and renders it into some text-based format, like HTML, XML, etc. In Figure 1, you can see that a JSON renderer picked from a set of available renderers can be used to produce some text-based output from a Cadmus part, whatever its type.
 
 The JSON renderer or the text block renderer may also use a set of **renderer filters**. Such filters are executed in the order they are defined for each renderer, just after its rendition completes. Each filter has a specific task, often general enough to be reused in other renderers.
 
@@ -67,515 +70,165 @@ For instance, some [prebuilt filters](filters) allow you to lookup thesauri (res
 
 As you can see from Figure 1, this pipeline uses:
 
-1. a **text part flattener** (`ITextPartFlattener`), used to flatten a layered text (i.e. one text part, plus any number of text layer parts) into a set of _text ranges_. Each range is a span of text with a number of layer IDs, linking that text with its annotations from layers. This is also the input model for a related HTML visualization leveraging the [text blocks view brick](https://github.com/vedph/cadmus-bricks-shell-v3/blob/master/projects/myrmidon/cadmus-text-block-view/README.md). Once the text and its layers are flattened, blocks are built using logic shared among all the flatteners (implemented in `TextBlockBuilder`). So, while the flattening logic varies according to the type of the text part (e.g. `TokenTextPart` or `TiledTextPart`), the block building logic stays the same. The resulting blocks are an abstraction, which can be easily leveraged in an interactive UI, as well as represent the source for building some other output like TEI.
+1. a **text part flattener** (`ITextPartFlattener`), used to flatten a layered text (i.e. one text part, plus any number of text layer parts) into a set of _text ranges_. Each range is a span of text linked to annotations from layers. Text is segmented into ranges according to the layer(s) selected for rendering. With no layer, we will have a single range; with 1 layer only, the segmentation will reflect the distribution of its annotations; with multiple layers, the segmentation is the result of flattening the segments from annotations from all the layers. Once ranges are defined, they get projected into a linear tree, where each segment is the child node of the node representing the previous segment.
 
-- a **text block renderer** can be used to generate a text-based output from these blocks. For instance, you can use a TEI block renderer to build standoff TEI from text blocks.
+2. zero or more **text tree filters** are applied to the tree to add metadata to its nodes or even reshape the tree as desired. Here we could also have branching, e.g. with binary trees to provide parallel segmentation strategies in TEI rendition.
 
-### Higher Level Components
+3. a **text block renderer** is then used to generate a text-based output from these nodes. For the preview UI in the editor frontend, a linear tree is assumed and its nodes data are just serialized into an array containing arrays of nodes, each representing a line in the original text. Other outputs depend on the desired format and encoding strategies, which may vary even dramatically, especially when dealing with TEI and XML.
 
-Higher level components can be used to orchestrate the tasks performed by these various components.
+#### Building Trees
 
-The **item composer** is a configurable component designed to compose the renditions from the parts belonging to a single item. Here you are free to add your own composers with any complex logic. The output of a composer is not limited in any way; for instance, the builtin TEI composer writes a set of TEI documents with stand-off notation.
+Trees are used as a middleware data structure which is particularly fit to most of the rendering output formats, like XML and HTML.
 
-The **Cadmus previewer** is the surface component used by Cadmus API. This allows rendering a part, a layer part's fragment, and optionally even an item (via an item composer). This previewer is configured in a simple [JSON document](config.md).
+When there is no branching, we have a linear tree, which has a single branch starting from the root node and going down child by child until the end of the text:
 
-## JSON Rendering and Other Techs
+```mermaid
+graph LR;
 
-Any Cadmus object, either part or fragment, is ultimately archived as JSON. So, JSON is the starting point when rendering the output. As seen above, any component implementing `IJsonRenderer` can be registered in the previewer factory and used in the rendering configuration, with all its settings.
-
-In most cases, unless complex logic is required, all what you have to do to provide a highly configurable output is using the `XsltJsonRenderer`. This component was designed right to provide the frendliest environment for rendering an output starting from any Cadmus object.
-
-As a matter of fact, most users are accustomed to XSLT as a way of producing an HTML output from a (TEI) XML document. XSLT, though not ideal, is thus a highly popular and well-known standard which usually provides enough power to transform the input semantic markup (XML) into a presentational markup (HTML).
-
-Thus, the JSON renderer which will probably used the most relies right on XSLT. Of course, XSLT is a sister technology of XML, and is designed to transform XML input. Yet, here we have JSON. So, to fill the gap this renderer can automatically convert JSON into XML, and then apply a user-provided XSLT to it.
-
-Yet, it may well happen that some transformations (e.g. data selection or projection) are best performed in the context of a JSON-based model, rather than in the XML DOM. After all, JSON is a serialization format for objects, and we might well need to access their structure when transforming it.
-
-So, this renderer not only provides XSLT-based transformation, but also JSON-based transformation. This is accomplished by using [JMESPath](https://jmespath.org/tutorial.html), a powerful selection and transformation language for JSON.
-
-The renderer can thus apply both JSON-based transformations and an XSLT script to the source object; or just any of them.
-
-Additionally, we might also want to adjust the resulting output in some special ways, using logic which can be shared among different renderers. There is a number of tasks which are best located here, just after the renderer transforms, and before returning their result. The _renderer filters_ are in charge of these tasks.
-
->Finally, there is also the possibility of a special preprocessing for JSON data in this renderer: this happens when rendering layer parts, and consists in providing the basis for mapping block layer IDs to target IDs in TEI stand-off. To this end, the renderer can inject properties into layer part fragments during JSON preprocessing, thus providing layer keys to be later used to link fragments to text blocks. See the [markup](markup) section for more.
-
-So, this JSON renderer has a number of requirements:
-
-- it should be fully customizable by users, who are accustomed to XSLT transformations. We must then adapt our JSON data to XML, so that it can be processed via XSLT.
-- it should provide a powerful way for transforming JSON data even before submitting it to the XSLT processor. This refers to a true JSON transform, rather than a raw string-based transform, just like XSLT implies a DOM rather than just working on a sequence of characters.
-- both the JSON and the XML transformation should be available in any combination: JSON only, XML only, JSON + XML.
-- it should be able to convert Markdown text.
-- it should be able to lookup thesauri.
-
-To this end we leverage these technologies:
-
-- [JMESPath](https://jmespath.org/tutorial.html).
-- an automatic [conversion](https://www.newtonsoft.com/json/help/html/ConvertingJSONandXML.htm) from JSON to XML.
-- XSLT for transforming XML.
-- [Markdig](https://github.com/xoofx/markdig) to optionally convert Markdown regions into HTML/plain text.
-
-Thesaurus lookup and Markdown conversion are provided via filters.
-
-Even though this implies more processing stages, it represents a highly customizable component where most users will be at home, as XSLT is a popular and easy way of processing XML for output. Yet, optionally the additional processing power of a specific JSON transformation engine can be leveraged to prepare the data before converting them into XSLT. It might also be the case that there is no XSLT, and the output is directly generated by JMESPath transforms: in this case no conversion from JSON to XML will occur.
-
-Also, more specialized processing is available via filters, which can extend any transformation.
-
-As a sample, say we have this token-based text part, representing the text `que bixit / annos XX`:
-
-```json
-{
-  "citation": "CIL 1,23",
-  "lines": [
-    { "y": 1, "text": "que bixit" },
-    { "y": 2, "text": "annos XX" }
-  ],
-  "id": "9a801c84-0c93-4074-b071-9f4f9885ba66",
-  "itemId": "item",
-  "typeId": "it.vedph.token-text",
-  "roleId": "base-text",
-  "thesaurusScope": null,
-  "timeCreated": "2022-08-07T14:04:01.3995195Z",
-  "creatorId": "zeus",
-  "timeModified": "2022-08-07T14:04:01.3995195Z",
-  "userId": "zeus"
-}
+root --> A
+A --> B
+B --> C
 ```
 
-The model for this part (apart from the usual metadata) just contains a _citation_, which can use any type of citational scheme for a text, and a _text_, consisting of any number of lines.
+After the tree is first created from text ranges, it always has this linear structure. Then, branching can be introduced by tree filters, e.g.:
 
-When handling it in an `XsltJsonRenderer` configured for a single XSLT-based transformation, first the JSON code is automatically wrapped in a `root` element by the renderer itself, to ensure it is well-formed for XML conversion, whence:
+```mermaid
+graph LR;
 
-```json
-{
-  "root": {
-    "citation": "CIL 1,23",
-    "lines": [
-      { "y": 1, "text": "que bixit" },
-      { "y": 2, "text": "annos XX" }
-    ],
-    "id": "9a801c84-0c93-4074-b071-9f4f9885ba66",
-    "itemId": "item",
-    "typeId": "it.vedph.token-text",
-    "roleId": "base-text",
-    "thesaurusScope": null,
-    "timeCreated": "2022-08-07T14:04:01.3995195Z",
-    "creatorId": "zeus",
-    "timeModified": "2022-08-07T14:04:01.3995195Z",
-    "userId": "zeus"
-  }
-}
+root --> A
+A --> B
+B --> C
+C --> D
+B --> E
+E --> F
 ```
 
-Then, JSON is converted into XML:
-
-```xml
-<root><citation>CIL 1,23</citation><lines><y>1</y><text>que bixit</text></lines><lines><y>2</y><text>annos XX</text></lines><id>9a801c84-0c93-4074-b071-9f4f9885ba66</id><itemId>item</itemId><typeId>it.vedph.token-text</typeId><roleId>base-text</roleId><thesaurusScope /><timeCreated>2022-08-07T14:12:44.8640749Z</timeCreated><creatorId>zeus</creatorId><timeModified>2022-08-07T14:12:44.8640749Z</timeModified><userId>zeus</userId></root>
-```
-
->To get the XML corresponding to each part's (or item's) JSON you can use the [Cadmus CLI tool](https://github.com/vedph/cadmus_tool).
-
-At this stage, the XSLT transformation occurs. In this example, it's a simple transform to produce a plain text output:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" version="1.0">
-  <xsl:output method="text" encoding="UTF-8"/>
-  <xsl:strip-space elements="*" />
-
-  <xsl:template match="citation">[<xsl:value-of select="."/>]<xsl:text xml:space="preserve">&#xA;</xsl:text>
-</xsl:template>
-
-  <xsl:template match="lines">
-    <xsl:value-of select="y"/>
-    <xsl:text xml:space="preserve">  </xsl:text>
-    <xsl:value-of select="text"/>
-    <xsl:text xml:space="preserve">&#xA;</xsl:text>
-  </xsl:template>
-
-  <xsl:template match="root">
-    <xsl:apply-templates/>
-  </xsl:template>
-
-  <xsl:template match="*"></xsl:template>
-</xsl:stylesheet>
-```
-
-So, the final output is:
+Let us start with a very simple example, a two lines, token-based text like this mock Latin inscription:
 
 ```txt
-[CIL 1,23]
-1  que bixit
-2  annos XX
+que bixit
+annos XX
 ```
 
-Of course, that's just a trivial example, but it should be enough to show the power of this multi-technology approach to JSON rendering. In real-world, the Cadmus editor will use HTML output, thus providing a highly structured presentational markup as the rendition for any part.
+Let us say that there are 3 annotation layers on top of this base text:
 
-### Example
+- orthography layer part:
+  - fragment 0 on `qu[e]` (`1.1@3`), about the historical orthography QVE for our normalized QVAE.
+  - fragment 1 on `[b]ixit` (`1.2@1`), about BIXIT for VIXIT.
+- paleography layer part:
+  - fragment 0 on `qu[e b]ixit` (a ligature: `1.1@3-1.2@1`), assuming there is a ligature between the final E and the initial B.
+- comment layer part:
+  - fragment 0 on `bixit annos` (`1.2-2.1`), about the rarer usage of accusative ("annos") instead of the more common ablative ("annis") in this expression.
 
-To better illustrate this point, here is a more realistic sample.
+>💡 Remember that in the Cadmus model a layer part is a collection of specialized annotation models named fragments. Each fragment is linked to any specific span of the base text. For instance, in a critical apparatus you might have two variants for the word `illud` chosen in the reconstructed critical text: `illuc` and `illic`. In the apparatus model, this would be a single fragment linked to `illud`, with 2 entries representing variants.
 
-Say you have this comments layer part. You enter its data via the comment fragment editor, as shown in the following screenshots:
+In this example we are going to render all these layers. We thus need to segment the base text so that we can link to each segment one or more fragments, whatever the layer they come from. Starting from this stage, we have 6 steps to get to our desired rendition, whatever its target format:
 
-![comment - text](img/comment-editor1.png)
+▶️ (1) **flatten layers**: use a text part flattener (`ITextPartFlattener`) to get the whole text into a multiline string, plus one range for each fragment in each of the picked layer parts.
 
-- _The comment editor with Markdown text and a tag named "general"._
+The resulting text is (I add a ruler with index numbers at its bottom for better readability):
 
-![comment - categories](img/comment-editor2.png)
-
-- _The comment editor references. There are two bibliographic references, and two external identifiers._
-
-![comment - text](img/comment-editor3.png)
-
-- _The comment editor categories. Categories are listed in a hierarchy, displayed as a tree. Here we have picked a couple of categories (history and literature)._
-
-![comment - text](img/comment-editor4.png)
-
-- _The comment editor keywords. There are a couple of English keywords, one related to a specific index (persons)._
-
-The corresponding JSON code representing this comment layer part follows (limited to a single comment fragment for brevity):
-
-```json
-{
-  "_id": "988a47cf-47f9-4678-bf5a-27221cc23c56",
-  "itemId": "b2271044-32e5-4b6e-b643-cfd925bbdda0",
-  "typeId": "it.vedph.token-text-layer",
-  "roleId": "fr.it.vedph.comment",
-  "thesaurusScope": null,
-  "content": {
-    "fragments": [
-      {
-        "location": "7.1",
-        "tag": "general",
-        "text": "Hic dolores quo.",
-        "references": [
-          {
-            "type": "biblio",
-            "tag": "tag",
-            "citation": "Nienow 2013",
-            "note": "Quod reprehenderit et libero quia ut."
-          }
-        ],
-        "externalIds": [
-          {
-            "assertion": null,
-            "tag": null,
-            "value": "JBOD",
-            "scope": "mydb"
-          },
-          {
-            "assertion": null,
-            "tag": null,
-            "value": "SQL",
-            "scope": "mydb"
-          }
-        ],
-        "categories": ["language.syntax"],
-        "keywords": [
-          {
-            "indexId": "ixb",
-            "note": null,
-            "tag": null,
-            "language": "ita",
-            "value": "a"
-          },
-          {
-            "indexId": "ixa",
-            "note": null,
-            "tag": null,
-            "language": "eng",
-            "value": "perferendis"
-          }
-        ]
-      },
-      {
-        "location": "4.8",
-        "tag": "general",
-        "text": "The *Fort Vancouver Centennial half dollar* is a commemorative fifty-cent piece struck by the United States Bureau of the Mint in 1925 in honor of the founding of Fort Vancouver in present-day Vancouver, Washington.\r\n\r\n- The obverse of the commemorative coin (pictured) depicts John McLoughlin, who built the fort for the Hudson's Bay Company in 1825.\r\n- The reverse shows an armed frontiersman standing in front of the fort.\r\n\r\nRepresentative Albert Johnson of Washington state was able to get Congress to authorize a coin for Fort Vancouver's centennial celebrations, and President Calvin Coolidge signed the authorizing act on February 24, 1925. Laura Gardin Fraser was engaged to design the coin on the recommendation of the United States Commission of Fine Arts. The coins were struck at the San Francisco Mint, and then were flown to Washington state by airplane as a publicity stunt. They sold badly, and are valuable today since few of the coins survive.",
-        "references": [
-          {
-            "type": "biblio",
-            "tag": "tag",
-            "citation": "Kihn 2021",
-            "note": ""
-          },
-          {
-            "type": "biblio",
-            "tag": "tag",
-            "citation": "Hilpert 2012",
-            "note": "A note about this reference."
-          }
-        ],
-        "externalIds": [
-          {
-            "assertion": null,
-            "tag": null,
-            "value": "http://mydb.org/1234",
-            "scope": "mydb"
-          },
-          {
-            "assertion": null,
-            "tag": null,
-            "value": "http://mydb.org/8865",
-            "scope": "mydb"
-          }
-        ],
-        "categories": ["history", "literature"],
-        "keywords": [
-          {
-            "indexId": "",
-            "note": null,
-            "tag": null,
-            "language": "eng",
-            "value": "coin"
-          },
-          {
-            "indexId": "persons",
-            "note": null,
-            "tag": null,
-            "language": "eng",
-            "value": "Albert Johnson"
-          }
-        ]
-      }
-    ],
-    "id": "988a47cf-47f9-4678-bf5a-27221cc23c56",
-    "itemId": "b2271044-32e5-4b6e-b643-cfd925bbdda0",
-    "typeId": "it.vedph.token-text-layer",
-    "roleId": "fr.it.vedph.comment",
-    "thesaurusScope": null,
-    "timeCreated": "2022-10-04T10:01:58.28Z",
-    "creatorId": "zeus",
-    "timeModified": "2022-10-10T11:02:28.7506614Z",
-    "userId": "zeus"
-  },
-  "timeCreated": "2022-10-04T10:01:58.280+0000",
-  "creatorId": "zeus",
-  "timeModified": "2022-10-10T11:02:28.750+0000",
-  "userId": "zeus"
-}
+```txt
+012345678901234567
+que bixit|annos XX
 ```
 
-Now, when viewing this comment part in the item, the editor finds a suitable previewer for its type, and thus a preview button appears next to it. The same happens for a couple of other part types (base text and critical apparatus):
+Here `|` stands for a LF character, used as the line delimiter.
 
-![comment part in item](img/comment-preview-btn.png)
+The resulting ranges collected from all the layers are:
 
-When clicking on this button, you get to the layer preview. This shows the text with green hilights for each portion of the text which is linked to a comment fragment in the comments layer part. By clicking on any of these portions, the previewer generates the corresponding output which is shown below the text:
+1. 2-2 for `qu[e]`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.orthography@0`;
+2. 4-4 for `[b]ixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.orthography@1`;
+3. 2-4 for `qu[e b]ixit`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.apparatus@0`;
+4. 4-14 for `bixit|annos`: fragment ID=`it.vedph.token-text-layer:fr.it.vedph.comment@0`.
 
-![comment - text](img/comment-preview.png)
+>Links to each layer's fragment are made via these fragment identifiers, built by concatenating the layer part type ID with its role ID, separated by a colon, followed by `@` and the index of the fragment in the layer's fragments array. Optionally, these links can be expanded with an additional suffix which starts from any non-digit character after the fragment index. For instance, an apparatus fragment has an array of entries, and when we want to target each of them we add a suffix `.` plus the index of the entry in that array.
 
-- _Previewing a comment's fragment (for `provident`)._
+Each of the ranges has a model including:
 
-As you can see, the comment preview here presents all the information found in the comment part, in a more compact and user-friendly way:
+- the start and end indexes referred to the whole text as output by the same function.
+- the global ID of the corresponding fragment(s). After flattening, each range has just a single fragment ID, because by definition one fragment produces one range. Later, when ranges are merged, they may carry more than a single fragment ID. Each fragment ID is built by concatenating the part type ID, followed by `:` and its role ID (which is always defined for a layer part), followed by `_` and the index of the fragment in its layer part.
+- the text corresponding to the range. This is assigned after flattening and merging, for performance reasons (it would be pointless to assign text to all the ranges when many of them are going to be merged into new ones).
 
-- at the top `general` is the comment's tag.
-- below it, its two categories are shown.
-- the comment's text has been rendered from Markdown, and shown in a couple of columns (the actual number depends on the width of the browser's window).
-- under the text, its keywords are listed with their language and optional container index.
-- below the text, references are listed with their type and tag, and eventual notes.
-- finally, identifiers are listed with their scope. As these IDs happen to begin with `http`, they are rendered as clickable links.
+At this stage we have a string with the text, and a bunch of freely overlapping ranges referring to it. The next step is merging these ranges into a single linear, contiguous sequence.
 
-Here is the configuration used for getting this preview:
+▶️ (2) **merge ranges** (via `FragmentTextRange.MergeRanges`) into a set of non-overlapping and contiguous ranges, covering the whole text from start to end. So, starting from this state, where each line below the text represents a range with its fragment ID (Figure 2).
 
-```json
-{
-  "RendererFilters": [
-    {
-      "Keys": "markdown",
-      "Id": "it.vedph.renderer-filter.markdown",
-      "Options": {
-        "MarkdownOpen": "<_md>",
-        "MarkdownClose": "</_md>",
-        "Format": "html"
-      }
-    },
-    {
-      "Keys": "iso639-3",
-      "Id": "it.vedph.renderer-filter.iso639"
-    }
-  ],
-  "JsonRenderers": [
-    {
-      "Keys": "it.vedph.token-text-layer|fr.it.vedph.comment",
-      "Id": "it.vedph.json-renderer.xslt",
-      "Options": {
-        "WrappedEntryNames": {
-          "categories": "category",
-          "references": "reference",
-          "keywords": "keyword",
-          "externalIds": "externalId"
-        },
-        "Xslt": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" exclude-result-prefixes=\"xs\" version=\"1.0\"><xsl:output media-type=\"text/html\" method=\"html\" omit-xml-declaration=\"yes\" encoding=\"UTF-8\"/><xsl:template match=\"*[not(*) and not(normalize-space())]\"></xsl:template><xsl:template name=\"build-link\"><xsl:param name=\"val\"/><xsl:choose><xsl:when test=\"starts-with($val, 'http')\"><xsl:element name=\"a\"><xsl:attribute name=\"href\"><xsl:value-of select=\"$val\"/></xsl:attribute><xsl:attribute name=\"target\">_blank</xsl:attribute><xsl:value-of select=\"$val\"/></xsl:element></xsl:when><xsl:otherwise><xsl:value-of select=\"$val\"/></xsl:otherwise></xsl:choose></xsl:template><xsl:template match=\"reference\"><li><xsl:if test=\"type[normalize-space(.)]\"><span class=\"comment-ref-y\"><xsl:value-of select=\"type\"/></span></xsl:if><xsl:if test=\"tag[normalize-space(.)]\"><span class=\"comment-ref-t\"><xsl:value-of select=\"tag\"/></span></xsl:if><xsl:if test=\"citation\"><span class=\"comment-ref-c\"><xsl:call-template name=\"build-link\"><xsl:with-param name=\"val\" select=\"citation\"></xsl:with-param></xsl:call-template></span></xsl:if><xsl:if test=\"note[normalize-space(.)]\"><xsl:text></xsl:text><span class=\"comment-ref-n\"><xsl:value-of select=\"note\"/></span></xsl:if></li></xsl:template><xsl:template match=\"root\"><div class=\"comment\"><xsl:if test=\"tag[normalize-space(.)]\"><div class=\"comment-tag\"><xsl:value-of select=\"tag\"/></div></xsl:if><xsl:if test=\"categories/category\"><div class=\"pv-flex-row comment-categories\"><xsl:for-each select=\"categories/category\"><div class=\"comment-category\"><xsl:value-of select=\".\"/></div></xsl:for-each></div></xsl:if><xsl:if test=\"text\"><div class=\"comment-text\"><_md><xsl:value-of select=\"text\"/></_md></div></xsl:if><xsl:if test=\"keywords/keyword\"><ul class=\"comment-keywords\"><xsl:for-each select=\"keywords/keyword\"><xsl:sort select=\"indexId\"/><xsl:sort select=\"language\"/><xsl:sort select=\"value\"/><li><xsl:if test=\"indexId[normalize-space(.)]\"><span class=\"comment-kw-x\"><xsl:value-of select=\"indexId\"/></span></xsl:if><span class=\"comment-kw-l\">^^<xsl:value-of select=\"language\"/></span><span class=\"comment-kw-v\"><xsl:value-of select=\"value\"/></span></li></xsl:for-each></ul></xsl:if><xsl:if test=\"references/*\"><div class=\"comment-hdr\">references</div><ol class=\"comment-references\"><xsl:apply-templates select=\"references/reference\"/></ol></xsl:if><xsl:if test=\"externalIds/*\"><div class=\"comment-hdr\">identifiers</div><ul class=\"comment-ids\"><xsl:for-each select=\"externalIds/externalId\"><li><xsl:if test=\"tag[normalize-space(.)]\"><span class=\"comment-id-t\"><xsl:value-of select=\"tag\"/></span></xsl:if><xsl:if test=\"scope[normalize-space(.)]\"><span class=\"comment-id-s\"><xsl:value-of select=\"scope\"/></span></xsl:if><span class=\"comment-id-v\"><xsl:call-template name=\"build-link\"><xsl:with-param name=\"val\" select=\"value\"/></xsl:call-template></span><xsl:if test=\"assertion/*\"><div class=\"comment-assertion\"><xsl:if test=\"assertion/tag\"><span class=\"comment-id-t\"><xsl:value-of select=\"assertion/tag\"/></span></xsl:if><xsl:if test=\"assertion/rank\"><xsl:text></xsl:text><span class=\"comment-id-r\">R<xsl:value-of select=\"assertion/rank\"/></span></xsl:if><xsl:if test=\"assertion/note\"><xsl:text></xsl:text><div class=\"comment-id-n\"><xsl:value-of select=\"assertion/note\"/></div></xsl:if><xsl:if test=\"assertion/references\"><ol class=\"comment-assertion-refs\"><xsl:apply-templates select=\"assertion/references/reference\"/></ol></xsl:if></div></xsl:if></li></xsl:for-each></ul></xsl:if></div></xsl:template><xsl:template match=\"*\"/></xsl:stylesheet>",
-        "FilterKeys": ["markdown", "iso639-3"]
-      }
-    }
-  ],
-  "TextPartFlatteners": [
-    {
-      "Keys": "it.vedph.token-text",
-      "Id": "it.vedph.text-flattener.token"
-    }
-  ]
-}
+![flattening](img/flattening.png)
+
+- Figure 2 - Flattening layer ranges into merged ranges
+
+>In this figure we represent the data item (our inscription) as a box containing 5 objects: the green ones are text and text layer parts, each with a specific type and model annotations: orthography, paleography, comment; the base text itself is another object in the box, the one labelled with `T`. The blue object is another part which is not linked to specific portions of the text, just to show that the box might include any type of data, whether it is directly related text or not. For instance, this blue object might be a datation, or a description of the material support, or of its archaeological context, etc.
+
+More schematically, these are our layers:
+
+```txt
+012345678901234567
+que bixit|annos XX
+..O............... fr1
+....O............. fr2
+..PPP............. fr3
+....CCCCCCCCCCC... fr4
 ```
 
-The rendition happens via an [XSLT-based JSON renderer](renderers.md#xslt-json-renderer). This is configured to wrap a number of entries into a parent element representing the original arrays in the JSON code (`WrappedEntryNames`), and to use a couple of filters:
+From here we get these ranges (I am numbering the ranges to make it easier to refer to them in this documentation):
 
-- a [Markdown filter](filters#markdown-conversion-filter), which renders Markdown text into HTML. In fact, as you can observe from the above screenshot, the preview shows some text in italic, and a couple of paragraphs as a bulleted list. This is the effect of rendering Markdown.
-- an [ISO 639 language code filter](filters#iso-639-lookup-filter), which converts ISO639-3 letters codes representing languages into their corresponding English name. In fact, instead of getting `eng` for keyword codes, which is the value stored in the database part, you get `English` by virtue of this filter.
+1. 0-1 for `qu` = no fragments;
+2. 2-2 for `e` = fr1, fr3;
+3. 3-3 for space = fr3;
+4. 4-4 for `b` = fr2, fr3, fr4;
+5. 5-14 for `ixit|annos` = fr4;
+6. 15-17 for space + `XX` = no fragments.
 
-This is the XSLT code extracted from the above JSON for better readability:
+Here we have the text with indexes above, and range numbers below:
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="1.0">
-    <xsl:output media-type="text/html" method="html" omit-xml-declaration="yes" encoding="UTF-8"/>
-    <xsl:template match="*[not(*) and not(normalize-space())]"></xsl:template>
-    <xsl:template name="build-link">
-        <xsl:param name="val"/>
-        <xsl:choose>
-            <xsl:when test="starts-with($val, 'http')">
-                <xsl:element name="a">
-                    <xsl:attribute name="href">
-                        <xsl:value-of select="$val"/>
-                    </xsl:attribute>
-                    <xsl:attribute name="target">_blank</xsl:attribute>
-                    <xsl:value-of select="$val"/>
-                </xsl:element>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="$val"/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:template>
-    <xsl:template match="reference">
-        <li>
-            <xsl:if test="type[normalize-space(.)]">
-                <span class="comment-ref-y">
-                    <xsl:value-of select="type"/>
-                </span>
-            </xsl:if>
-            <xsl:if test="tag[normalize-space(.)]">
-                <span class="comment-ref-t">
-                    <xsl:value-of select="tag"/>
-                </span>
-            </xsl:if>
-            <xsl:if test="citation">
-                <span class="comment-ref-c">
-                    <xsl:call-template name="build-link">
-                        <xsl:with-param name="val" select="citation"></xsl:with-param>
-                    </xsl:call-template>
-                </span>
-            </xsl:if>
-            <xsl:if test="note[normalize-space(.)]">
-                <xsl:text></xsl:text>
-                <span class="comment-ref-n">
-                    <xsl:value-of select="note"/>
-                </span>
-            </xsl:if>
-        </li>
-    </xsl:template>
-    <xsl:template match="root">
-        <div class="comment">
-            <xsl:if test="tag[normalize-space(.)]">
-                <div class="comment-tag">
-                    <xsl:value-of select="tag"/>
-                </div>
-            </xsl:if>
-            <xsl:if test="categories/category">
-                <div class="pv-flex-row comment-categories">
-                    <xsl:for-each select="categories/category">
-                        <div class="comment-category">
-                            <xsl:value-of select="."/>
-                        </div>
-                    </xsl:for-each>
-                </div>
-            </xsl:if>
-            <xsl:if test="text">
-                <div class="comment-text">
-                    <_md>
-                        <xsl:value-of select="text"/>
-                    </_md>
-                </div>
-            </xsl:if>
-            <xsl:if test="keywords/keyword">
-                <ul class="comment-keywords">
-                    <xsl:for-each select="keywords/keyword">
-                        <xsl:sort select="indexId"/>
-                        <xsl:sort select="language"/>
-                        <xsl:sort select="value"/>
-                        <li>
-                            <xsl:if test="indexId[normalize-space(.)]">
-                                <span class="comment-kw-x">
-                                    <xsl:value-of select="indexId"/>
-                                </span>
-                            </xsl:if>
-                            <span class="comment-kw-l">^^<xsl:value-of select="language"/>
-                            </span>
-                            <span class="comment-kw-v">
-                                <xsl:value-of select="value"/>
-                            </span>
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </xsl:if>
-            <xsl:if test="references/*">
-                <div class="comment-hdr">references</div>
-                <ol class="comment-references">
-                    <xsl:apply-templates select="references/reference"/>
-                </ol>
-            </xsl:if>
-            <xsl:if test="externalIds/*">
-                <div class="comment-hdr">identifiers</div>
-                <ul class="comment-ids">
-                    <xsl:for-each select="externalIds/externalId">
-                        <li>
-                            <xsl:if test="tag[normalize-space(.)]">
-                                <span class="comment-id-t">
-                                    <xsl:value-of select="tag"/>
-                                </span>
-                            </xsl:if>
-                            <xsl:if test="scope[normalize-space(.)]">
-                                <span class="comment-id-s">
-                                    <xsl:value-of select="scope"/>
-                                </span>
-                            </xsl:if>
-                            <span class="comment-id-v">
-                                <xsl:call-template name="build-link">
-                                    <xsl:with-param name="val" select="value"/>
-                                </xsl:call-template>
-                            </span>
-                            <xsl:if test="assertion/*">
-                                <div class="comment-assertion">
-                                    <xsl:if test="assertion/tag">
-                                        <span class="comment-id-t">
-                                            <xsl:value-of select="assertion/tag"/>
-                                        </span>
-                                    </xsl:if>
-                                    <xsl:if test="assertion/rank">
-                                        <xsl:text></xsl:text>
-                                        <span class="comment-id-r">R<xsl:value-of select="assertion/rank"/>
-                                        </span>
-                                    </xsl:if>
-                                    <xsl:if test="assertion/note">
-                                        <xsl:text></xsl:text>
-                                        <div class="comment-id-n">
-                                            <xsl:value-of select="assertion/note"/>
-                                        </div>
-                                    </xsl:if>
-                                    <xsl:if test="assertion/references">
-                                        <ol class="comment-assertion-refs">
-                                            <xsl:apply-templates select="assertion/references/reference"/>
-                                        </ol>
-                                    </xsl:if>
-                                </div>
-                            </xsl:if>
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </xsl:if>
-        </div>
-    </xsl:template>
-    <xsl:template match="*"/>
-</xsl:stylesheet>
+```txt
+012345678901234567
+que bixit|annos XX
+112345555555555666
 ```
+
+▶️ (3) **assign text values** to each merged range (via `ItemComposer`). This is trivial as it just means getting substrings from the whole text, as delimited by each range.
+
+▶️ (4) **build a text tree**: this tree is built (via `ItemComposer`) starting from a blank root node, having in a single branch descendant nodes corresponding to the merged ranges. The first range is child of the blank root node, and each following range is child of the previous one.
+
+Each node has _payload_ data with this model:
+
+- range: the source merged range with its fragment ID(s).
+- type: an optional string representing a node type when required.
+- before EOL: true if node is appeared before a line end marker (LF) in the original text.
+- text: the text corresponding to this node. Initially this is equal to the source range's text, but it might be changed by filters.
+- features: a set of generic name=value pairs, where both are strings, plus a source identifier (equal to or derived from the fragment ID). Duplicate names are allowed and represent arrays. Initially these are empty, but they are going to be used later.
+
+So the tree is:
+
+```mermaid
+graph LR;
+
+root --> 1[qu]
+1 --> 2[e]
+2 --> 3[_]
+3 --> 4[b]
+4 --> 5[ixit/annos]
+5 --> 6[_XX]
+```
+
+>The tree structure may seem an overcomplication when dealing with a single linear branch, but it is really useful when rendering more complex data. For instance, we might be able to transform a linear tree into a binary branching tree, and adopt a parallel segmentation strategy. See below for more.
+
+Note that here a node contains text with a LF character, which is used to mark the end of the original line. Typically this is adjusted in the next step so that such nodes are split.
+
+▶️ (5) **apply text tree filters**: optionally, apply filters to the tree nodes. Each of the filters takes the input of the previous one and generates a new tree. Almost always you will be using the _block linear tree text filter_, which splits nodes wherever they include newlines. This ensures that each node has at most 1 newline, and that it appears at the end of its text. This is required to ensure that text blocks will be correctly rendered. The result is:
+
+```mermaid
+graph LR;
+
+root --> 1[qu]
+1 --> 2[e]
+2 --> 3[_]
+3 --> 4[b]
+4 --> 5[ixit]
+5 --> 6[annos]
+6 --> 7[_XX]
+```
+
+▶️ (6) **render the text tree** (via an `ITextTreeRenderer`). A text tree renderer traverses the tree and renders it into some specific format. This can be anything, from something as simple as plain text (by just concatenating text from each node) to HTML, TEI, etc.

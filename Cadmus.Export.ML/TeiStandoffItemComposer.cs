@@ -19,7 +19,6 @@ namespace Cadmus.Export.ML;
 public abstract class TeiStandoffItemComposer : ItemComposer
 {
     private readonly JsonSerializerOptions _jsonOptions;
-    private int _nextLayerId;
 
     /// <summary>
     /// The TEI namespace.
