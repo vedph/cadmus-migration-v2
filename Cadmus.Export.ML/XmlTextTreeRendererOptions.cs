@@ -13,6 +13,17 @@ namespace Cadmus.Export.ML;
 public class XmlTextTreeRendererOptions : XmlTextFilterOptions
 {
     /// <summary>
+    /// The key used in the rendering context to keep track of unique identifiers
+    /// for text segments like <c>seg</c>, <c>lem</c>, <c>rdg</c>, etc.
+    /// </summary>
+    public const string CONTEXT_SEG_IDKEY = "seg";
+
+    /// <summary>
+    /// The context block type key to retrieve it from the context data.
+    /// </summary>
+    public const string CONTEXT_BLOCK_TYPE_KEY = "block-type";
+
+    /// <summary>
     /// Gets or sets the name of the root element. The default is <c>tei:div</c>.
     /// This is usually not rendered in output, but it is used as the root of
     /// the XML fragment built by the renderer.
@@ -43,6 +54,22 @@ public class XmlTextTreeRendererOptions : XmlTextFilterOptions
     /// indented. This can be useful for diagnostic purposes.
     /// </summary>
     public bool IsIndented { get; set; }
+
+    /// <summary>
+    /// Gets or sets the head code template to be rendered at the start of the
+    /// each group of items. Its value can include placeholders in curly braces,
+    /// corresponding to any of the metadata keys defined in the item composer's
+    /// context.
+    /// </summary>
+    public string? GroupHeadTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the tail code template to be rendered at the end of each
+    /// group of items. Its value can include placeholders in curly braces,
+    /// corresponding to any of the metadata keys defined in the item composer's
+    /// context.
+    /// </summary>
+    public string? GroupTailTemplate { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="XmlTextTreeRendererOptions"/>

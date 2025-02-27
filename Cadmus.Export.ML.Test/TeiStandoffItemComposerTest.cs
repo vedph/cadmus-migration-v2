@@ -88,7 +88,7 @@ public sealed class TeiStandoffItemComposerTest
         RamTeiStandoffItemComposer composer = new()
         {
             TextPartFlattener = new TokenTextPartFlattener(),
-            TextTreeRenderer = new TeiStandoffTextTreeRenderer()
+            TextTreeRenderer = new TeiOffLinearTextTreeRenderer()
         };
 
         composer.JsonRenderers["it.vedph.token-text"] = new NullJsonRenderer();

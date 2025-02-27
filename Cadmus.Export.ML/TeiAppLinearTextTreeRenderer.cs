@@ -30,17 +30,6 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     private int _group;
     private string? _pendingGroupId;
 
-    /// <summary>
-    /// The context block type data key to retrieve it from the context data.
-    /// </summary>
-    public const string CONTEXT_BLOCK_TYPE = "block-type";
-
-    /// <summary>
-    /// The key used in the rendering context to keep track of unique identifiers
-    /// for segments like <c>lem</c> and <c>rdg</c>.
-    /// </summary>
-    public const string CONTEXT_SEG_IDKEY = "text-tree-renderer.tei-app-linear:seg";
-
     private AppLinearTextTreeRendererOptions _options = new();
 
     /// <summary>
@@ -84,7 +73,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         seg.Add(witDetail);
 
         // @target=segID
-        int targetId = context.GetNextIdFor(CONTEXT_SEG_IDKEY);
+        int targetId = context.GetNextIdFor(
+            XmlTextTreeRendererOptions.CONTEXT_SEG_IDKEY);
         seg.SetAttributeValue(_options.ResolvePrefixedName("xml:id"),
             $"seg{targetId}");
         witDetail.SetAttributeValue("target", $"#seg{targetId}");
@@ -152,7 +142,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
 
         // get the block name
         string blockType = "default";
-        if (context.Data.TryGetValue(CONTEXT_BLOCK_TYPE, out object? value))
+        if (context.Data.TryGetValue(XmlTextTreeRendererOptions.CONTEXT_BLOCK_TYPE_KEY,
+            out object? value))
         {
             blockType = value as string ?? "default";
         }
@@ -298,20 +289,4 @@ public class AppLinearTextTreeRendererOptions : XmlTextTreeRendererOptions
     /// omission. If null, no attribute will be added. The default is null.
     /// </summary>
     public string? ZeroVariantType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the head code template to be rendered at the start of the
-    /// each group of items. Its value can include placeholders in curly braces,
-    /// corresponding to any of the metadata keys defined in the item composer's
-    /// context.
-    /// </summary>
-    public string? GroupHeadTemplate { get; set; }
-
-    /// <summary>
-    /// Gets or sets the tail code template to be rendered at the end of each
-    /// group of items. Its value can include placeholders in curly braces,
-    /// corresponding to any of the metadata keys defined in the item composer's
-    /// context.
-    /// </summary>
-    public string? GroupTailTemplate { get; set; }
 }

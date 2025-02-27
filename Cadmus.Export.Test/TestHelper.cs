@@ -26,7 +26,7 @@ internal static class TestHelper
             {
                 CadmusPreviewFactory.ConfigureServices(services, new[]
                 {
-                    typeof(TeiStandoffTextTreeRenderer).Assembly
+                    typeof(TeiOffLinearTextTreeRenderer).Assembly
                 });
             })
             // extension method from Fusi library

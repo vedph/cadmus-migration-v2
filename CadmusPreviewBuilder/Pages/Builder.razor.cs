@@ -51,7 +51,7 @@ public partial class Builder
             {
                 CadmusPreviewFactory.ConfigureServices(services,
                 [
-                    typeof(TeiStandoffTextTreeRenderer).Assembly
+                    typeof(TeiOffLinearTextTreeRenderer).Assembly
                 ]);
             })
             // extension method from Fusi library
