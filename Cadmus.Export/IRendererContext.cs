@@ -67,9 +67,29 @@ public interface IRendererContext : IHasDataDictionary
     void Clear(bool seeds = false);
 
     /// <summary>
-    /// Gets the next autonumber identifier for the specified key.
+    /// Gets the next autonumber identifier for the category specified by
+    /// <paramref name="categoryKey"/>. This is just a progressive number starting
+    /// from 1.
     /// </summary>
-    /// <param name="key">The key.</param>
+    /// <param name="categoryKey">The key.</param>
     /// <returns>The next autonumber ID.</returns>
-    int GetNextIdFor(string key);
+    int GetNextIdFor(string categoryKey);
+
+    /// <summary>
+    /// Maps the specified source (e.g. fragment etc.) global identifier
+    /// into a number. This is idempotent, i.e. if the ID has already been
+    /// mapped, the same number is returned.
+    /// </summary>
+    /// <param name="map">The ID of the map to use.</param>
+    /// <param name="id">The identifier to map.</param>
+    /// <returns>Numeric ID.</returns>
+    int MapSourceId(string map, string id);
+
+    /// <summary>
+    /// Gets the source identifier from its mapped unique number.
+    /// </summary>
+    /// <param name="map">The ID of the map to use.</param>
+    /// <param name="id">The mapped number.</param>
+    /// <returns>The source identifier or null if not found.</returns>
+    string? GetSourceId(string map, int id);
 }

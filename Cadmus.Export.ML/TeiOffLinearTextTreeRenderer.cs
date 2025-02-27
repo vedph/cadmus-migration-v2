@@ -106,7 +106,8 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
 
         // get the block name
         string blockType = "default";
-        if (context.Data.TryGetValue(XmlTextTreeRendererOptions.CONTEXT_BLOCK_TYPE_KEY,
+        if (context.Data.TryGetValue(
+            XmlTextTreeRendererOptions.CONTEXT_BLOCK_TYPE_KEY,
             out object? value))
         {
             blockType = value as string ?? "default";
@@ -125,11 +126,13 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
         {
             if (node.Data?.Text != null)
             {
-                int id = context.GetNextIdFor(
-                    XmlTextTreeRendererOptions.CONTEXT_SEG_IDKEY);
+                int id = context.MapSourceId("seg",
+                    $"{context.Item!.Id}_{node.Id}");
+
                 XElement seg = new(NamespaceOptions.TEI + "seg",
-                    new XAttribute(NamespaceOptions.XML + "id", id),
+                    new XAttribute(NamespaceOptions.XML + "id", $"seg{id}"),
                     node.Data.Text);
+
                 block.Add(seg);
             }
 

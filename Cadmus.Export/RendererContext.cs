@@ -46,15 +46,43 @@ public class RendererContext : DataDictionary, IRendererContext
     }
 
     /// <summary>
-    /// Gets the next autonumber identifier for the specified key.
+    /// Gets the next autonumber identifier for the category specified by
+    /// <paramref name="categoryKey"/>. This is just a progressive number starting
+    /// from 1.
     /// </summary>
-    /// <param name="key">The key.</param>
+    /// <param name="categoryKey">The key.</param>
     /// <returns>The next autonumber ID.</returns>
     /// <exception cref="ArgumentNullException">key</exception>
-    public int GetNextIdFor(string key)
+    public int GetNextIdFor(string categoryKey)
     {
-        ArgumentNullException.ThrowIfNull(key);
-        return _counters.AddOrUpdate(key, 1, (_, v) => v + 1);
+        ArgumentNullException.ThrowIfNull(categoryKey);
+        return _counters.AddOrUpdate(categoryKey, 1, (_, v) => v + 1);
+    }
+
+    /// <summary>
+    /// Maps the specified source (e.g. fragment etc.) global identifier
+    /// into a number. This is idempotent, i.e. if the ID has already been
+    /// mapped, the same number is returned.
+    /// </summary>
+    /// <param name="map">The ID of the map to use.</param>
+    /// <param name="id">The identifier to map.</param>
+    /// <returns>Numeric ID.</returns>
+    public int MapSourceId(string map, string id)
+    {
+        if (!IdMaps.ContainsKey(map)) IdMaps[map] = new IdMap();
+        return IdMaps[map].MapSourceId(id);
+    }
+
+    /// <summary>
+    /// Gets the source identifier from its mapped unique number.
+    /// </summary>
+    /// <param name="map">The ID of the map to use.</param>
+    /// <param name="id">The mapped number.</param>
+    /// <returns>The source identifier or null if not found.</returns>
+    public string? GetSourceId(string map, int id)
+    {
+        if (!IdMaps.ContainsKey(map)) IdMaps[map] = new IdMap();
+        return IdMaps[map].GetSourceId(id);
     }
 
     /// <summary>
