@@ -1,6 +1,5 @@
 ﻿using Cadmus.Core;
 using Cadmus.Core.Storage;
-using Fusi.Xml.Extras.Scan;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,10 +82,8 @@ public sealed class CadmusPreviewer
         return renderer;
     }
 
-    private IRendererContext? BuildContext(IItem? item)
+    private IRendererContext BuildContext(IItem item)
     {
-        if (item == null) return null;
-
         RendererContext context = new()
         {
             Repository = _repository
@@ -113,7 +110,7 @@ public sealed class CadmusPreviewer
     /// <returns>Rendition or empty string.</returns>
     /// <param name="context">The optional renderer context.</param>
     /// <exception cref="ArgumentNullException">json</exception>
-    public string RenderPartJson(string json, IRendererContext? context = null)
+    public string RenderPartJson(string json, IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(json);
 
@@ -149,7 +146,9 @@ public sealed class CadmusPreviewer
         ArgumentNullException.ThrowIfNull(partId);
 
         IItem? item = _repository?.GetItem(itemId, false);
-        IRendererContext? context = BuildContext(item);
+        if (item == null) return "";
+
+        IRendererContext context = BuildContext(item);
 
         string? json = _repository?.GetPartContent(partId);
         if (json == null) return "";

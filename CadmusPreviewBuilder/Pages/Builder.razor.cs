@@ -1,4 +1,5 @@
-﻿using Cadmus.Export.ML;
+﻿using Cadmus.Export;
+using Cadmus.Export.ML;
 using Cadmus.Export.Preview;
 using Fusi.Microsoft.Extensions.Configuration.InMemoryJson;
 using Microsoft.AspNetCore.Components;
@@ -50,9 +51,7 @@ public partial class Builder
             .ConfigureServices((hostContext, services) =>
             {
                 CadmusPreviewFactory.ConfigureServices(services,
-                [
-                    typeof(TeiOffLinearTextTreeRenderer).Assembly
-                ]);
+                    typeof(TeiOffLinearTextTreeRenderer).Assembly);
             })
             // extension method from Fusi library
             .AddInMemoryJson(config)
@@ -153,13 +152,15 @@ public partial class Builder
                 _configHash = configHash;
             }
 
+            RendererContext context = new();
+
             await Task.Run(() =>
             {
                 string result;
                 if (Model.IsFragment)
                     result = _previewer.RenderFragmentJson(Model.Json, 0);
                 else
-                    result = _previewer.RenderPartJson(Model.Json);
+                    result = _previewer.RenderPartJson(Model.Json, context);
 
                 Model.Html = Model.IsWrapEnabled
                     ? WrapIntoHtml(result) : result;

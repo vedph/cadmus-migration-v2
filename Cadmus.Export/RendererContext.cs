@@ -4,6 +4,7 @@ using Fusi.Tools;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cadmus.Export;
 
@@ -83,6 +84,16 @@ public class RendererContext : DataDictionary, IRendererContext
     {
         if (!IdMaps.ContainsKey(map)) IdMaps[map] = new IdMap();
         return IdMaps[map].GetSourceId(id);
+    }
+
+    /// <summary>
+    /// Gets the text part from <see cref="Item"/> if any.
+    /// </summary>
+    /// <returns>Text part or null.</returns>
+    public IPart? GetTextPart()
+    {
+        return Item?.Parts.FirstOrDefault(p =>
+            p.RoleId == PartBase.BASE_TEXT_ROLE_ID);
     }
 
     /// <summary>

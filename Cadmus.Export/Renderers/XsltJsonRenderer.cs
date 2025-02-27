@@ -1,5 +1,6 @@
 ﻿using DevLab.JmesPath;
 using Fusi.Tools.Configuration;
+using Fusi.Tools.Data;
 using Fusi.Xml;
 using Fusi.Xml.Extras.Render;
 using Newtonsoft.Json;
@@ -125,9 +126,12 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
     /// is the received JSON code, unless this already has this form.</param>
     /// <param name="context">The optional renderer context.</param>
     /// <returns>Rendered output.</returns>
+    /// <param name="tree">The optional text tree. This is used for layer
+    /// fragments to get source IDs targeting the various portions of the
+    /// text.</param>
     /// <exception cref="ArgumentNullException">json</exception>
     protected override string DoRender(string json,
-        IRendererContext? context = null)
+        IRendererContext context, TreeNode<TextSpanPayload>? tree = null)
     {
         if (_options == null) return json;
 

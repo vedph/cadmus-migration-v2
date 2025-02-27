@@ -92,4 +92,10 @@ public interface IRendererContext : IHasDataDictionary
     /// <param name="id">The mapped number.</param>
     /// <returns>The source identifier or null if not found.</returns>
     string? GetSourceId(string map, int id);
+
+    /// <summary>
+    /// Gets the text part from <see cref="Item"/> if any.
+    /// </summary>
+    /// <returns>Text part or null.</returns>
+    IPart? GetTextPart();
 }

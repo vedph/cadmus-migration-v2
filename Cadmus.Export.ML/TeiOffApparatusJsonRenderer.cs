@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using System.Linq;
 using Cadmus.Export.Renderers;
 using Proteus.Core.Text;
+using Fusi.Tools.Data;
 
 namespace Cadmus.Export.ML;
 
@@ -56,23 +57,23 @@ namespace Cadmus.Export.ML;
 /// <term>not rendered</term>
 /// <description>normValue, isAccepted, groupId.</description>
 /// </item>
-/// <para>Tag: <c>it.vedph.json-renderer.tei-standoff.apparatus</c>.</para>
+/// <para>Tag: <c>it.vedph.json-renderer.tei-off.apparatus</c>.</para>
 /// </summary>
 /// <seealso cref="JsonRenderer" />
 /// <seealso cref="IJsonRenderer" />
-[Tag("it.vedph.json-renderer.tei-standoff.apparatus")]
-public sealed class TeiStandoffApparatusJsonRenderer : JsonRenderer,
-    IJsonRenderer, IConfigurable<TeiStandoffApparatusJsonRendererOptions>
+[Tag("it.vedph.json-renderer.tei-off.apparatus")]
+public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
+    IJsonRenderer, IConfigurable<AppLinearTextTreeRendererOptions>
 {
     private readonly JsonSerializerOptions _jsonOptions;
 
-    private TeiStandoffApparatusJsonRendererOptions _options;
+    private AppLinearTextTreeRendererOptions _options;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TeiStandoffApparatusJsonRenderer"/>
+    /// Initializes a new instance of the <see cref="TeiOffApparatusJsonRenderer"/>
     /// class.
     /// </summary>
-    public TeiStandoffApparatusJsonRenderer()
+    public TeiOffApparatusJsonRenderer()
     {
         _jsonOptions = new()
         {
@@ -85,27 +86,27 @@ public sealed class TeiStandoffApparatusJsonRenderer : JsonRenderer,
     private string BuildValue(ApparatusEntry entry)
     {
         StringBuilder sb = new();
-        if (!string.IsNullOrEmpty(entry.Value))
-        {
-            sb.Append(entry.Value);
-        }
-        else if (entry.Type == ApparatusEntryType.Replacement &&
-            !string.IsNullOrEmpty(_options?.ZeroVariant))
-        {
-            sb.Append(_options.ZeroVariant);
-        }
+        //if (!string.IsNullOrEmpty(entry.Value))
+        //{
+        //    sb.Append(entry.Value);
+        //}
+        //else if (entry.Type == ApparatusEntryType.Replacement &&
+        //    !string.IsNullOrEmpty(_options?.ZeroVariant))
+        //{
+        //    sb.Append(_options.ZeroVariant);
+        //}
 
-        if (!string.IsNullOrEmpty(entry.Note))
-        {
-            if (sb.Length > 0) sb.Append(' ');
+        //if (!string.IsNullOrEmpty(entry.Note))
+        //{
+        //    if (sb.Length > 0) sb.Append(' ');
 
-            if (!string.IsNullOrEmpty(entry.Value) &&
-                !string.IsNullOrEmpty(_options?.NotePrefix))
-            {
-                sb.Append(_options.NotePrefix);
-            }
-            sb.Append(entry.Note);
-        }
+        //    if (!string.IsNullOrEmpty(entry.Value) &&
+        //        !string.IsNullOrEmpty(_options?.NotePrefix))
+        //    {
+        //        sb.Append(_options.NotePrefix);
+        //    }
+        //    sb.Append(entry.Note);
+        //}
         return sb.ToString();
     }
 
@@ -114,7 +115,7 @@ public sealed class TeiStandoffApparatusJsonRenderer : JsonRenderer,
     /// </summary>
     /// <param name="options">The options.</param>
     /// <exception cref="ArgumentNullException">options</exception>
-    public void Configure(TeiStandoffApparatusJsonRendererOptions options)
+    public void Configure(AppLinearTextTreeRendererOptions options)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
@@ -124,9 +125,12 @@ public sealed class TeiStandoffApparatusJsonRenderer : JsonRenderer,
     /// </summary>
     /// <param name="json">The input JSON.</param>
     /// <param name="context">The optional renderer context.</param>
+    /// <param name="tree">The optional text tree. This is used for layer
+    /// fragments to get source IDs targeting the various portions of the
+    /// text.</param>
     /// <returns>Rendered output.</returns>
     protected override string DoRender(string json,
-        IRendererContext? context = null)
+        IRendererContext context, TreeNode<TextSpanPayload>? tree = null)
     {
         // read fragments array
         JsonNode? root = JsonNode.Parse(json);
@@ -135,10 +139,13 @@ public sealed class TeiStandoffApparatusJsonRenderer : JsonRenderer,
             root["fragments"].Deserialize<ApparatusLayerFragment[]>(_jsonOptions);
         if (fragments == null || context == null) return "";
 
-        // div @xml:id="ITEM_ID"
-        XElement itemDiv = new(NamespaceOptions.TEI + "div",
+        // div @xml:id="item<ID>"
+        // get the root element name (usually div)
+        XName rootName = _options.ResolvePrefixedName(_options.RootElement);
+
+        XElement itemDiv = new(rootName,
             new XAttribute(NamespaceOptions.XML + "id",
-                context.Data[ItemComposer.M_ITEM_ID]));
+            $"item{context.Item!.Id}"));
 
         // process each fragment
         int frIndex = 0;
@@ -150,7 +157,7 @@ public sealed class TeiStandoffApparatusJsonRenderer : JsonRenderer,
                 frDiv.SetAttributeValue("type", fr.Tag);
             itemDiv.Add(frDiv);
 
-            // app @loc="BLOCK_ID"
+            // app @loc="segID"
             // the target block ID must be fetched from the fragment IDs
             // map in context; to get the ID for this fragment, we rely
             // on the current layer ID, get its prefix, and use this to
@@ -205,40 +212,5 @@ public sealed class TeiStandoffApparatusJsonRenderer : JsonRenderer,
             // remove default TEI namespace
             .Replace(" xmlns=\"http://www.tei-c.org/ns/1.0\"", "")
             + Environment.NewLine;
-    }
-}
-
-/// <summary>
-/// Options for <see cref="TeiStandoffApparatusJsonRenderer"/>
-/// </summary>
-public class TeiStandoffApparatusJsonRendererOptions
-{
-    /// <summary>
-    /// Gets or sets the text to output for a zero variant. A zero
-    /// variant is a deletion, represented as a text variant with an
-    /// empty value. When building an output, you might want to add
-    /// some conventional text for it, e.g. <c>del.</c> (delevit),
-    /// which is the default value.
-    /// </summary>
-    public string? ZeroVariant { get; set; }
-
-    /// <summary>
-    /// Gets or sets the note prefix. This is an optional string to be
-    /// prefixed to the note text after a non-empty value in a <c>rdg</c>
-    /// or <c>note</c> element value. Any apparatus entry can have a
-    /// value, and an optional note; when it's a variant mostly it has
-    /// a value, and eventually a note; when it's a note, mostly it has
-    /// only the note without value. The default value is space.
-    /// </summary>
-    public string? NotePrefix { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the
-    /// <see cref="TeiStandoffApparatusJsonRendererOptions"/> class.
-    /// </summary>
-    public TeiStandoffApparatusJsonRendererOptions()
-    {
-        ZeroVariant = "del.";
-        NotePrefix = " ";
     }
 }

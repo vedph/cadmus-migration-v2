@@ -11,6 +11,12 @@ namespace Cadmus.Export.Test.Renderers;
 
 public sealed class XsltJsonRendererTest
 {
+    private readonly JsonSerializerOptions _options =
+        new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
     private static XDocument GetSampleDocument(int count = 3)
     {
         XDocument doc = new(new XElement("root"));
@@ -76,12 +82,9 @@ public sealed class XsltJsonRendererTest
             Xslt = TestHelper.LoadResourceText("TokenTextPart.xslt")
         });
         TokenTextPart text = CadmusPreviewerTest.GetSampleTextPart();
-        string json = JsonSerializer.Serialize(text, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        string json = JsonSerializer.Serialize(text, _options);
 
-        string result = renderer.Render(json);
+        string result = renderer.Render(json, new RendererContext());
 
         Assert.NotNull(result);
         Assert.Equal("[CIL 1,23]\r\n1  que bixit\r\n2  annos XX\r\n", result);
@@ -100,12 +103,9 @@ public sealed class XsltJsonRendererTest
             }
         });
         TokenTextPart text = CadmusPreviewerTest.GetSampleTextPart();
-        string json = JsonSerializer.Serialize(text, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        string json = JsonSerializer.Serialize(text, _options);
 
-        string result = renderer.Render(json);
+        string result = renderer.Render(json, new RendererContext());
 
         Assert.NotNull(result);
         Assert.Equal("[CIL 1,23]\r\n1  que bixit\r\n2  annos XX\r\n", result);
@@ -117,16 +117,13 @@ public sealed class XsltJsonRendererTest
         XsltJsonRenderer renderer = new();
         renderer.Configure(new XsltJsonRendererOptions
         {
-            JsonExpressions = new[] { "root.citation" },
+            JsonExpressions = ["root.citation"],
             QuoteStripping = true
         });
         TokenTextPart text = CadmusPreviewerTest.GetSampleTextPart();
-        string json = JsonSerializer.Serialize(text, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        string json = JsonSerializer.Serialize(text, _options);
 
-        string result = renderer.Render(json);
+        string result = renderer.Render(json, new RendererContext());
 
         Assert.NotNull(result);
         Assert.Equal("CIL 1,23", result);
@@ -138,7 +135,7 @@ public sealed class XsltJsonRendererTest
         XsltJsonRenderer renderer = new();
         renderer.Configure(new XsltJsonRendererOptions
         {
-            JsonExpressions = new[] { "root.text" },
+            JsonExpressions = ["root.text"],
             QuoteStripping = true,
         });
         MarkdownRendererFilter filter = new();
@@ -154,12 +151,9 @@ public sealed class XsltJsonRendererTest
             UserId = "zeus",
             Text = "This is a *note* using MD"
         };
-        string json = JsonSerializer.Serialize(note, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        string json = JsonSerializer.Serialize(note, _options);
 
-        string result = renderer.Render(json);
+        string result = renderer.Render(json, new RendererContext());
 
         Assert.NotNull(result);
         Assert.Equal("<p>This is a <em>note</em> using MD</p>\n", result);

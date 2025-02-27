@@ -88,7 +88,7 @@ As an example, consider this configuration, targeting a [project](https://github
   "ContextSuppliers": [
     {
       "Keys": "flags",
-      "Id": "renderer-context-supplier.flag",
+      "Id": "it.vedph.renderer-context-supplier.flag",
       "Options": {
         "On": {
           "8": "block-type=poetry"
@@ -102,11 +102,11 @@ As an example, consider this configuration, targeting a [project](https://github
   "TextTreeFilters": [
     {
       "Keys": "block-linear",
-      "Id": "text-tree-filter.block-linear"
+      "Id": "it.vedph.text-tree-filter.block-linear"
     },
     {
       "Keys": "app-linear",
-      "Id": "text-tree-filter.apparatus-linear"
+      "Id": "it.vedph.text-tree-filter.apparatus-linear"
     }
   ],
   "RendererFilters": [
@@ -140,7 +140,7 @@ As an example, consider this configuration, targeting a [project](https://github
   "TextTreeRenderers": [
     {
       "Keys": "tei",
-      "Id": "text-tree-renderer.tei-app-linear",
+      "Id": "it.vedph.text-tree-renderer.tei-app-linear",
       "Options": {
         "FilterKeys": ["nl-appender", "ns-remover"],
         "ZeroVariantType": "omissio",

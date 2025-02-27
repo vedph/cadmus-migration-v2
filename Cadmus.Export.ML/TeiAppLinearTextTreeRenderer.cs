@@ -152,13 +152,12 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             _options.BlockElements[blockType]);
 
         // get layer part
-        IPart? layerPart = context.Item!.Parts.FirstOrDefault(p =>
-            p.TypeId == "it.vedph.token-text-layer" &&
-            p.RoleId == "fr.it.vedph.apparatus");
+        IPart? textPart = context.GetTextPart();
+        if (textPart == null) return "";    // should not happen
 
         // calculate the apparatus fragment ID prefix
-        string prefix = TextSpanPayload.GetFragmentPrefixFor(layerPart
-            ?? new TokenTextLayerPart<ApparatusLayerFragment>(),
+        string prefix = TextSpanPayload.GetFragmentPrefixFor(
+            new TokenTextLayerPart<ApparatusLayerFragment>(),
             new ApparatusLayerFragment());
 
         // create root element
@@ -169,8 +168,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         // traverse nodes and build the XML (each node corresponds to a fragment)
         tree.Traverse(node =>
         {
-            if (layerPart != null &&
-                node.Data?.HasFeaturesFromFragment(prefix) == true)
+            if (node.Data?.HasFeaturesFromFragment(prefix) == true)
             {
                 // app
                 XElement app = new(NamespaceOptions.TEI + "app");
@@ -204,8 +202,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
                         seg.SetAttributeValue("type", _options.ZeroVariantType);
                     }
 
-                    // build the source ID for this entry
-                    string sourceId = $"{layerPart.Id}_{int.Parse(entryKey[1..])}";
+                    // build the source ID for this entry: textPartId_nodeId
+                    string sourceId = $"{textPart.Id}_{node.Id}";
 
                     // enrich the segment with witnesses and authors
                     EnrichSegment(features, seg, sourceId, context);
