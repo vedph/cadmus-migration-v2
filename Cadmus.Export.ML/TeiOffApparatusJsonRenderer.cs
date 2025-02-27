@@ -10,8 +10,7 @@ using Cadmus.Export.Renderers;
 using Proteus.Core.Text;
 using Fusi.Tools.Data;
 using Cadmus.General.Parts;
-using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
+using Cadmus.Core;
 
 namespace Cadmus.Export.ML;
 
@@ -71,6 +70,7 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
     private readonly JsonSerializerOptions _jsonOptions;
 
     private AppLinearTextTreeRendererOptions _options;
+    private IRendererContext? _context;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TeiOffApparatusJsonRenderer"/>
@@ -84,33 +84,6 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
             PropertyNameCaseInsensitive = true,
         };
         _options = new();
-    }
-
-    private string BuildValue(ApparatusEntry entry)
-    {
-        StringBuilder sb = new();
-        //if (!string.IsNullOrEmpty(entry.Value))
-        //{
-        //    sb.Append(entry.Value);
-        //}
-        //else if (entry.Type == ApparatusEntryType.Replacement &&
-        //    !string.IsNullOrEmpty(_options?.ZeroVariant))
-        //{
-        //    sb.Append(_options.ZeroVariant);
-        //}
-
-        //if (!string.IsNullOrEmpty(entry.Note))
-        //{
-        //    if (sb.Length > 0) sb.Append(' ');
-
-        //    if (!string.IsNullOrEmpty(entry.Value) &&
-        //        !string.IsNullOrEmpty(_options?.NotePrefix))
-        //    {
-        //        sb.Append(_options.NotePrefix);
-        //    }
-        //    sb.Append(entry.Note);
-        //}
-        return sb.ToString();
     }
 
     /// <summary>
@@ -151,8 +124,78 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
         return lastNode != null? (firstNode!, lastNode!) : null;
     }
 
-    private static void AddLoc(IRendererContext context, int frIndex,
-        TreeNode<TextSpanPayload> tree, XElement target)
+    private void AddLocToElement(string textPartId,
+        TreeNode<TextSpanPayload> first,
+        TreeNode<TextSpanPayload> last,
+        XElement element)
+    {
+        if (first == last)
+        {
+            int id = _context!.MapSourceId("seg", $"{textPartId}_{first}");
+            element.SetAttributeValue("loc", $"seg{id}");
+        }
+        else
+        {
+            int firstId = _context!.MapSourceId("seg", $"{textPartId}_{first}");
+            int lastId = _context!.MapSourceId("seg", $"{textPartId}_{last}");
+
+            XElement loc = new(NamespaceOptions.TEI + "loc",
+                new XAttribute("spanFrom", $"seg{firstId}"),
+                new XAttribute("spanTo", $"seg{lastId}"));
+            element.Add(loc);
+        }
+    }
+
+    private void AddWitDetail(string attrName, string? witOrResp, string sourceId,
+        string detail, XElement lemOrRdg)
+    {
+        // witDetail
+        XElement witDetail = new(NamespaceOptions.TEI + "witDetail", detail);
+        lemOrRdg.Add(witDetail);
+
+        // @target=lem or rdg ID
+        string local = lemOrRdg.Name.LocalName;
+        int targetId = _context!.MapSourceId(local, sourceId);
+        lemOrRdg.SetAttributeValue(_options.ResolvePrefixedName("xml:id"),
+            $"{local}{targetId}");
+        witDetail.SetAttributeValue("target", $"#{local}{targetId}");
+
+        // @wit or @resp
+        if (witOrResp != null)
+            witDetail.SetAttributeValue(attrName, $"#{witOrResp}");
+    }
+
+    private void AddWitOrResp(string sourceId, ApparatusEntry entry,
+        XElement lemOrRdg)
+    {
+        StringBuilder wit = new();
+        StringBuilder resp = new();
+
+        foreach (AnnotatedValue av in entry.Witnesses)
+        {
+            if (wit.Length > 0) wit.Append(' ');
+            wit.Append('#').Append(av.Value);
+            if (!string.IsNullOrEmpty(av.Note))
+                AddWitDetail("wit", av.Value, sourceId, av.Note, lemOrRdg);
+        }
+
+        foreach (LocAnnotatedValue lav in entry.Authors)
+        {
+            if (resp.Length > 0) resp.Append(' ');
+            resp.Append('#').Append(lav.Value);
+            if (!string.IsNullOrEmpty(lav.Note))
+                AddWitDetail("resp", lav.Value, sourceId, lav.Note, lemOrRdg);
+        }
+
+        if (wit.Length > 0)
+            lemOrRdg.SetAttributeValue("wit", wit.ToString());
+        if (resp.Length > 0)
+            lemOrRdg.SetAttributeValue("resp", resp.ToString());
+    }
+
+    private XElement? BuildAppElement(string textPartId,
+        ApparatusLayerFragment fr, int frIndex,
+        TreeNode<TextSpanPayload> tree)
     {
         // calculate the apparatus fragment ID prefix
         // (like "it.vedph.token-text-layer:fr.it.vedph.comment@INDEX")
@@ -160,26 +203,62 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
             new TokenTextLayerPart<ApparatusLayerFragment>(),
             new ApparatusLayerFragment()) + frIndex;
 
+        // find first and last nodes having a fragment ID starting with prefix
         var bounds = FindFragmentBounds(prefix, tree);
-        if (bounds == null) return;
+        if (bounds == null) return null;
 
-        string firstSourceId = bounds.Value.First.Id!;
-        string lastSourceId = bounds.Value.Last.Id!;
-
-        int firstId = context.MapSourceId("seg", firstSourceId);
-        int lastId = context.MapSourceId("seg", lastSourceId);
-
-        if (firstId == lastId)
+        // collect text from nodes
+        StringBuilder text = new();
+        bounds.Value.First.Traverse(node =>
         {
-            target.SetAttributeValue("loc", firstSourceId);
-        }
-        else
+            if (node.Data != null)
+                text.Append(node.Data.Text);
+            return node != bounds.Value.Last;
+        });
+
+        // div/app @n="FRINDEX+1"
+        XElement app = new(NamespaceOptions.TEI + "app",
+            new XAttribute("n", frIndex + 1));
+
+        // div/app @type="TAG"
+        if (!string.IsNullOrEmpty(fr.Tag))
+            app.SetAttributeValue("type", fr.Tag);
+
+        // div/app @loc="segID" or loc @spanFrom/spanTo
+        AddLocToElement(textPartId, bounds.Value.First, bounds.Value.Last, app);
+
+        // for each entry
+        int entryIndex = 0;
+        foreach (ApparatusEntry entry in fr.Entries)
         {
-            XElement loc = new(NamespaceOptions.TEI + "loc",
-                new XAttribute("spanFrom", firstSourceId),
-                new XAttribute("spanTo", lastSourceId));
-            target.Add(loc);
+            // if it has a variant render rdg, else render lem
+            XElement lemOrRdg = entry.Value != null
+                ? new(NamespaceOptions.TEI + "rdg", entry.Value)
+                : new(NamespaceOptions.TEI + "lem", text.ToString());
+
+            // rdg or lem @n="ENTRY_INDEX+1"
+            lemOrRdg.SetAttributeValue("n", entryIndex + 1);
+            app.Add(lemOrRdg);
+
+            // rdg or lem @type="TAG"
+            if (!string.IsNullOrEmpty(entry.Tag))
+                lemOrRdg.SetAttributeValue("type", entry.Tag);
+
+            // rdg or lem/note
+            if (!string.IsNullOrEmpty(entry.Note))
+            {
+                lemOrRdg.Add(new XElement(NamespaceOptions.TEI + "note",
+                    entry.Note));
+            }
+
+            // rdg or lem/@wit or @resp
+            AddWitOrResp($"{textPartId}_{frIndex}.{entryIndex}", entry,
+                lemOrRdg);
+
+            entryIndex++;
         }
+
+        return app;
     }
 
     /// <summary>
@@ -200,6 +279,11 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
             throw new InvalidOperationException("Text tree is required " +
                 "for rendering standoff apparatus");
         }
+
+        IPart? textPart = context.GetTextPart();
+        if (textPart == null) return "";
+
+        _context = context;
 
         // read fragments array
         JsonNode? root = JsonNode.Parse(json);
@@ -227,44 +311,15 @@ public sealed class TeiOffApparatusJsonRenderer : JsonRenderer,
                 frDiv.SetAttributeValue("type", fr.Tag);
             itemDiv.Add(frDiv);
 
-            int n = 0;
             foreach (ApparatusEntry entry in fr.Entries)
             {
                 // div/app @n="INDEX + 1"
-                XElement app = new(NamespaceOptions.TEI + "app",
-                    new XAttribute("n", ++n));
-
-                // div/app @loc="segID" or loc @spanFrom/spanTo
-                AddLoc(context, frIndex, tree, app);
-                frDiv.Add(app);
-
-                // div/app @type="TAG"
-                if (!string.IsNullOrEmpty(entry.Tag))
-                    app.SetAttributeValue("type", entry.Tag);
-
-                // div/app/rdg or div/app/note with value[+note]
-                XElement rdgOrNote = new(NamespaceOptions.TEI +
-                    (entry.Type == ApparatusEntryType.Note? "note" : "rdg"),
-                    BuildValue(entry));
-                app.Add(rdgOrNote);
-
-                // rdg/note @wit
-                if (entry.Witnesses?.Count > 0)
-                {
-                    rdgOrNote.SetAttributeValue("wit",
-                        string.Join(" ", from av in entry.Witnesses
-                                         select $"#{av.Value}"));
-                }
-
-                // rdg/note @source
-                if (entry.Authors?.Count > 0)
-                {
-                    rdgOrNote.SetAttributeValue("source",
-                        string.Join(" ", from av in entry.Authors
-                                         select $"#{av.Value}"));
-                }
+                XElement? app = BuildAppElement(textPart.Id, fr, frIndex, tree);
+                if (app != null) frDiv.Add(app);
             }
         }
+
+        _context = null;
 
         return itemDiv.ToString(_options.IsIndented
             ? SaveOptions.OmitDuplicateNamespaces
