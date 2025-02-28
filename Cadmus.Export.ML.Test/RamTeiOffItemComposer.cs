@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Cadmus.Export.ML.Test;
 
-internal sealed class RamTeiStandoffItemComposer : TeiStandoffItemComposer,
+internal sealed class RamTeiOffItemComposer : TeiOffItemComposer,
     IItemComposer
 {
     protected override void EnsureWriter(string key)

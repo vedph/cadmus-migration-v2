@@ -14,7 +14,7 @@ namespace Cadmus.Export.ML;
 /// <seealso cref="ItemComposer" />
 /// <seealso cref="IItemComposer" />
 [Tag("it.vedph.item-composer.tei-standoff.fs")]
-public sealed class FSTeiStandoffItemComposer : TeiStandoffItemComposer,
+public sealed class FSTeiOffItemComposer : TeiOffItemComposer,
     IItemComposer, IConfigurable<FSTeiStandoffItemComposerOptions>
 {
     private FSTeiStandoffItemComposerOptions? _options;
@@ -85,9 +85,9 @@ public sealed class FSTeiStandoffItemComposer : TeiStandoffItemComposer,
 }
 
 /// <summary>
-/// Options for <see cref="FSTeiStandoffItemComposer"/>.
+/// Options for <see cref="FSTeiOffItemComposer"/>.
 /// </summary>
-public class FSTeiStandoffItemComposerOptions : TeiStandoffItemComposerOptions
+public class FSTeiStandoffItemComposerOptions : TeiOffItemComposerOptions
 {
     /// <summary>
     /// Gets or sets the output directory.

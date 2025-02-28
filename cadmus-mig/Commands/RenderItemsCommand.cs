@@ -72,7 +72,7 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
             return Task.FromResult(2);
         }
         CadmusPreviewFactory factory = provider.GetFactory(config,
-            typeof(FSTeiStandoffItemComposer).Assembly);
+            typeof(FSTeiOffItemComposer).Assembly);
         factory.ConnectionString = cs;
 
         // get the Cadmus repository from the specified plugin

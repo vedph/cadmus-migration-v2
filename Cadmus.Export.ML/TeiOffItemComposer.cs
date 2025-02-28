@@ -16,7 +16,7 @@ namespace Cadmus.Export.ML;
 /// documents as its layers.
 /// </summary>
 /// <seealso cref="ItemComposer" />
-public abstract class TeiStandoffItemComposer : ItemComposer
+public abstract class TeiOffItemComposer : ItemComposer
 {
     private readonly JsonSerializerOptions _jsonOptions;
 
@@ -37,10 +37,10 @@ public abstract class TeiStandoffItemComposer : ItemComposer
     public const string M_LAYER_ID = "layer-id";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TeiStandoffItemComposer"/>
+    /// Initializes a new instance of the <see cref="TeiOffItemComposer"/>
     /// class.
     /// </summary>
-    protected TeiStandoffItemComposer()
+    protected TeiOffItemComposer()
     {
         _jsonOptions = new JsonSerializerOptions
         {
@@ -68,12 +68,15 @@ public abstract class TeiStandoffItemComposer : ItemComposer
         // render layers
         foreach (IPart layerPart in GetLayerParts(Context.Item))
         {
-            if (JsonRenderers.TryGetValue(layerPart.RoleId!,
-                out IJsonRenderer? value))
+            // get the renderer for the layer type
+            string id = $"{layerPart.TypeId}:{layerPart.RoleId}";
+            if (JsonRenderers.TryGetValue(id, out IJsonRenderer? renderer))
             {
-                string json = JsonSerializer.Serialize<object>(layerPart,
-                    _jsonOptions);
-                result = value.Render(json, Context);
+                // render layer
+                string json = JsonSerializer.Serialize(layerPart, _jsonOptions);
+                result = renderer.Render(json, Context, tree);
+
+                // write output
                 WriteOutput(layerPart.RoleId!, result);
             }
         }
@@ -84,7 +87,7 @@ public abstract class TeiStandoffItemComposer : ItemComposer
 /// <summary>
 /// Base options for TEI standoff item composers.
 /// </summary>
-public class TeiStandoffItemComposerOptions
+public class TeiOffItemComposerOptions
 {
     /// <summary>
     /// Gets or sets the optional text head. This is written at the start
@@ -120,9 +123,9 @@ public class TeiStandoffItemComposerOptions
 
     /// <summary>
     /// Initializes a new instance of the
-    /// <see cref="TeiStandoffItemComposerOptions"/> class.
+    /// <see cref="TeiOffItemComposerOptions"/> class.
     /// </summary>
-    public TeiStandoffItemComposerOptions()
+    public TeiOffItemComposerOptions()
     {
         TextHead = "<body>";
         TextTail = "</body>";

@@ -203,7 +203,9 @@ This implies that in a standoff notation we will need to refer to ranges of node
 </p>
 ```
 
-So, standoff notations would link to either a single element, using a `@loc` attribute, or to a range of elements, using a child `loc` element with attributes `@spanFrom` and `@spanTo`. For instance, in the case of P0 we would have from=`#seg2` and to=`#seg4`.
+>Note that differently from usual standoff practices, where we define an a-priori granularity level for our annotations, like the "word", and then systematically wrap each word in some element like `seg`, here the granularity level is not set in advance; and wrapping text happens only when required. So, `qu` and space + `XX`, which are not linked to any annotation layer, are not wrapped in `seg`. Also, where used these elements wrap a variable span of text, from a single character to multiple words.
+
+So, standoff notations would link to either a single element, using a `@loc` attribute, or to a range of elements, using a child `loc` element with attributes `@spanFrom` and `@spanTo`. For instance, in the case of P0 we would have a range starting from `#seg2` and ending with `#seg4`.
 
 To get a similar output, our item composer would use:
 

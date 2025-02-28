@@ -31,7 +31,7 @@ public abstract class MLJsonRenderer : JsonRenderer
 
         tree.Traverse(node =>
         {
-            if (node.Data == null) return true;
+            if (node.Data?.Range == null) return true;
             if (node.Data.Range.FragmentIds.Any(s => s.StartsWith(prefix)))
             {
                 if (firstNode == null)

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Cadmus.Export.ML.Test;
 
-public sealed class TeiStandoffItemComposerTest
+public sealed class TeiOffItemComposerTest
 {
     private static Item GetItem()
     {
@@ -84,9 +84,9 @@ public sealed class TeiStandoffItemComposerTest
         return item;
     }
 
-    private static RamTeiStandoffItemComposer GetComposer()
+    private static RamTeiOffItemComposer GetComposer()
     {
-        RamTeiStandoffItemComposer composer = new()
+        RamTeiOffItemComposer composer = new()
         {
             TextPartFlattener = new TokenTextPartFlattener(),
             TextTreeRenderer = new TeiOffLinearTextTreeRenderer()
@@ -104,7 +104,7 @@ public sealed class TeiStandoffItemComposerTest
     [Fact]
     public void Compose_Ok()
     {
-        RamTeiStandoffItemComposer composer = GetComposer();
+        RamTeiOffItemComposer composer = GetComposer();
 
         composer.Open();
         composer.Compose(GetItem());
