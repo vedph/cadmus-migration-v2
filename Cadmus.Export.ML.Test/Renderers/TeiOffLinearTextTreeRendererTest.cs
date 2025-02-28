@@ -115,11 +115,46 @@ public sealed class TeiOffLinearTextTreeRendererTest
 
         (TreeNode<TextSpanPayload>? tree, IItem item) = GetTreeAndItem();
 
+        // ensure that tree is as expected:
+        // root
+        //  - qu
+        //    - e
+        //      - (space)
+        //        - b
+        //          - ixit with LF marker
+        //            - annos
+        //              - space + XX
+        Assert.Null(tree.Data);
+        TreeNode<TextSpanPayload> qu = tree.Children[0];
+        Assert.NotNull(qu.Data);
+        Assert.Equal("qu", qu.Data.Text);
+        TreeNode<TextSpanPayload> e = qu.Children[0];
+        Assert.NotNull(e.Data);
+        Assert.Equal("e", e.Data.Text);
+        TreeNode<TextSpanPayload> space = e.Children[0];
+        Assert.NotNull(space.Data);
+        Assert.Equal(" ", space.Data.Text);
+        TreeNode<TextSpanPayload> b = space.Children[0];
+        Assert.NotNull(b.Data);
+        Assert.Equal("b", b.Data.Text);
+        TreeNode<TextSpanPayload> ixit = b.Children[0];
+        Assert.NotNull(ixit.Data);
+        Assert.Equal("ixit", ixit.Data.Text);
+        Assert.True(ixit.Data.IsBeforeEol);
+        TreeNode<TextSpanPayload> annos = ixit.Children[0];
+        Assert.NotNull(annos.Data);
+        Assert.Equal("annos", annos.Data.Text);
+        TreeNode<TextSpanPayload> xx = annos.Children[0];
+        Assert.NotNull(xx.Data);
+        Assert.Equal(" XX", xx.Data.Text);
+
+        // act
         string xml = renderer.Render(tree, new RendererContext
         {
             Item = item
         });
 
+        // assert
         Assert.Equal(
             "<p n=\"1\" xmlns=\"http://www.tei-c.org/ns/1.0\">" +
             "<seg xml:id=\"seg1\">qu</seg>" +
