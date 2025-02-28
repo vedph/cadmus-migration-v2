@@ -2,26 +2,26 @@
 
 Rendering a critical apparatus is especially complex because it involves many different rendition strategies according to the source data and the target format. Let us consider various scenarios, from the simplest to the most complex ones.
 
-Before illustrating these examples, let us recap the standard [apparatus](https://github.com/vedph/cadmus-philology/blob/master/docs/fr.apparatus.md) fragment model (I add the feature name after each property converted to a feature during certain types of processing):
+Before illustrating these examples, let us recap the standard [apparatus](https://github.com/vedph/cadmus-philology/blob/master/docs/fr.apparatus.md) fragment model:
 
 - location
-- tag (`app-tag`)
+- tag
 - entries:
   - subrange
-  - tag (`app.e.tag`)
-  - value  (`app.e.variant`, when type is not note)
+  - tag
+  - value
   - normValue
   - isAccepted
   - groupId
   - witnesses:
-    - value (`app.e.witness`)
-    - note (`app.e.witness.note`)
+    - value
+    - note
   - authors:
     - tag
-    - value (`app.e.author`)
-    - location (`app.e.author.loc`)
-    - note (`app.e.author.note`)
-  - note (`app.e.note`)
+    - value
+    - location
+    - note
+  - note
 
 The apparatus model essentially represents variants as edit operations on the base text. So, a variant like `illic` for the base text `illuc` is represented as a replacement operation (type=replacement). When instead we just want to add metadata, e.g. to list the witnesses for `illuc`, the lemma accepted in the reconstructed text, we use a note type. In this case the value is null (when it is an empty string, this is a zero variant, i.e. an omission or deletion).
 
@@ -30,7 +30,7 @@ The apparatus model essentially represents variants as edit operations on the ba
 - tree: linear;
 - layers: single (=apparatus only).
 
-In this approach we just have selected a _single_ layer, the apparatus. So, merging just projects the apparatus ranges on the whole text; the text is segmented only according to the apparatus fragments.
+In this approach we have selected a _single_ layer, the apparatus. So, merging just projects the apparatus ranges on the whole text; the text is segmented only according to the apparatus fragments.
 
 >Given that we deal with a single layer, we can be sure there is no overlap: this is a constraint imposed to the Cadmus text layers model. This constraint, somewhat artificial for the Cadmus model itself, was designed for compatibility reasons, to make it simpler to deal with third-party models in exports or visualizations.
 
@@ -76,44 +76,19 @@ class 3 em;
 
 >In this diagram, yellow borders mark nodes linked to apparatus fragments and dashes represent spaces.
 
-Given that we have a single layer, we won't need to add or delete nodes, but just to change their payload data adding an **apparatus linear tree text filter** to ▶️ step (5). So, traversing our nodes this layer generates features for nodes linked to apparatus fragments:
-
-1. `illuc` is linked to fragment 0:
-    - from entry 0 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.0`):
-      - `app.e.witness`=`O1`
-    - from entry 1 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.1`):
-      - `app.e.variant`=`illud`
-      - `app.e.witness`=`O`
-      - `app.e.witness`=`G`
-      - `app.e.witness`=`R`
-    - from entry 2 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@0.2`):
-      - `app.e.variant`=`illic`
-      - `app.e.author`=`Fruterius`
-      - `app.e.author.note`=`(†1566) 1605a 388`
-2. `quemquam` is linked to fragment 1:
-    - from entry 0 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@1.0`):
-      - `app.e.witness`=`O`
-      - `app.e.witness`=`G`
-    - from entry 1 (source `it.vedph.token-text-layer:fr.it.vedph.apparatus@1.1`):
-      - `app.e.variant`=`umquam`
-      - `app.e.witness`=`R`
-      - `app.e.note`=`some note`
-
-This is a generic process I designate with "featurization": some essential features of the model are projected into this more flat model, with a grouping level and many features in each group. This approach can be used when projecting metadata into tree nodes from different and even heterogeneous sources.
-
-At this stage, we're done with the tree and we can move to ▶️ step (6) for rendering it. Rendition depends on the desired output format; for this example, let's keep things simple and say that we want a TEI text fragment like this (witnesses and other attributes are fake data assumed to be in the fragments, and text is indented for more readability):
+At this stage, we're done with the tree and we can move to its rendering. Rendition depends on the desired output format; for this example, let's keep things simple and say that we want a TEI text fragment like this (witnesses and other attributes are fake data assumed to be in the fragments, and text is indented for more readability):
 
 ```xml
 <p>
-    <app>
-      <lem wit="#O1">illuc</lem>
-      <rdg wit="#O #G #R">illud</rdg>
-      <rdg id="seg1" resp="#Fruterius">illic</rdg>
-      <witDetail target="#seg1" resp="#Fruterius">(†1566) 1605a 388</witDetail>
+    <app n="1">
+      <lem n="1" wit="#O1">illuc</lem>
+      <rdg n="2" wit="#O #G #R">illud</rdg>
+      <rdg n="3" xml:id="rdg1" resp="#Fruterius">illic</rdg>
+      <witDetail target="#rdg1" resp="#Fruterius">(†1566) 1605a 388</witDetail>
     </app>
     unde negant redire
-    <app>
-      <lem wit="#O #G">quemquam</lem>
+    <app n="2">
+      <lem n="1" wit="#O #G">quemquam</lem>
       <rdg wit="#R">
         umquam
         <note>some note</note>
@@ -142,3 +117,5 @@ So the rules for this simple renderer would be:
     - `lem` = node text with `@wit` for witnesses, `@resp` for authors, a child `note` for note. Also, for each witness/author having its own note, add a `witDetail` sibling with `@target` pointing to the witness/author element, `@wit` or `@resp` with the value of the author/witness, and content=note's value.
     - `rdg` = variant text, with attributes and children as above.
 - else just output the node's text.
+
+>As you can see from the example, the renderer also adds `@n` attributes with the ordinal numbers of fragments (rendered into `app` elements) and entries (rendered into `lem` or `rdg` elements).

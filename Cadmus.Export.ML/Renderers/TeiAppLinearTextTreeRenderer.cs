@@ -137,7 +137,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
 
                 // app
                 XElement app = _tei.BuildAppElement(textPart.Id,
-                    layerPart.Fragments[frIndex], frIndex, false,
+                    layerPart!.Fragments[frIndex], frIndex, false,
                     _options.ZeroVariantType)!;
                 block.Add(app);
             }

@@ -1,4 +1,5 @@
-﻿using Cadmus.Core;
+﻿/*
+using Cadmus.Core;
 using Cadmus.Export.Filters;
 using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
@@ -243,3 +244,4 @@ public sealed class AppLinearTextTreeFilterTest
         Assert.Empty(node.Children);
     }
 }
+*/

@@ -1,4 +1,5 @@
-﻿using Cadmus.Core;
+﻿/*
+using Cadmus.Core;
 using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
@@ -213,3 +214,4 @@ public sealed class AppLinearTextTreeFilter : ITextTreeFilter
         return tree;
     }
 }
+*/

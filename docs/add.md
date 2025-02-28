@@ -20,55 +20,86 @@ The factory used to configure the process is based on a JSON configuration file 
 ```json
 {
   "ItemIdCollector": {
-    "Id": "...",
-    "Options": {}
+    "Id": "it.vedph.item-id-collector.mongo",
+    "Options": {
+      "FacetId": "text"
+    }
   },
+  "ContextSuppliers": [
+    {
+      "Keys": "flags",
+      "Id": "it.vedph.renderer-context-supplier.flag",
+      "Options": {
+        "On": {
+          "8": "block-type=poetry"
+        },
+        "Off": {
+          "8": "block-type=prose"
+        }
+      }
+    }
+  ],
   "TextTreeFilters": [
     {
-      "Keys": ["..."],
-      "Id": "...",
-      "Options": {}
+      "Keys": "block-linear",
+      "Id": "it.vedph.text-tree-filter.block-linear"
     }
   ],
   "RendererFilters": [
     {
-      "Keys": ["..."],
-      "Id": "...",
-      "Options": {}
-    }
-  ],
-  "JsonRenderers": [
+      "Keys": "nl-appender",
+      "Id": "it.vedph.renderer-filter.appender",
+      "Options": {
+        "Text": "\r\n"
+      }
+    },
     {
-      "Keys": ["..."],
-      "Id": "...",
-      "Options": {}
+      "Keys": "ns-remover",
+      "Id": "it.vedph.renderer-filter.replace",
+      "Options": {
+        "Replacements": [
+          {
+            "Source": " xmlns=\"http://www.tei-c.org/ns/1.0\"",
+            "Target": "",
+            "Repetitions": 1
+          }
+        ]
+      }
     }
   ],
   "TextPartFlatteners": [
     {
-      "Keys": ["..."],
-      "Id": "...",
-      "Options": {}
+      "Keys": "it.vedph.token-text",
+      "Id": "it.vedph.text-flattener.token"
     }
   ],
   "TextTreeRenderers": [
     {
-      "Keys": ["..."],
-      "Id": "...",
+      "Keys": "tei",
+      "Id": "it.vedph.text-tree-renderer.tei-app-linear",
       "Options": {
-        "FilterKeys": ["..."]
+        "FilterKeys": ["nl-appender", "ns-remover"],
+        "ZeroVariantType": "omissio",
+        "BlockElements": {
+          "default": "tei:p",
+          "poetry": "tei:l",
+          "prose": "tei:p"
+        }
       }
     }
   ],
   "ItemComposers": [
     {
-      "Keys": ["..."],
-      "Id": "...",
+      "Keys": "default",
+      "Id": "it.vedph.item-composer.tei.fs",
       "Options": {
-        "ContextSupplierKeys": ["..."],
-        "TextPartFlattenerKey": "...",
-        "TextTreeFilterKeys": ["..."],
-        "TextTreeRendererKey": "...",
+        "ContextSupplierKeys": ["flags"],
+        "TextPartFlattenerKey": "it.vedph.token-text",
+        "TextTreeFilterKeys": ["block-linear"],
+        "TextTreeRendererKey": "tei",
+        "TextHead": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">\n  <teiHeader>\n    <fileDesc>\n      <titleStmt>\n        <title>Sidonius</title>\n      </titleStmt>\n      <publicationStmt>\n        <p>Not published.</p>\n      </publicationStmt>\n      <sourceDesc>\n        <p>Undisclosed.</p>\n      </sourceDesc>\n    </fileDesc>\n  </teiHeader>\n  <text>\n    <body>\n      <div>\n",
+        "TextTail": "      </div>\n    </body>\n  </text>\n</TEI>",
+        "OutputDirectory": "c:\\users\\dfusi\\Desktop\\sidon"
       }
     }
   ]
@@ -397,8 +428,8 @@ At this stage, we're done with the tree and we can move to ▶️ step (6) for r
       <witDetail target="#rdg1" resp="#Fruterius">(†1566) 1605a 388</witDetail>
     </app>
     unde negant redire
-    <app>
-      <lem wit="#O #G">quemquam</lem>
+    <app n="2">
+      <lem n="1" wit="#O #G">quemquam</lem>
       <rdg wit="#R">
         umquam
         <note>some note</note>
