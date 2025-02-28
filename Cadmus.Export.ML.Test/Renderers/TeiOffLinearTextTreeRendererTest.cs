@@ -121,13 +121,13 @@ public sealed class TeiOffLinearTextTreeRendererTest
         });
 
         Assert.Equal(
-            "<p xmlns=\"http://www.tei-c.org/ns/1.0\" n=\"1\">" +
+            "<p n=\"1\" xmlns=\"http://www.tei-c.org/ns/1.0\">" +
             "<seg xml:id=\"seg1\">qu</seg>" +
             "<seg xml:id=\"seg2\">e</seg>" +
             "<seg xml:id=\"seg3\"> </seg>" +
             "<seg xml:id=\"seg4\">b</seg>" +
             "<seg xml:id=\"seg5\">ixit</seg></p>" +
-            "<p xmlns=\"http://www.tei-c.org/ns/1.0\" n=\"2\">" +
+            "<p n=\"2\" xmlns=\"http://www.tei-c.org/ns/1.0\">" +
             "<seg xml:id=\"seg6\">annos</seg>" +
             " XX</p>", xml);
     }
