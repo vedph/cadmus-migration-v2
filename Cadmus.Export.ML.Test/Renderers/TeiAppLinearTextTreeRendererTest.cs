@@ -141,8 +141,6 @@ public sealed class TeiAppLinearTextTreeRendererTest
         TeiAppLinearTextTreeRenderer renderer = new();
 
         (TreeNode<TextSpanPayload>? tree, IItem item) = GetTreeAndItem();
-        //AppLinearTextTreeFilter filter = new();
-        //filter.Apply(tree, item);
 
         string xml = renderer.Render(tree, new RendererContext
         {

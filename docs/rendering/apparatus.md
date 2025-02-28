@@ -27,8 +27,9 @@ The apparatus model essentially represents variants as edit operations on the ba
 
 ## Linear Single Layer
 
-- tree: linear;
+- tree: linear.
 - layers: single (=apparatus only).
+- output: TEI with embedded `app`.
 
 In this approach we have selected a _single_ layer, the apparatus. So, merging just projects the apparatus ranges on the whole text; the text is segmented only according to the apparatus fragments.
 
@@ -119,3 +120,87 @@ So the rules for this simple renderer would be:
 - else just output the node's text.
 
 >As you can see from the example, the renderer also adds `@n` attributes with the ordinal numbers of fragments (rendered into `app` elements) and entries (rendered into `lem` or `rdg` elements).
+
+## Linear Multiple Layers
+
+- tree: linear.
+- layers: multiple.
+- output: standoff TEI, where a document contains the text and there are as many additional documents as layers.
+
+Let us start from a 2-lines token-based text like this:
+
+```txt
+que bixit
+annos XX
+```
+
+Let us say that there are the following layer fragments:
+
+- O0: orthography fragment 0 on `qu[e]` (`1.1@3`).
+- O1: orthography fragment 1 on `[b]ixit` (`1.2@1`).
+- P0: paleography fragment 0 on `qu[e b]ixit` (a ligature: `1.1@3-1.2@1`).
+- C0: comment fragment 0 on `bixit annos` (`1.2-2.1`).
+
+This time we select all the layers for rendition and we opt for standoff TEI. Tthese are our layers:
+
+```txt
+012345678901234567
+que bixit|annos XX
+..O............... O0
+....O............. O1
+..PPP............. P0
+....CCCCCCCCCCC... C0
+```
+
+From here we get these ranges (I am numbering the ranges to make it easier to refer to them in this documentation):
+
+1. 0-1 for `qu` = no fragments;
+2. 2-2 for `e` = O0, P0;
+3. 3-3 for space = P0;
+4. 4-4 for `b` = O1, P0, C0;
+5. 5-14 for `ixit|annos` = C0;
+6. 15-17 for space + `XX` = no fragments.
+
+Here we have the text with indexes above, and range numbers below:
+
+```txt
+012345678901234567
+que bixit|annos XX
+112345555555555666
+```
+
+From ranges we get our tree, which is further filtered by a block linear tree text filter to properly handle newlines (see about [rendition stages](rendition#building-trees)):
+
+```mermaid
+graph LR;
+
+root --> 1[qu]
+1 --> 2[e _O0 P0_]
+2 --> 3[_ _P0_]
+3 --> 4[b _O1 P0 C0_]
+4 --> 5[ixit _C0_]
+5 --> 6[annos _C0_]
+6 --> 7[_XX]
+```
+
+In this diagram, I have added the abbreviations for the corresponding linked fragments to each node having them.
+
+The first thing to notice is that, due to merging ranges from multiple layers, the segmentation often is no longer aligned with that of each single layer. For instance, the paleographic layer, whose unique fragment covered `e b` in `que bixit`, is now split across 3 text nodes: `e`, space, and `b`; and similarly happens for the comment layer (`b`, `ixit`, `annos`).
+
+This implies that in a standoff notation we will need to refer to ranges of nodes, rather than to a single one. In other terms, a possible rendering for the base text would be like this (I am indenting code for better readability):
+
+```xml
+<p>
+  <seg xml:id="seg1">qu</seg>
+  <seg xml:id="seg2">e</seg>
+  <seg xml:id="seg3"> </seg>
+  <seg xml:id="seg4">b</seg>
+  <seg xml:id="seg5">ixit</seg>
+</p>
+<p>
+  <seg xml:id="seg6">annos</seg>
+   XX
+</p>
+```
+
+So, standoff notations would link to either a single element, using a `@loc` attribute, or to a range of elements, using a child `loc` element with attributes `@spanFrom` and `@spanTo`. For instance, in the case of P0 we would have from=`#seg2` and to=`#seg4`.
