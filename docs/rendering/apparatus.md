@@ -211,3 +211,14 @@ To get a similar output, our item composer would use:
 
 - a text tree renderer which generates the above XML, segmented as per tree nodes, having a unique ID for each segment.
 - 3 JSON renderers, one per layer, each generating its own document with annotations, variously linked to the base text segments.
+
+While the text tree renderer can be implemented just once, JSON renderers may vary a lot depending not only on the source data type, but also on the desired output. The general architecture is flexible enough, because a TEI item composer just uses the text tree renderer sampled above, plus any number of JSON renderers. These get as input the JSON code representing a layer part, and output a string using any format, e.g. XML.
+
+On the implementation side, for a specific input and output you could either use a specialized backend component, adding it to the configuration (and to the plugins, when it's not included in the default modules); or just use a more generic approach based on more accessible technologies, like XSLT.
+
+For the latter option there is a specific JSON renderer, whose task is right to:
+
+1. get a JSON input;
+2. convert it into XML;
+3. apply the received XSLT script to it;
+4. emit the result as its output.
