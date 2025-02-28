@@ -132,14 +132,21 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
         {
             if (node.Data?.Text != null)
             {
-                int id = context.MapSourceId("seg",
-                    $"{context.Item!.Id}_{node.Id}");
+                if (node.Data.Range?.FragmentIds?.Count > 0)
+                {
+                    int id = context.MapSourceId("seg",
+                        $"{context.Item!.Id}_{node.Id}");
 
-                XElement seg = new(NamespaceOptions.TEI + "seg",
-                    new XAttribute(NamespaceOptions.XML + "id", $"seg{id}"),
-                    node.Data.Text);
+                    XElement seg = new(NamespaceOptions.TEI + "seg",
+                        new XAttribute(NamespaceOptions.XML + "id", $"seg{id}"),
+                        node.Data.Text);
 
-                block.Add(seg);
+                    block.Add(seg);
+                }
+                else
+                {
+                    block.Add(node.Data.Text);
+                }
             }
 
             // open a new block if needed
