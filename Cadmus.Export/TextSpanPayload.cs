@@ -131,6 +131,6 @@ public class TextSpanPayload(FragmentTextRange range)
     /// </returns>
     public override string ToString()
     {
-        return $"[{Type}] {Text}{(IsBeforeEol? "\u21b4" : "")}: {FeatureSets.Count}";
+        return $"[{Type}] {Text}{(IsBeforeEol? " [\u21b4]" : "")}: {FeatureSets.Count}";
     }
 }

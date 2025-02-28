@@ -59,7 +59,7 @@ public sealed class TeiOffLinearTextTreeRendererTest
         TokenTextLayerPart<EpiLigaturesLayerFragment> ligLayerPart = new();
         ligLayerPart.Fragments.Add(new EpiLigaturesLayerFragment
         {
-            Location = "1.1@3-2.1@1",
+            Location = "1.1@3-1.2@1",
             Types = new HashSet<string>(["connection"])
         });
 
