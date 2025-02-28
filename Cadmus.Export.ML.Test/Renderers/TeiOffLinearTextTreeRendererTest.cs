@@ -67,7 +67,7 @@ public sealed class TeiOffLinearTextTreeRendererTest
         TokenTextLayerPart<CommentLayerFragment> commentLayerPart = new();
         commentLayerPart.Fragments.Add(new CommentLayerFragment
         {
-            Location = "1.2-1.3",
+            Location = "1.2-2.1",
             Tag = "syntax",
             Text = "accusative rather than ablative is rare but attested."
         });
