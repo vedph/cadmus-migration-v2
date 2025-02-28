@@ -7,10 +7,11 @@ namespace Cadmus.Export.Test.Filters;
 
 public class BlockLinearTextTreeFilterTests
 {
-    private static TreeNode<TextSpanPayload> CreateNode(string text)
+    private static TreeNode<TextSpanPayload> CreateTextNode(string text)
     {
         return new TreeNode<TextSpanPayload>(
             new TextSpanPayload(
+                // we do not care about range here, just use 0-length
                 new FragmentTextRange(0, text.Length))
                 {
                     Text = text
@@ -21,7 +22,8 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_SingleNodeNoNewline_ReturnsSameNode()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> root = CreateNode("Hello world");
+        TreeNode<TextSpanPayload> root = new();
+        root.AddChild(CreateTextNode("Hello world"));
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
@@ -35,7 +37,8 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_SingleNodeWithNewline_SplitsNode()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> root = CreateNode("Hello\nworld");
+        TreeNode<TextSpanPayload> root = new();
+        root.AddChild(CreateTextNode("Hello\nworld"));
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
@@ -58,7 +61,8 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_MultipleNewlines_SplitsNodes()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> root = CreateNode("Hello\nworld\nagain");
+        TreeNode<TextSpanPayload> root = new();
+        root.AddChild(CreateTextNode("Hello\nworld\nagain"));
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
@@ -87,7 +91,8 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_EndsWithNewline_SplitsNodes()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> root = CreateNode("Hello\nworld\n");
+        TreeNode<TextSpanPayload> root = new();
+        root.AddChild(CreateTextNode("Hello\nworld\n"));
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
@@ -110,8 +115,9 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_MultipleNodesWithNewlines_SplitsNodes()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> root = CreateNode("Hello\n");
-        TreeNode<TextSpanPayload> child = CreateNode("world\nagain");
+        TreeNode<TextSpanPayload> root = new();
+        root.AddChild(CreateTextNode("Hello\n"));
+        TreeNode<TextSpanPayload> child = CreateTextNode("world\nagain");
         root.AddChild(child);
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
@@ -141,7 +147,8 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_TextStartingWithNewline_SplitsNodes()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> root = CreateNode("\nHello\nworld");
+        TreeNode<TextSpanPayload> root = new();
+        root.AddChild(CreateTextNode("\nHello\nworld"));
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
@@ -170,7 +177,8 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_EmptyText_ReturnsNodeUnchanged()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> root = CreateNode("");
+        TreeNode<TextSpanPayload> root = new();
+        root.AddChild(CreateTextNode(""));
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
@@ -183,7 +191,8 @@ public class BlockLinearTextTreeFilterTests
     public void Apply_ConsecutiveNewlines_SplitsNodes()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> root = CreateNode("Hello\n\nworld");
+        TreeNode<TextSpanPayload> root = new();
+        root.AddChild(CreateTextNode("Hello\n\nworld"));
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
@@ -209,17 +218,15 @@ public class BlockLinearTextTreeFilterTests
     }
 
     [Fact]
-    public void Apply_NullTextInPayload_HandlesGracefully()
+    public void Apply_RootOnly_HandlesGracefully()
     {
         BlockLinearTextTreeFilter filter = new();
-        TreeNode<TextSpanPayload> node = new(new TextSpanPayload(
-            new FragmentTextRange(0, 0)) { Text = null });
+        TreeNode<TextSpanPayload> root = new();
 
-        TreeNode<TextSpanPayload> result = filter.Apply(node, new Item());
+        TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
-        Assert.Single(result.Children);
-        Assert.Null(result.Children[0].Data!.Text);
-        Assert.Empty(result.Children[0].Children);
+        Assert.Empty(result.Children);
+        Assert.Null(result.Data);
     }
 
     [Fact]
@@ -227,26 +234,37 @@ public class BlockLinearTextTreeFilterTests
     {
         // que bixit|annos XX
         BlockLinearTextTreeFilter filter = new();
+
+        TreeNode<TextSpanPayload> root = new();
+        TreeNode<TextSpanPayload> node;
+
         // que
-        TreeNode<TextSpanPayload> root = CreateNode("que");
-        TreeNode<TextSpanPayload> current = root;
+        node = CreateTextNode("que");
+        root.AddChild(node);
+        TreeNode<TextSpanPayload> current = node;
+
         // space
-        TreeNode<TextSpanPayload> node = CreateNode(" ");
+        node = CreateTextNode(" ");
         current.AddChild(node);
+        current = node;
+
         // bixit
-        node = CreateNode("bixit");
+        node = CreateTextNode("bixit");
         current.AddChild(node);
         current = node;
+
         // LF
-        node = CreateNode("\n");
+        node = CreateTextNode("\n");
         current.AddChild(node);
         current = node;
+
         // annos
-        node = CreateNode("annos");
+        node = CreateTextNode("annos");
         current.AddChild(node);
         current = node;
+
         // space + XX
-        node = CreateNode(" XX");
+        node = CreateTextNode(" XX");
         current.AddChild(node);
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
@@ -274,5 +292,46 @@ public class BlockLinearTextTreeFilterTests
         TreeNode<TextSpanPayload> xx = annos.Children[0];
         Assert.Equal(" XX", xx.Data!.Text);
         Assert.False(xx.HasChildren);
+    }
+
+    [Fact]
+    public void Apply_NewlineAtStartOfNodeText_HandledCorrectly()
+    {
+        BlockLinearTextTreeFilter filter = new();
+
+        // create a tree where a node's text starts with a newline
+        TreeNode<TextSpanPayload> root = new();
+        TreeNode<TextSpanPayload> node1 = CreateTextNode("First node");
+        root.AddChild(node1);
+
+        // create a node whose text starts with a newline
+        TreeNode<TextSpanPayload> node2 = CreateTextNode("\nSecond node");
+        node1.AddChild(node2);
+
+        // apply the filter
+        TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
+
+        // validate result structure:
+        // - root
+        //   - First node (with IsBeforeEol=true)
+        //     - Second node (without the leading newline)
+
+        // check root structure
+        Assert.Single(result.Children);
+
+        // check first node
+        TreeNode<TextSpanPayload> firstNode = result.Children[0];
+        Assert.Equal("First node", firstNode.Data!.Text);
+        Assert.True(firstNode.Data.IsBeforeEol,
+            "First node should be marked with IsBeforeEol");
+        Assert.Single(firstNode.Children);
+
+        // check second node (should have the leading newline removed)
+        TreeNode<TextSpanPayload> secondNode = firstNode.Children[0];
+        Assert.Equal("Second node", secondNode.Data!.Text);
+        Assert.False(secondNode.Data.IsBeforeEol);
+
+        // no more children
+        Assert.Empty(secondNode.Children);
     }
 }

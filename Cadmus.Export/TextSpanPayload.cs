@@ -43,7 +43,7 @@ public class TextSpanPayload(FragmentTextRange range)
     /// like a fragment or a part of it, as specified by
     /// <see cref="FragmentFeatureSource"/>.
     /// </summary>
-    public Dictionary<string, TextSpanFeatureSet> FeatureSets { get; init; } = [];
+    // public Dictionary<string, TextSpanFeatureSet> FeatureSets { get; init; } = [];
 
     /// <summary>
     /// Adds the specified feature to the set with the specified key, adding
@@ -54,20 +54,20 @@ public class TextSpanPayload(FragmentTextRange range)
     /// <param name="source">The set source.</param>
     /// <exception cref="ArgumentNullException">key or feature or source
     /// </exception>
-    public void AddFeatureToSet(string key, TextSpanFeature feature,
-        string source)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(feature);
-        ArgumentNullException.ThrowIfNull(source);
+    //public void AddFeatureToSet(string key, TextSpanFeature feature,
+    //    string source)
+    //{
+    //    ArgumentNullException.ThrowIfNull(key);
+    //    ArgumentNullException.ThrowIfNull(feature);
+    //    ArgumentNullException.ThrowIfNull(source);
 
-        if (!FeatureSets.TryGetValue(key, out TextSpanFeatureSet? set))
-        {
-            set = new TextSpanFeatureSet(key, source);
-            FeatureSets[key] = set;
-        }
-        set.Features.Add(feature);
-    }
+    //    if (!FeatureSets.TryGetValue(key, out TextSpanFeatureSet? set))
+    //    {
+    //        set = new TextSpanFeatureSet(key, source);
+    //        FeatureSets[key] = set;
+    //    }
+    //    set.Features.Add(feature);
+    //}
 
     /// <summary>
     /// Gets the fragment ID prefix used in text tree nodes to link fragments.
@@ -118,8 +118,8 @@ public class TextSpanPayload(FragmentTextRange range)
             Type = Type,
             IsBeforeEol = IsBeforeEol,
             Text = Text,
-            FeatureSets = FeatureSets.ToDictionary(
-                kv => kv.Key, kv => kv.Value.Clone())
+            //FeatureSets = FeatureSets.ToDictionary(
+            //    kv => kv.Key, kv => kv.Value.Clone())
         };
     }
 
@@ -131,6 +131,7 @@ public class TextSpanPayload(FragmentTextRange range)
     /// </returns>
     public override string ToString()
     {
-        return $"[{Type}] {Text}{(IsBeforeEol? " [\u21b4]" : "")}: {FeatureSets.Count}";
+        // return $"[{Type}] {Text}{(IsBeforeEol? " [\u21b4]" : "")}: {FeatureSets.Count}";
+        return $"[{Type}] {Text}{(IsBeforeEol ? " [\u21b4]" : "")}";
     }
 }

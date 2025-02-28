@@ -2,6 +2,7 @@
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 using System;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Cadmus.Export.Filters;
 
@@ -22,7 +23,9 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
     private static TreeNode<TextSpanPayload> SplitNode(
           TreeNode<TextSpanPayload> node)
     {
-        string text = node.Data!.Text!;
+        string? text = node.Data!.Text;
+        if (text == null) return node;
+
         int i = text.IndexOf('\n');
 
         // if no newline found, return the node as is
@@ -30,8 +33,12 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
 
         // create the first left node
         TreeNode<TextSpanPayload> head = new(node.Data.Clone());
+
+        // for newline at beginning (i == 0), create an empty node with IsBeforeEol.
+        // For other positions, extract text up to newline
         head.Data!.Text = text[..i];
         head.Data.IsBeforeEol = true;
+
         TreeNode<TextSpanPayload> current = head;
 
         // process remaining text
@@ -89,7 +96,8 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
                 // corner case: single newline, set flag for parent and skip
                 if (node.Data.Text == "\n")
                 {
-                    current.Data!.IsBeforeEol = true;
+                    if (current.Data != null) current.Data.IsBeforeEol = true;
+                    // skip this node, but traversing will handle its children
                     return true;
                 }
 
