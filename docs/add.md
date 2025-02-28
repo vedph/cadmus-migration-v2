@@ -390,11 +390,11 @@ At this stage, we're done with the tree and we can move to ▶️ step (6) for r
 
 ```xml
 <p>
-    <app>
-      <lem wit="#O1">illuc</lem>
-      <rdg wit="#O #G #R">illud</rdg>
-      <rdg id="seg1" resp="#Fruterius">illic</rdg>
-      <witDetail target="#seg1" resp="#Fruterius">(†1566) 1605a 388</witDetail>
+    <app n="1">
+      <lem n="1" wit="#O1">illuc</lem>
+      <rdg n="2" wit="#O #G #R">illud</rdg>
+      <rdg n="3" xml:id="rdg1" resp="#Fruterius">illic</rdg>
+      <witDetail target="#rdg1" resp="#Fruterius">(†1566) 1605a 388</witDetail>
     </app>
     unde negant redire
     <app>

@@ -51,7 +51,7 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
     {
         // witDetail
         XElement witDetail = new(NamespaceOptions.TEI + "witDetail", detail);
-        lemOrRdg.Add(witDetail);
+        lemOrRdg.Parent!.Add(witDetail);
 
         // @target=lem or rdg ID
         string local = lemOrRdg.Name.LocalName;
@@ -101,10 +101,14 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
     /// <param name="frIndex">Index of the fragment in its layer part.</param>
     /// <param name="addLoc">True to add location to the app element (usually
     /// for standoff).</param>
+    /// <param name="zeroVarType">The value for the type attribute to add to
+    /// <c>rdg</c> elements for zero-variants, i.e. variants with no text
+    /// meaning an omission. If null, no attribute will be added.</param>
     /// <returns>The element built.</returns>
     /// <exception cref="ArgumentNullException">textPartId or fr</exception>
     public XElement? BuildAppElement(string textPartId,
-        ApparatusLayerFragment fragment, int frIndex, bool addLoc)
+        ApparatusLayerFragment fragment, int frIndex, bool addLoc,
+        string? zeroVarType = null)
     {
         ArgumentNullException.ThrowIfNull(textPartId);
         ArgumentNullException.ThrowIfNull(fragment);
@@ -124,8 +128,7 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
         StringBuilder text = new();
         bounds.Value.First.Traverse(node =>
         {
-            if (node.Data != null)
-                text.Append(node.Data.Text);
+            if (node.Data != null) text.Append(node.Data.Text);
             return node != bounds.Value.Last;
         });
 
@@ -152,6 +155,10 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
             XElement lemOrRdg = entry.Value != null
                 ? new(NamespaceOptions.TEI + "rdg", entry.Value)
                 : new(NamespaceOptions.TEI + "lem", text.ToString());
+
+            // add @type if zero variant
+            if (zeroVarType != null && entry.Value?.Length == 0)
+                lemOrRdg.SetAttributeValue("type", zeroVarType);
 
             // rdg or lem @n="ENTRY_INDEX+1"
             lemOrRdg.SetAttributeValue("n", entryIndex + 1);

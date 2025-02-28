@@ -47,6 +47,8 @@ public abstract class MLJsonRenderer : JsonRenderer
             return true;
         });
 
+        if (firstNode != null && lastNode == null) return (firstNode, firstNode);
+
         return lastNode != null ? (firstNode!, lastNode!) : null;
     }
 

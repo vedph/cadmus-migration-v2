@@ -68,14 +68,13 @@ public abstract class TeiStandoffItemComposer : ItemComposer
         // render layers
         foreach (IPart layerPart in GetLayerParts(Context.Item))
         {
-            string id = TextSpanPayload.GetTagAttributeValue(layerPart)!;
-
-            if (JsonRenderers.TryGetValue(id, out IJsonRenderer? value))
+            if (JsonRenderers.TryGetValue(layerPart.RoleId!,
+                out IJsonRenderer? value))
             {
                 string json = JsonSerializer.Serialize<object>(layerPart,
                     _jsonOptions);
                 result = value.Render(json, Context);
-                WriteOutput(id, result);
+                WriteOutput(layerPart.RoleId!, result);
             }
         }
     }

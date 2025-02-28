@@ -23,7 +23,7 @@ public sealed class TeiOffApparatusJsonRenderer : MLJsonRenderer,
     IJsonRenderer, IConfigurable<AppLinearTextTreeRendererOptions>
 {
     private readonly JsonSerializerOptions _jsonOptions;
-    private TeiHelper? _tei;
+    private TeiHelper _tei;
 
     private AppLinearTextTreeRendererOptions _options;
 
@@ -39,6 +39,7 @@ public sealed class TeiOffApparatusJsonRenderer : MLJsonRenderer,
             PropertyNameCaseInsensitive = true,
         };
         _options = new();
+        _tei = new(_options);
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public sealed class TeiOffApparatusJsonRenderer : MLJsonRenderer,
     public void Configure(AppLinearTextTreeRendererOptions options)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
-        _tei = new TeiHelper(options);
+        _tei = new TeiHelper(_options);
     }
 
     /// <summary>
@@ -71,8 +72,7 @@ public sealed class TeiOffApparatusJsonRenderer : MLJsonRenderer,
                 "for rendering standoff apparatus");
         }
 
-        if (_tei == null)
-            throw new InvalidOperationException("Renderer not configured");
+        // configure the helper
         _tei.Configure(context, tree);
 
         // get the text part

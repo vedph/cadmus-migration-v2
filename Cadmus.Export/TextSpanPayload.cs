@@ -70,70 +70,42 @@ public class TextSpanPayload(FragmentTextRange range)
     }
 
     /// <summary>
-    /// Gets the tag value for the specified object instance decorated
-    /// with <see cref="TagAttribute"/>.
-    /// </summary>
-    /// <param name="instance">The instance.</param>
-    /// <returns>Value or null.</returns>
-    /// <exception cref="ArgumentNullException">instance</exception>
-    public static string? GetTagAttributeValue(object instance)
-    {
-        ArgumentNullException.ThrowIfNull(instance);
-
-        Type type = instance.GetType();
-        TagAttribute? attribute = (TagAttribute?)Attribute.GetCustomAttribute(
-            type, typeof(TagAttribute));
-        return attribute?.Tag;
-    }
-
-    /// <summary>
-    /// Gets the tag attribute of the first item of the Fragments property
-    /// of the layerPart, if any.
-    /// </summary>
-    /// <param name="layerPart">The layer part.</param>
-    /// <returns>Tag attribute value or null if no fragments in part.</returns>
-    public static string? GetTagForPartFragment(IPart layerPart)
-    {
-        // get Fragments array with reflection
-        var fragmentsProp = layerPart.GetType().GetProperty("Fragments");
-        if (fragmentsProp == null) return null;
-
-        // get the first item if any
-        IEnumerable<ITextLayerFragment>? fragments =
-            (IEnumerable<ITextLayerFragment>?)fragmentsProp.GetValue(layerPart);
-        var fr = fragments?.FirstOrDefault();
-
-        // return its tag attribute
-        return fr != null? GetTagAttributeValue(fr) : null;
-    }
-
-    /// <summary>
     /// Gets the fragment ID prefix used in text tree nodes to link fragments.
     /// This is a string like "it.vedph.token-text-layer:fr.it.vedph.comment@".
     /// </summary>
     /// <param name="layerPart">The layer part.</param>
-    /// <param name="layerFragment">The layer fragment.</param>
     /// <returns>Prefix.</returns>
-    public static string GetFragmentPrefixFor(IPart layerPart,
-        ITextLayerFragment layerFragment = null)
+    public static string GetFragmentPrefixFor(IPart layerPart) =>
+        $"{layerPart.TypeId}:{layerPart.RoleId}@";
+
+    /// <summary>
+    /// Gets the index of the fragment from its ID, with form
+    /// <c>typeId:roleId@index</c> where index might be followed by a suffix.
+    /// </summary>
+    /// <param name="fragmentId">The fragment identifier.</param>
+    /// <returns>Fragment index.</returns>
+    /// <exception cref="ArgumentNullException">fragmentId</exception>
+    /// <exception cref="FormatException">invalid fragment ID</exception>
+    public static int GetFragmentIndex(string fragmentId)
     {
-        return GetTagAttributeValue(layerPart) + ":" +
-               (layerFragment != null
-                ? GetTagAttributeValue(layerFragment)
-                : GetTagForPartFragment(layerPart)) + "@";
+        ArgumentNullException.ThrowIfNull(fragmentId);
+        int i = fragmentId.IndexOf('@');
+        if (i < 0) throw new FormatException("Invalid fragment ID: " + fragmentId);
+        int j = ++i;
+        while (j < fragmentId.Length && char.IsDigit(fragmentId[j])) j++;
+        return int.Parse(fragmentId[i..j]);
     }
 
     /// <summary>
-    /// Determines whether this span has any feature derived from the type
-    /// of fragment defined by the specified prefix.
+    /// Determines whether this span is linked to a fragment with the specified
+    /// fragment ID prefix, returning the ID it if found.
     /// </summary>
-    /// <param name="prefix">The prefix (with form TypeId:RoleId@).</param>
-    /// <returns>
-    ///   <c>true</c> if the specified prefix has fragment; otherwise,
-    ///   <c>false</c>.
-    /// </returns>
-    public bool HasFeaturesFromFragment(string prefix) =>
-        FeatureSets.Values.Any(s => s.Source.StartsWith(prefix));
+    /// <param name="prefix">The fragment ID prefix (with form TypeId:RoleId@).
+    /// </param>
+    /// <returns>The fragment ID of the type specified by prefix, or null if
+    /// not found.</returns>
+    public string? GetLinkedFragmentId(string prefix) =>
+        Range.FragmentIds.FirstOrDefault(s => s.StartsWith(prefix));
 
     /// <summary>
     /// Create a clone of this instance.
