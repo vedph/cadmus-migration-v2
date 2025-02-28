@@ -204,3 +204,8 @@ This implies that in a standoff notation we will need to refer to ranges of node
 ```
 
 So, standoff notations would link to either a single element, using a `@loc` attribute, or to a range of elements, using a child `loc` element with attributes `@spanFrom` and `@spanTo`. For instance, in the case of P0 we would have from=`#seg2` and to=`#seg4`.
+
+To get a similar output, our item composer would use:
+
+- a text tree renderer which generates the above XML, segmented as per tree nodes, having a unique ID for each segment.
+- 3 JSON renderers, one per layer, each generating its own document with annotations, variously linked to the base text segments.

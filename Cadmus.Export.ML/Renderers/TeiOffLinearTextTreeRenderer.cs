@@ -116,9 +116,15 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
         XName blockName = _options.ResolvePrefixedName(
             _options.BlockElements[blockType]);
 
-        // create root element
+        // create root element like div @n="ITEM_NR
         XElement root = new(rootName);
-        XElement block = new(blockName);
+        if (context.Data.TryGetValue(M_ITEM_NR, out object? nr))
+            root.SetAttributeValue("n", nr);
+
+        // create block element like p
+        int y = 1;
+        XElement block = new(blockName,
+            new XAttribute("n", 1));
         root.Add(block);
 
         // traverse nodes and build the XML (each node corresponds to a fragment)
@@ -139,7 +145,8 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
             // open a new block if needed
             if (node.Data?.IsBeforeEol == true)
             {
-                block = new XElement(blockName);
+                block = new XElement(blockName,
+                    new XAttribute("n", ++y));
                 root.Add(block);
             }
 
