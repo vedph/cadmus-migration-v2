@@ -41,7 +41,6 @@ public class IdMap
     /// etc.; plus a suffix which is a scoped identifier in the context of the prefix,
     /// separated by an underscore, e.g. the fragment index in its layer part,
     /// or the node ID in a linear tree representing an item's base text.</param>
-    /// </param>
     /// <returns>The number.</returns>
     /// <exception cref="ArgumentNullException">prefix or suffix</exception>
     public int MapSourceId(string id)

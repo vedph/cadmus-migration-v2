@@ -2,7 +2,6 @@
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
 using System;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Cadmus.Export.Filters;
 
@@ -20,25 +19,41 @@ namespace Cadmus.Export.Filters;
 [Tag("it.vedph.text-tree-filter.block-linear")]
 public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
 {
+    /// <summary>
+    /// Splits a node at newline characters, handling all newlines in the text.
+    /// </summary>
+    /// <param name="node">The node to split.</param>
+    /// <param name="skipInitialNewline">True to skip an initial newline if 
+    /// present.</param>
+    /// <returns>The head of the split chain.</returns>
     private static TreeNode<TextSpanPayload> SplitNode(
-          TreeNode<TextSpanPayload> node)
+        TreeNode<TextSpanPayload> node,
+        bool skipInitialNewline = false)
     {
         string? text = node.Data!.Text;
-        if (text == null) return node;
+        if (string.IsNullOrEmpty(text)) return node;
 
-        int i = text.IndexOf('\n');
+        int startIndex = skipInitialNewline && text[0] == '\n' ? 1 : 0;
+        if (startIndex >= text.Length) return node;
 
-        // if no newline found, return the node as is
-        if (i == -1) return node;
+        // find the first newline (after the skipped one if applicable)
+        int i = text.IndexOf('\n', startIndex);
 
-        // create the first left node
+        // if no newline found, return the node with appropriate text
+        if (i == -1)
+        {
+            if (startIndex == 0) return node;
+
+            // just skip the initial newline
+            TreeNode<TextSpanPayload> result = new(node.Data.Clone());
+            result.Data!.Text = text[startIndex..];
+            return result;
+        }
+
+        // create the first node with text up to the newline
         TreeNode<TextSpanPayload> head = new(node.Data.Clone());
-
-        // for newline at beginning (i == 0), create an empty node with IsBeforeEol.
-        // For other positions, extract text up to newline
-        head.Data!.Text = text[..i];
+        head.Data!.Text = startIndex == 0 ? text[..i] : text[startIndex..i];
         head.Data.IsBeforeEol = true;
-
         TreeNode<TextSpanPayload> current = head;
 
         // process remaining text
@@ -91,30 +106,53 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
 
         tree.Traverse(node =>
         {
-            if (node.Data?.Text?.Contains('\n') == true)
+            if (node.Data?.Text == null || node == tree) return true;
+
+            // handle nodes with newlines
+            if (node.Data.Text.Contains('\n'))
             {
-                // corner case: single newline, set flag for parent and skip
+                // case 1: single newline only - mark parent and skip
                 if (node.Data.Text == "\n")
                 {
                     if (current.Data != null) current.Data.IsBeforeEol = true;
-                    // skip this node, but traversing will handle its children
                     return true;
                 }
 
-                // split node and add to current
+                // case 2: text starts with newline - mark parent and handle
+                // content after newline
+                if (node.Data.Text.StartsWith('\n'))
+                {
+                    // mark parent (if it's root we need to create its payload)
+                    if (current.Data != null) current.Data.IsBeforeEol = true;
+                    else current.Data = new TextSpanPayload { IsBeforeEol = true };
+
+                    if (node.Data.Text.Length > 1)
+                    {
+                        // Process the text after the initial newline
+                        TreeNode<TextSpanPayload> head = SplitNode(node, true);
+                        current.AddChild(head);
+
+                        // Move to the last node in the chain
+                        current = head;
+                        while (current.Children.Count > 0)
+                            current = current.Children[0];
+                    }
+
+                    return true;
+                }
+
+                // case 3: Regular case - newlines in the middle or at end
                 TreeNode<TextSpanPayload> splitHead = SplitNode(node);
                 current.AddChild(splitHead);
 
-                // find the last node in the split chain
+                // move to the last node in the chain
                 current = splitHead;
                 while (current.Children.Count > 0)
                     current = current.Children[0];
             }
+            // handle nodes without newlines
             else
             {
-                // add node as is unless it's the root
-                if (node == tree) return true;
-
                 TreeNode<TextSpanPayload> child = new()
                 {
                     Id = node.Id,

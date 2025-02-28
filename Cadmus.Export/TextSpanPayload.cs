@@ -15,12 +15,13 @@ namespace Cadmus.Export;
 /// Initializes a new instance of the <see cref="TextSpanPayload"/> class.
 /// </remarks>
 /// <param name="range">The source fragment text range for this payload.</param>
-public class TextSpanPayload(FragmentTextRange range)
+public class TextSpanPayload(FragmentTextRange? range = null)
 {
     /// <summary>
     /// Gets the source fragment text range for this payload.
+    /// This is null for the root node, all the other nodes should have one.
     /// </summary>
-    public FragmentTextRange Range { get; } = range;
+    public FragmentTextRange? Range { get; } = range;
 
     /// <summary>
     /// Gets or sets the optional node type.
@@ -36,7 +37,7 @@ public class TextSpanPayload(FragmentTextRange range)
     /// <summary>
     /// Gets or sets the text.
     /// </summary>
-    public string? Text { get; set; } = range.Text;
+    public string? Text { get; set; } = range?.Text;
 
     /// <summary>
     /// Gets the features sets. Each set is derived from a specific source,
@@ -105,7 +106,7 @@ public class TextSpanPayload(FragmentTextRange range)
     /// <returns>The fragment ID of the type specified by prefix, or null if
     /// not found.</returns>
     public string? GetLinkedFragmentId(string prefix) =>
-        Range.FragmentIds.FirstOrDefault(s => s.StartsWith(prefix));
+        Range?.FragmentIds.FirstOrDefault(s => s.StartsWith(prefix));
 
     /// <summary>
     /// Create a clone of this instance.

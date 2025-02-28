@@ -144,7 +144,48 @@ public class BlockLinearTextTreeFilterTests
     }
 
     [Fact]
-    public void Apply_TextStartingWithNewline_SplitsNodes()
+    public void Apply_TextWithInitialNewline_EolAddedToParent()
+    {
+        BlockLinearTextTreeFilter filter = new();
+
+        // create a tree where a node's text starts with a newline
+        TreeNode<TextSpanPayload> root = new();
+        TreeNode<TextSpanPayload> node1 = CreateTextNode("First node");
+        root.AddChild(node1);
+
+        // create a node whose text starts with a newline
+        TreeNode<TextSpanPayload> node2 = CreateTextNode("\nSecond node");
+        node1.AddChild(node2);
+
+        // apply the filter
+        TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
+
+        // validate result structure:
+        // - root
+        //   - First node (with IsBeforeEol=true)
+        //     - Second node (without the leading newline)
+
+        // check root structure
+        Assert.Single(result.Children);
+
+        // check first node
+        TreeNode<TextSpanPayload> firstNode = result.Children[0];
+        Assert.Equal("First node", firstNode.Data!.Text);
+        Assert.True(firstNode.Data.IsBeforeEol,
+            "First node should be marked with IsBeforeEol");
+        Assert.Single(firstNode.Children);
+
+        // check second node (should have the leading newline removed)
+        TreeNode<TextSpanPayload> secondNode = firstNode.Children[0];
+        Assert.Equal("Second node", secondNode.Data!.Text);
+        Assert.False(secondNode.Data.IsBeforeEol);
+
+        // no more children
+        Assert.Empty(secondNode.Children);
+    }
+
+    [Fact]
+    public void Apply_TextWithInitialAndInternalNewline_SplitsNodes()
     {
         BlockLinearTextTreeFilter filter = new();
         TreeNode<TextSpanPayload> root = new();
@@ -152,25 +193,23 @@ public class BlockLinearTextTreeFilterTests
 
         TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
 
-        // \n
-        Assert.Single(result.Children);
-        TreeNode<TextSpanPayload> first = result.Children[0];
-        Assert.Equal("", first.Data!.Text);
-        Assert.True(first.Data.IsBeforeEol);
+        // root
+        Assert.NotNull(result.Data);
+        Assert.True(result.Data.IsBeforeEol);
 
         // Hello\n
-        Assert.Single(first.Children);
-        TreeNode<TextSpanPayload> second = first.Children[0];
-        Assert.Equal("Hello", second.Data!.Text);
-        Assert.True(second.Data.IsBeforeEol);
+        Assert.Single(result.Children);
+        TreeNode<TextSpanPayload> hello = result.Children[0];
+        Assert.Equal("Hello", hello.Data!.Text);
+        Assert.True(hello.Data.IsBeforeEol);
 
         // world
-        Assert.Single(second.Children);
-        TreeNode<TextSpanPayload> third = second.Children[0];
-        Assert.Equal("world", third.Data!.Text);
-        Assert.False(third.Data.IsBeforeEol);
+        Assert.Single(hello.Children);
+        TreeNode<TextSpanPayload> world = hello.Children[0];
+        Assert.Equal("world", world.Data!.Text);
+        Assert.False(world.Data.IsBeforeEol);
 
-        Assert.Empty(third.Children);
+        Assert.Empty(world.Children);
     }
 
     [Fact]
@@ -292,46 +331,5 @@ public class BlockLinearTextTreeFilterTests
         TreeNode<TextSpanPayload> xx = annos.Children[0];
         Assert.Equal(" XX", xx.Data!.Text);
         Assert.False(xx.HasChildren);
-    }
-
-    [Fact]
-    public void Apply_NewlineAtStartOfNodeText_HandledCorrectly()
-    {
-        BlockLinearTextTreeFilter filter = new();
-
-        // create a tree where a node's text starts with a newline
-        TreeNode<TextSpanPayload> root = new();
-        TreeNode<TextSpanPayload> node1 = CreateTextNode("First node");
-        root.AddChild(node1);
-
-        // create a node whose text starts with a newline
-        TreeNode<TextSpanPayload> node2 = CreateTextNode("\nSecond node");
-        node1.AddChild(node2);
-
-        // apply the filter
-        TreeNode<TextSpanPayload> result = filter.Apply(root, new Item());
-
-        // validate result structure:
-        // - root
-        //   - First node (with IsBeforeEol=true)
-        //     - Second node (without the leading newline)
-
-        // check root structure
-        Assert.Single(result.Children);
-
-        // check first node
-        TreeNode<TextSpanPayload> firstNode = result.Children[0];
-        Assert.Equal("First node", firstNode.Data!.Text);
-        Assert.True(firstNode.Data.IsBeforeEol,
-            "First node should be marked with IsBeforeEol");
-        Assert.Single(firstNode.Children);
-
-        // check second node (should have the leading newline removed)
-        TreeNode<TextSpanPayload> secondNode = firstNode.Children[0];
-        Assert.Equal("Second node", secondNode.Data!.Text);
-        Assert.False(secondNode.Data.IsBeforeEol);
-
-        // no more children
-        Assert.Empty(secondNode.Children);
     }
 }
