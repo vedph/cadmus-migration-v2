@@ -88,6 +88,36 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
     }
 
     /// <summary>
+    /// Assigns IDs to all the nodes not having one, using an autonumber value
+    /// starting from the max ID in the tree + 1. This is used to assign IDs
+    /// to newly created nodes, thus ensuring that all the nodes have one and
+    /// IDs are unique within the tree.
+    /// </summary>
+    /// <param name="root">The root.</param>
+    private static void AssignNodeIds(TreeNode<TextSpanPayload> root)
+    {
+        // first pass gets max node ID
+        int maxId = 0;
+        root.Traverse(node =>
+        {
+            if (!string.IsNullOrEmpty(node.Id))
+            {
+                int n = int.Parse(node.Id);
+                if (maxId < n) maxId = n;
+            }
+            return true;
+        });
+
+        // assign IDs to all the nodes without it
+        root.Traverse(node =>
+        {
+            if (string.IsNullOrEmpty(node.Id))
+                node.Id = $"{++maxId}";
+            return true;
+        });
+    }
+
+    /// <summary>
     /// Applies this filter to the specified tree, generating a new tree.
     /// </summary>
     /// <param name="tree">The tree's root node.</param>
@@ -165,6 +195,8 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
             }
             return true;
         });
+
+        AssignNodeIds(root);
 
         return root;
     }
