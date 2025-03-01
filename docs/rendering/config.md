@@ -9,20 +9,27 @@ nav_order: 2
 
 >See also: [configuration samples](config-samples).
 
-The Cadmus previewer relies on a JSON configuration consumed by a factory (`CadmusPreviewerFactory`), having these sections, all modeled as arrays of objects:
+The Cadmus rendering system is configured via an external JSON document, consumed by a factory (`CadmusRenderingFactory`), having these sections, all modeled as arrays of objects:
 
-- `RendererFilters`: list of renderer filters, each named with a key, and having its component ID and eventual options. The key is an arbitrary string, used in the scope of the configuration to reference each filter from other sections.
-- `JsonRenderers`: list of JSON renderers, each named with a key, and having its component ID and eventual options. The key corresponds to the part type ID, optionally followed by `|` and its role ID in the case of a layer part. This allows mapping each part type to a specific renderer ID. This key is used in the scope of the configuration to reference each filter from/ other sections. Under options, any renderer can have a `FilterKeys` property which is an array of filter keys, representing the filters used by that renderer, to be applied in the specified order.
-- `TextPartFlatteners`: list of text part flatteners, each named with a key, and having its component ID and eventual options. The key is an arbitrary string, used in the scope of the configuration to reference each filter from other sections These are in charge of flattening the text of a base text part, which is a stage in building its block-based representation.
-- `TextBlockRenderers`: List of text block renderers, each named with a key, and having its component ID and eventual options. The key is an arbitrary string, used in the scope of the configuration to reference each filter from other sections. These text block renderers are used to produce some text output starting from text blocks, typically when exporting a layered text into some other format, e.g. XML TEI.
-- `ItemComposers`: list of item composers, each named with a key, and having its component ID and eventual options. The key is an arbitrary string, not used elsewhere in the context of the configuration. It is used as an argument for UI which process data export. Each composer can have among its options a `TextPartFlattenerKey` and a `TextBlockRendererKey`, referencing the corresponding components by their key, and a `JsonRendererKeys` array, referencing the corresponding JSON renderers by their key. Item composers are used to produce any type of output starting from an item with its parts.
 - `ItemIdCollector`: a single item ID collector to use when required. It has the component ID, and eventual options. Item ID collectors are used to collect the IDs of all the items to be processed, in the desired order.
+- `ContextSuppliers`: list of renderer context suppliers, each named with a key, and having its component ID and eventual options. The key is an arbitrary string, used in the scope of the configuration to reference each filter from other sections.
+- `TextTreeFilters`: list of text tree filters, each named with a key, and having its component ID and eventual options.
+- `RendererFilters`: list of renderer filters, each named with a key, and having its component ID and eventual options.
+- `JsonRenderers`: list of JSON renderers, each named with a key, and having its component ID and eventual options. The key corresponds to the part type ID, optionally followed by `|` and its role ID in the case of a layer part. This allows mapping each part type to a specific renderer ID. This key is used in the scope of the configuration to reference each filter from/ other sections. Among its `Options`, a renderer can have a `FilterKeys` property which is an array of filter keys, representing the filters used by that renderer, to be applied in the specified order.
+- `TextPartFlatteners`: list of text part flatteners, each named with a key, and having its component ID and eventual options. These are in charge of flattening the text of a base text part, which is a stage in building its block-based representation.
+- `TextTreeRenderers`: list of text tree renderers, each named with a key, and having its component ID and eventual options.
+- `ItemComposers`: list of item composers, each named with a key, and having its component ID and eventual options. The key is an arbitrary string, not used elsewhere in the context of the configuration. It is used as an argument for UI which process data export. Each composer can have these properties among its options:
+  - `ContextSupplierKeys`: keys referring to context suppliers (as defined in `ContextSuppliers`).
+  - `TextPartFlattenerKey`: key referring to the text part flattener (as defined in `TextPartFlatteners`).
+  - `TextTreeFilterKeys`: keys referring to text tree filters (as defined in `TextTreeFilters`).
+  - `TextTreeRendererKey`: key referring to the text tree renderer (as defined in `TextTreeRenderers`).
+  - `JsonRendererKeys` array, referencing the corresponding JSON renderers by their key.
 
-Each array in the configuration contains any number of JSON _objects_ having:
+Each array in the configuration contains any number of JSON _objects_, all having:
 
 - an `Id` property.
-- an optional `Options` object to configure the component. All the `JsonRenderers` can have a `FilterKeys` array property, specifying the filters to apply after its rendition. Each entry in the array is one of the filters keys as defined in the `RendererFilters` section.
-- a `Keys` property is used to include the key(s) of the object type being processed. This is a string property, but several keys could be added by separating them with space. For the purposes of preview components anyway there is no need for more than a single key.
+- an optional `Options` object to configure the component.
+- a `Keys` property is used to include the key(s) of the object type being processed. This is a string property, but several keys could be added by separating them with space. For the purposes of most components anyway there is no need for more than a single key.
 
 As a sample, consider this configuration:
 
@@ -35,6 +42,12 @@ As a sample, consider this configuration:
 
 ```json
 {
+  "ItemIdCollector": {
+    "Id": "it.vedph.item-id-collector.mongo",
+    "Options": {
+      "FacetId": "text"
+    }
+  },
   "RendererFilters": [
     {
       "Keys": "thes-filter",
@@ -85,16 +98,10 @@ As a sample, consider this configuration:
       "Id": "it.vedph.text-flattener.token"
     }
   ],
-  "TextBlockRenderers": [
+  "TextTreeRenderers": [
     {
       "Keys": "tei-standoff",
-      "Id": "it.vedph.text-block-renderer.tei-standoff",
-      "Options": {
-        "RowOpen": "<div xml:id=\"r{y}\">",
-        "RowClose": "</div>",
-        "BlockOpen": "<seg xml:id=\"{b}\">",
-        "BlockClose": "</seg>"
-      }
+      "Id": "it.vedph.text-tree-renderer.tei-off-linear"
     }
   ],
   "ItemComposers": [
@@ -103,19 +110,31 @@ As a sample, consider this configuration:
       "Id": "it.vedph.item-composer.tei-standoff.fs",
       "Options": {
         "TextPartFlattenerKey": "it.vedph.token-text",
-        "TextBlockRendererKey": "tei-standoff",
+        "TextTreeRendererKey": "tei-standoff",
         "JsonRendererKeys": [
           "it.vedph.token-text-layer|fr.it.vedph.comment",
           "it.vedph.token-text-layer|fr.it.vedph.orthography"
         ]
       }
     }
-  ],
-  "ItemIdCollector": {
-    "Id": "it.vedph.item-id-collector.mongo",
-    "Options": {
-      "FacetId": "text"
-    }
-  }
+  ]
 }
 ```
+
+Explanation:
+
+- the item ID collector is used to collect the IDs of the items to render. In this case we are filtering items to select only those with a facet ID equal to `text`.
+- rendering filters:
+  - `thes-filter` is used to map thesauri IDs to their values.
+  - `rep-filter` is used to replace some text. Here we just have a mock replacement to show how it works.
+  - `md-filter` is used to render Markdown into some other format; in this case, the target format is plain text.
+- JSON renderers are defined for:
+  - the token-based text part;
+  - the comment layer part;
+  - the orthography layer part.
+- text part flatteners: a single flattener used for token-based text parts.
+- text tree renderers: a single renderer used to generate TEI segmented text for standoff notation.
+- item composers: a single composer orchestrating all the components in rendering each item and saving its output into several files. Its options define:
+  - the text part flattener to use (for token-based text).
+  - the text tree renderer to use (the base text for standoff renderer).
+  - the JSON renderers to use (for comment and orthography layers).

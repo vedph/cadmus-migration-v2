@@ -143,7 +143,7 @@ In the context of the rendering process, there are many types of identifiers.
 
 #### Fragment Identifiers
 
-Fragment identifiers are used to link the portion of a text to one or more fragments in a layer part. As explained about the [rendition architecture](rendition#building-trees), the process converts the annotated text into a tree of text nodes, each linked to zero or more fragments (=annotations with a specific model).
+Fragment identifiers are used to link the portion of a text to one or more fragments in a layer part. As explained about the [rendition architecture](architecture#building-trees), the process converts the annotated text into a tree of text nodes, each linked to zero or more fragments (=annotations with a specific model).
 
 The rendering system processes one item at a time; so, within the item's context, all what is required to identify each part is just the combination of the part's type and role IDs.
 
@@ -157,7 +157,7 @@ For instance, the first fragment (=index 0 in the fragments array of the layer p
 2. role = apparatus fragment (role ID `fr.it.vedph.orthography`);
 3. fragment index = 0.
 
-For instance, the word `e` of `que` in the [example](rendition#building-trees) about rendering architecture has a fragment ID equal to `it.vedph.token-text-layer:fr.it.vedph.orthography@0`, because it is linked to a single fragment (here the first one) from the orthography annotations layer.
+For instance, the word `e` of `que` in the [example](architecture#building-trees) about rendering architecture has a fragment ID equal to `it.vedph.token-text-layer:fr.it.vedph.orthography@0`, because it is linked to a single fragment (here the first one) from the orthography annotations layer.
 
 This ID is unique only within the scope of the item being processed; in a typical text, you will have many items representing text with an apparatus layer, and each will have its first apparatus layer fragment identified by the same ID value.
 
@@ -262,7 +262,7 @@ que bixit|annos XX
 112345555555555666
 ```
 
-From ranges we get our tree, which is further filtered by a block linear tree text filter to properly handle newlines (see about [rendition stages](rendition#building-trees)):
+From ranges we get our tree, which is further filtered by a block linear tree text filter to properly handle newlines (see about [rendition stages](architecture#building-trees)):
 
 ```mermaid
 graph LR;

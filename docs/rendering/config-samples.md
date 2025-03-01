@@ -25,7 +25,7 @@ Here I collect some real-world samples of render [configurations](overview.md#co
 
 This sample configuration is very basic, as it just renders the note part. A note part contains a Markdown text, plus an optional tag.
 
-So, the XSLT-based renderer is used to convert the JSON code representing the node into XML, apply an XSLT transformation, and return an HTML result.
+An XSLT-based renderer is used to convert the JSON code representing the node into XML, apply an XSLT transformation, and return an HTML result.
 
 As the text is Markdown, to properly render it we use a filter. Filters are applied after the renderer has completed, so in this case they work on an HTML input. The XSLT script wraps the Markdown text into a mock element named `_md`. Then, the Markdown filter replaces all the text inside this element into its HTML rendition (as specified by the `Format` option).
 

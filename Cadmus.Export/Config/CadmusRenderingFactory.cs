@@ -12,7 +12,7 @@ using System.Reflection;
 namespace Cadmus.Export.Config;
 
 /// <summary>
-/// Components factory for <see cref="CadmusPreviewer"/>.
+/// Rendering components factory.
 /// </summary>
 /// <remarks>The JSON configuration has the following sections:
 /// <list type="bullet">

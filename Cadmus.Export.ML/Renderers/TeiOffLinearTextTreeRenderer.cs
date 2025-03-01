@@ -11,7 +11,9 @@ using System.Xml.Linq;
 namespace Cadmus.Export.ML.Renderers;
 
 /// <summary>
-/// Standoff TEI text tree renderer.
+/// Standoff TEI text tree renderer. This renders the base text from a linear
+/// tree into a TEI segmented text using <c>seg</c>, each with its mapped ID,
+/// so that it can be targeted by annotations.
 /// <para>Tag: <c>it.vedph.text-tree-renderer.tei-off-linear</c>.</para>
 /// </summary>
 [Tag("it.vedph.text-tree-renderer.tei-off-linear")]
@@ -21,28 +23,6 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
 {
     private int _group;
     private string? _pendingGroupId;
-
-    /// <summary>
-    /// The name of the metadata placeholder for the item's ordinal number
-    /// (1-N). This is set externally when repeatedly using this renderer
-    /// for multiple items.
-    /// </summary>
-    public const string M_ITEM_NR = "item-nr";
-    /// <summary>
-    /// The name of the metadata placeholder for each block's target ID.
-    /// Each target ID is built with item number + layer ID + block number,
-    /// all separated by underscore and prefixed by an initial single <c>b</c>
-    /// (e.g. <c>b1_2_3</c>).
-    /// </summary>
-    public const string M_TARGET_ID = "target-id";
-    /// <summary>
-    /// The name of the metadata placeholder for row's y number (1-N).
-    /// </summary>
-    public const string M_ROW_Y = "y";
-    /// <summary>
-    /// The name of the metadata placeholder for block's ID.
-    /// </summary>
-    public const string M_BLOCK_ID = "b";
 
     private XmlTextTreeRendererOptions _options;
 
@@ -118,7 +98,7 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
 
         // create root element like div @n="ITEM_NR
         XElement root = new(rootName);
-        if (context.Data.TryGetValue(M_ITEM_NR, out object? nr))
+        if (context.Data.TryGetValue(ItemComposer.M_ITEM_NR, out object? nr))
             root.SetAttributeValue("n", nr);
 
         // create block element like p

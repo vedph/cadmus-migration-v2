@@ -1,17 +1,21 @@
 ---
-title: "Rendition" 
+title: "Rendition Architecture" 
 layout: default
 parent: Migration
 nav_order: 1
 ---
 
-# Rendering Architecture
+# Rendition Architecture
 
-- [Rendering Architecture](#rendering-architecture)
+- [Rendition Architecture](#rendition-architecture)
   - [Flow](#flow)
     - [Non-Textual](#non-textual)
     - [Textual](#textual)
       - [Building Trees](#building-trees)
+        - [Flattening Layers](#flattening-layers)
+        - [Merging Ranges](#merging-ranges)
+        - [Building Text Tree](#building-text-tree)
+        - [Rendering Text Tree](#rendering-text-tree)
 
 The easiest form of data export in Cadmus is based on rendering data, for both exporting data into files and providing a frontend interface with "previews", i.e. views which summarize structured data for human readers. For instance, in the former case you can export standoff TEI documents from text items with layers; in the latter case, you can view a compact and human-friendly data summary inside the editor itself.
 
@@ -122,7 +126,9 @@ Let us say that there are 3 annotation layers on top of this base text:
 
 >💡 Remember that in the Cadmus model a layer part is a collection of specialized annotation models named fragments. Each fragment is linked to any specific span of the base text. For instance, in a critical apparatus you might have two variants for the word `illud` chosen in the reconstructed critical text: `illuc` and `illic`. In the apparatus model, this would be a single fragment linked to `illud`, with 2 entries representing variants.
 
-In this example we are going to render all these layers. We thus need to segment the base text so that we can link to each segment one or more fragments, whatever the layer they come from. Starting from this stage, we have 6 steps to get to our desired rendition, whatever its target format:
+In this example we are going to render all these layers. We thus need to segment the base text so that we can link to each segment one or more fragments, whatever the layer they come from. Starting from this stage, we have 6 steps to get to our desired rendition, whatever its target format.
+
+##### Flattening Layers
 
 ▶️ (1) **flatten layers**: use a text part flattener (`ITextPartFlattener`) to get the whole text into a multiline string, plus one range for each fragment in each of the picked layer parts.
 
@@ -151,6 +157,8 @@ Each of the ranges has a model including:
 - the text corresponding to the range. This is assigned after flattening and merging, for performance reasons (it would be pointless to assign text to all the ranges when many of them are going to be merged into new ones).
 
 At this stage we have a string with the text, and a bunch of freely overlapping ranges referring to it. The next step is merging these ranges into a single linear, contiguous sequence.
+
+##### Merging Ranges
 
 ▶️ (2) **merge ranges** (via `FragmentTextRange.MergeRanges`) into a set of non-overlapping and contiguous ranges, covering the whole text from start to end. So, starting from this state, where each line below the text represents a range with its fragment ID (Figure 2).
 
@@ -189,6 +197,8 @@ que bixit|annos XX
 ```
 
 ▶️ (3) **assign text values** to each merged range (via `ItemComposer`). This is trivial as it just means getting substrings from the whole text, as delimited by each range.
+
+##### Building Text Tree
 
 ▶️ (4) **build a text tree**: this tree is built (via `ItemComposer`) starting from a blank root node, having in a single branch descendant nodes corresponding to the merged ranges. The first range is child of the blank root node, and each following range is child of the previous one.
 
@@ -230,5 +240,7 @@ root --> 1[qu]
 5 --> 6[annos]
 6 --> 7[_XX]
 ```
+
+##### Rendering Text Tree
 
 ▶️ (6) **render the text tree** (via an `ITextTreeRenderer`). A text tree renderer traverses the tree and renders it into some specific format. This can be anything, from something as simple as plain text (by just concatenating text from each node) to HTML, TEI, etc.
