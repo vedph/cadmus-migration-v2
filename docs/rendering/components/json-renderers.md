@@ -1,38 +1,28 @@
 ---
-title: "Renderers" 
+title: "JSON Renderers" 
 layout: default
 parent: Rendition
 nav_order: 3
 ---
 
-# Renderers
+# JSON Renderers
 
-- [Renderers](#renderers)
-  - [JSON Renderers](#json-renderers)
-    - [Filters](#filters)
-    - [Null Json Renderer](#null-json-renderer)
-    - [XSLT Json Renderer](#xslt-json-renderer)
+- [JSON Renderers](#json-renderers)
+  - [Null Json Renderer](#null-json-renderer)
+  - [XSLT Json Renderer](#xslt-json-renderer)
     - [TEI Standoff Apparatus Json Renderer](#tei-standoff-apparatus-json-renderer)
 
-## JSON Renderers
+>💡 Under its `Options`, any renderer can have a `FilterKeys` property which is an array of filter keys, representing the filters used by that renderer, to be applied in the specified order. These filters are defined in the `RendererFilters` section of the [configuration](../config).
 
-Here you can find a list of builting JSON renderers.
+## Null Json Renderer
 
-### Filters
-
-Under its `Options`, any renderer can have a `FilterKeys` property which is an array of filter keys, representing the filters used by that renderer, to be applied in the specified order.
-
-These filters are specified in the `Filters` section of the [configuration](config).
-
-### Null Json Renderer
+👉 A pass-through filter, which just returns the received JSON. It can be used for diagnostic purposes, or to apply some filters to the received text.
 
 - ID: `it.vedph.json-renderer.null`
 
-Null JSON renderer. This is a pass-through filter, which just returns the received JSON. It can be used for diagnostic purposes, or to apply some filters to the received text.
+## XSLT Json Renderer
 
-### XSLT Json Renderer
-
-XSLT-based JSON renderer. This can transform JSON, convert it into XML, transform XML with XSLT, and apply filters to the result.
+👉 XSLT-based JSON renderer. This can transform JSON, convert it into XML, transform XML with XSLT, and apply filters to the result.
 
 - ID: `it.vedph.json-renderer.xslt`
 - options:
