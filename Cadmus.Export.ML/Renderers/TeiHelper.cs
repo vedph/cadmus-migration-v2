@@ -143,7 +143,7 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
         // app @loc="segID" or loc @spanFrom/spanTo
         if (addLoc)
         {
-            MLJsonRenderer.AddTeiLocToElement(textPartId,
+            MLJsonRenderer.AddTeiLocToElement(
                 bounds.Value.First, bounds.Value.Last, app, _context!);
         }
 
@@ -176,7 +176,7 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
             }
 
             // rdg or lem/@wit or @resp
-            AddWitOrResp($"{textPartId}_{frIndex}.{entryIndex}", entry,
+            AddWitOrResp($"{textPartId}/{frIndex}.{entryIndex}", entry,
                 lemOrRdg);
 
             entryIndex++;

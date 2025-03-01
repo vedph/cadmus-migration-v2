@@ -8,8 +8,10 @@ public sealed class FrLinkRendererFilterTest
     private static RendererContext GetContext()
     {
         RendererContext context = new();
-        context.MapSourceId("seg", "it.vedph.token-text:fr.it.vedph.apparatus@0");
-        context.MapSourceId("seg", "it.vedph.token-text:fr.it.vedph.apparatus@1");
+        context.MapSourceId("seg",
+            "db66b931-d468-4478-a6ae-d9e56e9431b9/0");
+        context.MapSourceId("seg",
+            "db66b931-d468-4478-a6ae-d9e56e9431b9/1");
         return context;
     }
 
@@ -25,7 +27,7 @@ public sealed class FrLinkRendererFilterTest
     }
 
     [Fact]
-    public void Apply_TagsWithoutMatch_Copied()
+    public void Apply_TagsWithoutMatch_Unresolved()
     {
         FrLinkRendererFilter filter = new();
 
@@ -40,6 +42,10 @@ public sealed class FrLinkRendererFilterTest
     public void Apply_TagsWithoutMatchWithOmit_Omitted()
     {
         FrLinkRendererFilter filter = new();
+        filter.Configure(new FrLinkRendererFilterOptions
+        {
+            OmitUnresolved = true
+        });
 
         string? result = filter.Apply("hello #[unknown]# world",
             GetContext());
@@ -54,7 +60,7 @@ public sealed class FrLinkRendererFilterTest
         FrLinkRendererFilter filter = new();
 
         string? result = filter.Apply(
-            "hello #[seg/it.vedph.token-text:fr.it.vedph.apparatus@0]# world",
+            "hello #[seg/db66b931-d468-4478-a6ae-d9e56e9431b9/0]# world",
             GetContext());
 
         Assert.NotNull(result);

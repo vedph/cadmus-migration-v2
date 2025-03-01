@@ -9,9 +9,8 @@ namespace Cadmus.Export.ML.Filters;
 /// Fragments links renderer filter. This filter replaces all the fragment
 /// keys delimited between a specified pair of opening and closing tags
 /// with a target ID got from the rendering context.
-/// For instance, a key like (map/layerTypeId:roleId@fragmentIndex) as
-/// <c>seg/it.vedph.token-text-layer:fr.it.vedph.apparatus@0</c>
-/// is mapped to a target ID like <c>seg123</c>.
+/// For instance, a key like <c>seg/itemId/nodeId</c> is mapped to
+/// a target ID like <c>seg123</c>.
 /// <para>Tag: <c>it.vedph.renderer-filter.fr-link</c>.</para>
 /// </summary>
 [Tag("it.vedph.renderer-filter.fr-link")]

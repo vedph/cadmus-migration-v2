@@ -136,7 +136,7 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
                 if (node.Data.Range?.FragmentIds?.Count > 0)
                 {
                     int id = context.MapSourceId("seg",
-                        $"{context.Item!.Id}_{node.Id}");
+                        $"{context.Item!.Id}/{node.Id}");
 
                     XElement seg = new(NamespaceOptions.TEI + "seg",
                         new XAttribute(NamespaceOptions.XML + "id", $"seg{id}"),

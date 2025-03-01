@@ -57,20 +57,16 @@ public abstract class MLJsonRenderer : JsonRenderer
     /// element. The location is either encoded as a single @loc attribute or
     /// as a loc child element with @spanFrom and @spanTo attributes.
     /// </summary>
-    /// <param name="textPartId">The text part identifier.</param>
     /// <param name="first">The first node linked to the fragment.</param>
     /// <param name="last">The last node linked to the fragment.</param>
     /// <param name="element">The target element to receive location.</param>
     /// <param name="context">The rendering context.</param>
     /// <exception cref="ArgumentNullException">any of the arguments is null
     /// </exception>
-    public static void AddTeiLocToElement(string textPartId,
-        TreeNode<TextSpanPayload> first,
-        TreeNode<TextSpanPayload> last,
-        XElement element,
+    public static void AddTeiLocToElement(TreeNode<TextSpanPayload> first,
+        TreeNode<TextSpanPayload> last, XElement element,
         IRendererContext context)
     {
-        ArgumentNullException.ThrowIfNull(textPartId);
         ArgumentNullException.ThrowIfNull(first);
         ArgumentNullException.ThrowIfNull(last);
         ArgumentNullException.ThrowIfNull(element);
@@ -78,13 +74,13 @@ public abstract class MLJsonRenderer : JsonRenderer
 
         if (first == last)
         {
-            int id = context!.MapSourceId("seg", $"{textPartId}_{first}");
+            int id = context!.MapSourceId("seg", $"{context.Item!.Id}/{first}");
             element.SetAttributeValue("loc", $"seg{id}");
         }
         else
         {
-            int firstId = context!.MapSourceId("seg", $"{textPartId}_{first}");
-            int lastId = context!.MapSourceId("seg", $"{textPartId}_{last}");
+            int firstId = context!.MapSourceId("seg", $"{context.Item!.Id}/{first}");
+            int lastId = context!.MapSourceId("seg", $"{context.Item!.Id}/{last}");
 
             XElement loc = new(NamespaceOptions.TEI + "loc",
                 new XAttribute("spanFrom", $"seg{firstId}"),
