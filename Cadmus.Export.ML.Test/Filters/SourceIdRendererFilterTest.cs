@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Cadmus.Export.ML.Test.Filters;
 
-public sealed class FrLinkRendererFilterTest
+public sealed class SourceIdRendererFilterTest
 {
     private static RendererContext GetContext()
     {
@@ -18,7 +18,7 @@ public sealed class FrLinkRendererFilterTest
     [Fact]
     public void Apply_NoTags_Unchanged()
     {
-        FrLinkRendererFilter filter = new();
+        SourceIdRendererFilter filter = new();
 
         string? result = filter.Apply("hello world", GetContext());
 
@@ -29,7 +29,7 @@ public sealed class FrLinkRendererFilterTest
     [Fact]
     public void Apply_TagsWithoutMatch_Unresolved()
     {
-        FrLinkRendererFilter filter = new();
+        SourceIdRendererFilter filter = new();
 
         string? result = filter.Apply("hello #[unknown]# world",
             GetContext());
@@ -41,7 +41,7 @@ public sealed class FrLinkRendererFilterTest
     [Fact]
     public void Apply_TagsWithoutMatchWithOmit_Omitted()
     {
-        FrLinkRendererFilter filter = new();
+        SourceIdRendererFilter filter = new();
         filter.Configure(new FrLinkRendererFilterOptions
         {
             OmitUnresolved = true
@@ -57,7 +57,7 @@ public sealed class FrLinkRendererFilterTest
     [Fact]
     public void Apply_TagsWithMatch_Ok()
     {
-        FrLinkRendererFilter filter = new();
+        SourceIdRendererFilter filter = new();
 
         string? result = filter.Apply(
             "hello #[seg/db66b931-d468-4478-a6ae-d9e56e9431b9/0]# world",

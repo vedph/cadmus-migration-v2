@@ -6,24 +6,25 @@ using System.Text;
 namespace Cadmus.Export.ML.Filters;
 
 /// <summary>
-/// Fragments links renderer filter. This filter replaces all the fragment
-/// keys delimited between a specified pair of opening and closing tags
-/// with a target ID got from the rendering context.
-/// For instance, a key like <c>seg/itemId/nodeId</c> is mapped to
-/// a target ID like <c>seg123</c>.
-/// <para>Tag: <c>it.vedph.renderer-filter.fr-link</c>.</para>
+/// Source IDs renderer filter. This filter replaces all the source identifiers
+/// delimited between a specified pair of opening and closing tags with
+/// the corresponding mapped identifiers got from the rendering context.
+/// For instance, a segment source ID with form <c>seg/itemId/nodeId</c> is mapped
+/// to a target ID like <c>seg123</c>. This assumes that the source ID is prefixed
+/// by the map name (e.g. <c>seg</c>) followed by a slash.
+/// <para>Tag: <c>it.vedph.renderer-filter.source-id</c>.</para>
 /// </summary>
-[Tag("it.vedph.renderer-filter.fr-link")]
-public sealed class FrLinkRendererFilter : IRendererFilter,
+[Tag("it.vedph.renderer-filter.source-id")]
+public sealed class SourceIdRendererFilter : IRendererFilter,
     IConfigurable<FrLinkRendererFilterOptions>
 {
     private FrLinkRendererFilterOptions _options;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FrLinkRendererFilter"/>
+    /// Initializes a new instance of the <see cref="SourceIdRendererFilter"/>
     /// class.
     /// </summary>
-    public FrLinkRendererFilter()
+    public SourceIdRendererFilter()
     {
         _options = new FrLinkRendererFilterOptions();
     }
