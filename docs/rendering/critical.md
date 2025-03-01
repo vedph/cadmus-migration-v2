@@ -1,5 +1,14 @@
 # Rendering Critical Text
 
+- [Rendering Critical Text](#rendering-critical-text)
+  - [Linear Single Layer](#linear-single-layer)
+  - [Linear Multiple Layers](#linear-multiple-layers)
+    - [Standoff Linking](#standoff-linking)
+      - [Fragment Identifiers](#fragment-identifiers)
+      - [Segment Identifiers](#segment-identifiers)
+      - [Identifiers Mapping](#identifiers-mapping)
+    - [Standoff Procedure](#standoff-procedure)
+
 Rendering a critical apparatus is especially complex because it involves many different rendition strategies according to the source data and the target format. Let us consider various scenarios, from the simplest to the most complex ones.
 
 Before illustrating these examples, let us recap the standard [apparatus](https://github.com/vedph/cadmus-philology/blob/master/docs/fr.apparatus.md) fragment model:
@@ -25,7 +34,7 @@ Before illustrating these examples, let us recap the standard [apparatus](https:
 
 The apparatus model essentially represents variants as _edit operations_ on the base text. So, a variant like `illic` for the base text `illuc` is represented as a replacement operation (type=replacement). When instead we just want to add metadata, e.g. to list the witnesses for `illuc`, the lemma accepted in the reconstructed text, we use a _note_ type. In this case the value is null (or empty). The variant value is null or empty also when it represents a zero variant, i.e. an omission or deletion; but in this case the type is _replacement_.
 
->In practice, this means that a user of the apparatus editor will create a _replacement_ or _insert-before_ or _insert-after_ entry to represent a variant, and a note entry to represent the variant accepted in the critical text. An omission or deletion is just a variant with value zero.
+>💡 In practice, this means that the creator of the apparatus editor will add a _replacement_ or _insert-before_ or _insert-after_ entry to represent a variant, and a note entry to represent the variant accepted in the critical text. An omission or deletion is just a variant with value zero.
 
 ## Linear Single Layer
 
@@ -187,7 +196,7 @@ So, both families of components involved in rendering standoff TEI would use the
 
 Both these components have access to the source item and the corresponding text tree. The tree nodes correspond to segments, and each node has its ID and any number of fragment IDs pointing to annotations. So, given the same input, we expect the same output ID for each segment.
 
-#### Mapping Identifiers
+#### Identifiers Mapping
 
 Anyway, in a TEI output we would not like such long identifiers for text fragments. We need something more compact, like a simple number as customary in TEI practice, to avoid hindering XML code readability.
 
