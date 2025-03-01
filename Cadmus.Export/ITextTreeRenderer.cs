@@ -5,7 +5,7 @@ using Fusi.Tools.Data;
 namespace Cadmus.Export;
 
 /// <summary>
-/// Renderer of <see cref="TextBlockRow"/>'s.
+/// Renderer of text trees.
 /// </summary>
 public interface ITextTreeRenderer : IHasRendererFilters
 {
