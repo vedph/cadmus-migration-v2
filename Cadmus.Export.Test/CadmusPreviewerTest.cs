@@ -139,15 +139,15 @@ public sealed class CadmusPreviewerTest
         {
             Location = "1.2-2.1",
             Text = "acc. rather than abl. is rarer but attested.",
-            References = new List<DocReference>
-            {
+            References =
+            [
                 new DocReference
                 {
                     Citation = "Sandys 1927 63",
                     Tag = "m",
                     Type = "book"
                 }
-            }
+            ]
         });
         // XX
         commLayer.AddFragment(new CommentLayerFragment
@@ -162,10 +162,10 @@ public sealed class CadmusPreviewerTest
     {
         // camel case everything:
         // https://stackoverflow.com/questions/19521626/mongodb-convention-packs/19521784#19521784
-        ConventionPack pack = new()
-        {
+        ConventionPack pack =
+        [
             new CamelCaseElementNameConvention()
-        };
+        ];
         ConventionRegistry.Register("camel case", pack, _ => true);
 
         _client.DropDatabase(DB_NAME);
@@ -174,14 +174,14 @@ public sealed class CadmusPreviewerTest
         SeedData(db);
     }
 
-    private static ICadmusRepository GetRepository()
+    private static MongoCadmusRepository GetRepository()
     {
         TagAttributeToTypeMap map = new();
-        map.Add(new[]
-        {
+        map.Add(
+        [
             typeof(NotePart).Assembly,
             typeof(ApparatusLayerFragment).Assembly
-        });
+        ]);
         MongoCadmusRepository repository = new(
             new StandardPartTypeProvider(map),
             new StandardItemSortKeyBuilder());
@@ -193,7 +193,7 @@ public sealed class CadmusPreviewerTest
         return repository;
     }
 
-    private static CadmusPreviewer GetPreviewer(ICadmusRepository repository)
+    private static CadmusPreviewer GetPreviewer(MongoCadmusRepository repository)
     {
         CadmusRenderingFactory factory = TestHelper.GetFactory();
         return new(factory, repository);
@@ -203,7 +203,7 @@ public sealed class CadmusPreviewerTest
     public void RenderPart_NullWithText_Ok()
     {
         InitDatabase();
-        ICadmusRepository repository = GetRepository();
+        MongoCadmusRepository repository = GetRepository();
         CadmusPreviewer previewer = GetPreviewer(repository);
 
         string json = previewer.RenderPart(ITEM_ID, TEXT_ID);
@@ -231,7 +231,7 @@ public sealed class CadmusPreviewerTest
     public void RenderFragment_NullWithOrth_Ok(int index)
     {
         InitDatabase();
-        ICadmusRepository repository = GetRepository();
+        MongoCadmusRepository repository = GetRepository();
         CadmusPreviewer previewer = GetPreviewer(repository);
 
         string json2 = previewer.RenderFragment(ITEM_ID, ORTH_ID, index);
@@ -258,53 +258,63 @@ public sealed class CadmusPreviewerTest
         // ................CC 2.2     L1-1
 
         InitDatabase();
-        ICadmusRepository repository = GetRepository();
+        MongoCadmusRepository repository = GetRepository();
         CadmusPreviewer previewer = GetPreviewer(repository);
 
-        IList<TextBlockRow> rows = previewer.BuildTextBlocks(TEXT_ID, new[]
-        {
+        IList<TextSpanPayload> payloads = previewer.BuildTextBlocks(TEXT_ID,
+        [
             ORTH_ID,
             COMM_ID
-        });
+        ]);
 
-        Assert.Equal(2, rows.Count);
+        Assert.Equal(2, payloads.Count);
 
-        // row 0
-        TextBlockRow row = rows[0];
-        Assert.Equal(5, row.Blocks.Count);
         // qu: -
-        Assert.Equal("qu", row.Blocks[0].Text);
-        Assert.Empty(row.Blocks[0].LayerIds);
+        TextSpanPayload p = payloads[0];
+        Assert.Equal("qu", p.Text);
+        Assert.NotNull(p.Range);
+        Assert.Empty(p.Range.FragmentIds);
         // e: AB
-        Assert.Equal("e", row.Blocks[1].Text);
-        Assert.Single(row.Blocks[1].LayerIds);
-        Assert.Equal("L0-0", row.Blocks[1].LayerIds[0]);
+        p = payloads[1];
+        Assert.Equal("e", p.Text);
+        Assert.NotNull(p.Range);
+        Assert.Single(p.Range.FragmentIds);
+        Assert.Equal("L0-0", p.Range.FragmentIds[0]);
         // _: -
-        Assert.Equal(" ", row.Blocks[2].Text);
-        Assert.Empty(row.Blocks[2].LayerIds);
+        p = payloads[2];
+        Assert.Equal(" ", p.Text);
+        Assert.NotNull(p.Range);
+        Assert.Empty(p.Range.FragmentIds);
         // b: OC
-        Assert.Equal("b", row.Blocks[3].Text);
-        Assert.Equal(2, row.Blocks[3].LayerIds.Count);
-        Assert.Equal("L0-1", row.Blocks[3].LayerIds[0]);
-        Assert.Equal("L1-0", row.Blocks[3].LayerIds[1]);
+        p = payloads[3];
+        Assert.Equal("b", p.Text);
+        Assert.NotNull(p.Range);
+        Assert.Equal(2, p.Range.FragmentIds.Count);
+        Assert.Equal("L0-1", p.Range.FragmentIds[0]);
+        Assert.Equal("L1-0", p.Range.FragmentIds[1]);
         // ixit: C
-        Assert.Equal("ixit", row.Blocks[4].Text);
-        Assert.Single(row.Blocks[4].LayerIds);
-        Assert.Equal("L1-0", row.Blocks[4].LayerIds[0]);
+        p = payloads[4];
+        Assert.Equal("ixit", p.Text);
+        Assert.NotNull(p.Range);
+        Assert.Single(p.Range.FragmentIds);
+        Assert.Equal("L1-0", p.Range.FragmentIds[0]);
 
-        // row 1
-        row = rows[1];
-        Assert.Equal(3, row.Blocks.Count);
         // annos: C
-        Assert.Equal("annos", row.Blocks[0].Text);
-        Assert.Single(row.Blocks[0].LayerIds);
-        Assert.Equal("L1-0", row.Blocks[0].LayerIds[0]);
+        p = payloads[5];
+        Assert.Equal("annos", p.Text);
+        Assert.NotNull(p.Range);
+        Assert.Single(p.Range.FragmentIds);
+        Assert.Equal("L1-0", p.Range.FragmentIds[0]);
         // _: -
-        Assert.Equal(" ", row.Blocks[1].Text);
-        Assert.Empty(row.Blocks[1].LayerIds);
+        p = payloads[6];
+        Assert.Equal(" ", p.Text);
+        Assert.NotNull(p.Range);
+        Assert.Empty(p.Range.FragmentIds);
         // XX: D
-        Assert.Equal("XX", row.Blocks[2].Text);
-        Assert.Single(row.Blocks[2].LayerIds);
-        Assert.Equal("L1-1", row.Blocks[2].LayerIds[0]);
+        p = payloads[7];
+        Assert.Equal("XX", p.Text);
+        Assert.NotNull(p.Range);
+        Assert.Single(p.Range.FragmentIds);
+        Assert.Equal("L1-1", p.Range.FragmentIds[0]);
     }
 }

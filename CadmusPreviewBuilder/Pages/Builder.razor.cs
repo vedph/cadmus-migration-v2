@@ -158,7 +158,7 @@ public partial class Builder
             {
                 string result;
                 if (Model.IsFragment)
-                    result = _previewer.RenderFragmentJson(Model.Json, 0);
+                    result = _previewer.RenderFragmentJson(Model.Json, 0, context);
                 else
                     result = _previewer.RenderPartJson(Model.Json, context);
 

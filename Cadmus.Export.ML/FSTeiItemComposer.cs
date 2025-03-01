@@ -7,6 +7,7 @@ namespace Cadmus.Export.ML;
 
 /// <summary>
 /// File-based TEI item composer.
+/// <para>Tag: <c>it.vedph.item-composer.tei.fs</c>.</para>
 /// </summary>
 /// <seealso cref="TeiItemComposer" />
 [Tag("it.vedph.item-composer.tei.fs")]

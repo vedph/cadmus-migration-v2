@@ -1,6 +1,9 @@
 ﻿using Cadmus.Core;
 using Cadmus.Core.Storage;
 using Cadmus.Export.Config;
+using Cadmus.Export.Filters;
+using Cadmus.Export.Renderers;
+using Fusi.Tools.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +19,7 @@ public sealed class CadmusPreviewer
 {
     private readonly ICadmusRepository? _repository;
     private readonly CadmusRenderingFactory _factory;
+    private readonly BlockLinearTextTreeFilter _blockFilter;
     // cache
     private readonly Dictionary<string, IJsonRenderer> _jsonRenderers;
     private readonly Dictionary<string, ITextPartFlattener> _flatteners;
@@ -34,6 +38,7 @@ public sealed class CadmusPreviewer
         _factory = factory ??
             throw new ArgumentNullException(nameof(factory));
         _repository = repository;
+        _blockFilter = new BlockLinearTextTreeFilter();
 
         // cached components
         _jsonRenderers = [];
@@ -83,7 +88,7 @@ public sealed class CadmusPreviewer
         return renderer;
     }
 
-    private IRendererContext BuildContext(IItem item)
+    private RendererContext BuildContext(IItem item)
     {
         RendererContext context = new()
         {
@@ -177,13 +182,14 @@ public sealed class CadmusPreviewer
     /// content.</param>
     /// <param name="frIndex">Index of the fragment in the <c>fragments</c>
     /// array of the received layer part.</param>
-    /// <param name="context">The optional renderer context.</param>
+    /// <param name="context">The renderer context.</param>
     /// <returns>Rendition or empty string.</returns>
-    /// <exception cref="ArgumentNullException">json</exception>
+    /// <exception cref="ArgumentNullException">json or context</exception>
     public string RenderFragmentJson(string json, int frIndex,
-        IRendererContext? context = null)
+        IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(json);
+        ArgumentNullException.ThrowIfNull(context);
 
         // get the part type ID and role ID (=fragment type)
         JsonDocument doc = JsonDocument.Parse(json);
@@ -252,6 +258,7 @@ public sealed class CadmusPreviewer
         if (json == null) return "";
 
         IItem? item = _repository?.GetItem(itemId, false);
+        if (item == null) return "";
 
         IRendererContext? context = BuildContext(item);
 
@@ -259,36 +266,32 @@ public sealed class CadmusPreviewer
     }
 
     /// <summary>
-    /// Builds the text blocks from the specified text part.
+    /// Builds blocks of texts from the specified text part.
     /// Note that this method requires a repository.
     /// </summary>
-    /// <param name="id">The part identifier.</param>
+    /// <param name="textPartId">The text part identifier.</param>
     /// <param name="layerPartIds">The IDs of the layers to include in the
     /// rendition.</param>
-    /// <param name="layerIds">The optional IDs to assign to each layer
-    /// part's range. When specified, it must have the same size of
-    /// <paramref name="layerPartIds"/> so that the first entry in it
-    /// corresponds to the first entry in layer IDs, the second to the second,
-    /// and so forth.</param>
     /// <returns>Rendition.</returns>
-    /// <exception cref="ArgumentNullException">id or layerIds</exception>
-    public IList<TextBlockRow> BuildTextBlocks(string id,
-        IList<string> layerPartIds, IList<string?>? layerIds = null)
+    /// <exception cref="ArgumentNullException">textPartId or layerPartIds
+    /// </exception>
+    public IList<TextSpanPayload> BuildTextBlocks(string textPartId,
+        IList<string> layerPartIds)
     {
-        ArgumentNullException.ThrowIfNull(id);
+        ArgumentNullException.ThrowIfNull(textPartId);
         ArgumentNullException.ThrowIfNull(layerPartIds);
 
-        if (_repository == null) return Array.Empty<TextBlockRow>();
-
-        string? json = _repository.GetPartContent(id);
-        if (json == null) return Array.Empty<TextBlockRow>();
+        // get the part's JSON
+        if (_repository == null) return [];
+        string? json = _repository.GetPartContent(textPartId);
+        if (json == null) return [];
 
         // get the part type ID (role ID is always base-text)
         JsonDocument doc = JsonDocument.Parse(json);
         string? typeId = doc.RootElement.GetProperty("typeId").GetString();
-        if (typeId == null) return Array.Empty<TextBlockRow>();
+        if (typeId == null) return [];
 
-        // get the flattener for that type ID
+        // get the flattener for that type ID (reuse from cached if available)
         ITextPartFlattener? flattener;
         if (_flatteners.TryGetValue(typeId, out ITextPartFlattener? value))
         {
@@ -297,25 +300,50 @@ public sealed class CadmusPreviewer
         else
         {
             flattener = _factory.GetTextPartFlattener(typeId);
-            if (flattener == null) return Array.Empty<TextBlockRow>();
+            if (flattener == null) return [];
             _flatteners[typeId] = flattener;
         }
 
         // load part and layers
-        IPart? part = _repository?.GetPart<IPart>(id);
-        if (part == null) return Array.Empty<TextBlockRow>();
-        List<IPart> layerParts = layerPartIds
+        IPart? part = _repository?.GetPart<IPart>(textPartId);
+        if (part == null) return [];
+
+        // load item
+        IItem? item = _repository!.GetItem(part.ItemId, false);
+        if (item == null) return [];
+
+        List<IPart> layerParts = [.. layerPartIds
             .Select(lid => _repository!.GetPart<IPart>(lid)!)
-            .Where(p => p != null)
-            .ToList();
+            .Where(p => p != null)];
 
         // flatten them
-        var tr = flattener.Flatten(part, layerParts);
+        Tuple<string, IList<FragmentTextRange>> tr = flattener.Flatten(
+            part, layerParts);
 
-        // build blocks rows
-        // TODO: implement
-        return [];
-        //if (_blockBuilder == null) _blockBuilder = new();
-        //return _blockBuilder.Build(tr.Item1, tr.Item2).ToList();
+        // merge ranges
+        IList<FragmentTextRange> mergedRanges = FragmentTextRange.MergeRanges(
+            0, tr.Item1.Length - 1, tr.Item2);
+
+        // assign text to merged ranges
+        foreach (FragmentTextRange range in mergedRanges)
+            range.AssignText(tr.Item1);
+
+        // build a linear tree from merged ranges
+        TreeNode<TextSpanPayload> tree = ItemComposer.BuildTreeFromRanges(
+            mergedRanges, tr.Item1);
+        if (!tree.HasChildren) return [];
+
+        // apply linear tree block filter
+        tree = _blockFilter.Apply(tree, item);
+
+        // collect payloads from tree nodes and return them
+        List<TextSpanPayload> payloads = [];
+        tree.Traverse(node =>
+        {
+            if (node.Data != null) payloads.Add(node.Data);
+            return true;
+        });
+
+        return payloads;
     }
 }

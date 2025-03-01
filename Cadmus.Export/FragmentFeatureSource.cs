@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Text.RegularExpressions;
 
 namespace Cadmus.Export;
@@ -121,3 +122,4 @@ public partial record FragmentFeatureSource
         return index;
     }
 }
+*/

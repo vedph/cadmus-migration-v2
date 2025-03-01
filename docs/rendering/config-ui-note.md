@@ -31,6 +31,12 @@ As the text is Markdown, to properly render it we use a filter. Filters are appl
         "FilterKeys": ["markdown"]
       }
     }
+  ],
+  "TextPartFlatteners": [
+    {
+      "Keys": "it.vedph.token-text",
+      "Id": "it.vedph.text-flattener.token"
+    }
   ]
 }
 ```
