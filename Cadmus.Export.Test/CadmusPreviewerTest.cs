@@ -1,7 +1,7 @@
 ﻿using Cadmus.Core;
 using Cadmus.Core.Config;
 using Cadmus.Core.Storage;
-using Cadmus.Export.Preview;
+using Cadmus.Export.Config;
 using Cadmus.General.Parts;
 using Cadmus.Mongo;
 using Cadmus.Philology.Parts;
@@ -195,7 +195,7 @@ public sealed class CadmusPreviewerTest
 
     private static CadmusPreviewer GetPreviewer(ICadmusRepository repository)
     {
-        CadmusPreviewFactory factory = TestHelper.GetFactory();
+        CadmusRenderingFactory factory = TestHelper.GetFactory();
         return new(factory, repository);
     }
 

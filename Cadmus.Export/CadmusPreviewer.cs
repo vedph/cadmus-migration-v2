@@ -1,11 +1,12 @@
 ﻿using Cadmus.Core;
 using Cadmus.Core.Storage;
+using Cadmus.Export.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-namespace Cadmus.Export.Preview;
+namespace Cadmus.Export;
 
 /// <summary>
 /// Cadmus object previewer. This is a high level class using rendition
@@ -14,7 +15,7 @@ namespace Cadmus.Export.Preview;
 public sealed class CadmusPreviewer
 {
     private readonly ICadmusRepository? _repository;
-    private readonly CadmusPreviewFactory _factory;
+    private readonly CadmusRenderingFactory _factory;
     // cache
     private readonly Dictionary<string, IJsonRenderer> _jsonRenderers;
     private readonly Dictionary<string, ITextPartFlattener> _flatteners;
@@ -27,7 +28,7 @@ public sealed class CadmusPreviewer
     /// pass a repository, unless you are just consuming the methods using
     /// JSON as their input.</param>
     /// <exception cref="ArgumentNullException">repository or factory</exception>
-    public CadmusPreviewer(CadmusPreviewFactory factory,
+    public CadmusPreviewer(CadmusRenderingFactory factory,
         ICadmusRepository? repository)
     {
         _factory = factory ??

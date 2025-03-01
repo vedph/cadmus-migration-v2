@@ -1,9 +1,9 @@
 ﻿using Cadmus.Cli.Core;
 using Cadmus.Core.Storage;
 using Cadmus.Core;
-using Cadmus.Export.Preview;
 using System.IO;
 using System;
+using Cadmus.Export.Config;
 
 namespace Cadmus.Migration.Cli.Services;
 
@@ -18,19 +18,19 @@ internal sealed class AppContextService(CadmusMigCliContextServiceConfig config)
     /// <summary>
     /// Gets the preview factory provider with the specified plugin tag
     /// (assuming that the plugin has a (single) implementation of
-    /// <see cref="ICadmusPreviewFactoryProvider"/>).
+    /// <see cref="ICadmusRenderingFactoryProvider"/>).
     /// </summary>
     /// <param name="pluginTag">The tag of the component in its plugin,
     /// or null to use the standard preview factory provider.</param>
     /// <returns>The provider.</returns>
-    public static ICadmusPreviewFactoryProvider? GetPreviewFactoryProvider(
+    public static ICadmusRenderingFactoryProvider? GetPreviewFactoryProvider(
         string? pluginTag = null)
     {
         if (pluginTag == null)
-            return new StandardPreviewFactoryProvider();
+            return new StandardRenderingFactoryProvider();
 
         return PluginFactoryProvider
-            .GetFromTag<ICadmusPreviewFactoryProvider>(pluginTag);
+            .GetFromTag<ICadmusRenderingFactoryProvider>(pluginTag);
     }
 
     /// <summary>

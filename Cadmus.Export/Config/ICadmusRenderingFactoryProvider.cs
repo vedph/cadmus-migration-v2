@@ -1,11 +1,11 @@
 ﻿using System.Reflection;
 
-namespace Cadmus.Export.Preview;
+namespace Cadmus.Export.Config;
 
 /// <summary>
-/// Provider for <see cref="CadmusPreviewFactory"/>.
+/// Provider for <see cref="CadmusRenderingFactory"/>.
 /// </summary>
-public interface ICadmusPreviewFactoryProvider
+public interface ICadmusRenderingFactoryProvider
 {
     /// <summary>
     /// Gets the factory.
@@ -14,6 +14,6 @@ public interface ICadmusPreviewFactoryProvider
     /// <param name="additionalAssemblies">The optional additional assemblies
     /// to load components from.</param>
     /// <returns>Factory.</returns>
-    CadmusPreviewFactory GetFactory(string profile,
+    CadmusRenderingFactory GetFactory(string profile,
         params Assembly[] additionalAssemblies);
 }

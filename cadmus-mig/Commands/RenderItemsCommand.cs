@@ -1,8 +1,8 @@
 ﻿using Cadmus.Core;
 using Cadmus.Core.Storage;
 using Cadmus.Export;
+using Cadmus.Export.Config;
 using Cadmus.Export.ML;
-using Cadmus.Export.Preview;
 using Cadmus.Migration.Cli.Services;
 using Microsoft.Extensions.Configuration;
 using Spectre.Console;
@@ -63,7 +63,7 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
 
         // get preview factory from its provider
         AnsiConsole.WriteLine("Building preview factory...");
-        ICadmusPreviewFactoryProvider? provider =
+        ICadmusRenderingFactoryProvider? provider =
             AppContextService.GetPreviewFactoryProvider(
                 settings.PreviewFactoryProviderTag);
         if (provider == null)
@@ -71,7 +71,7 @@ internal sealed class RenderItemsCommand : AsyncCommand<RenderItemsCommandSettin
             AnsiConsole.MarkupLine("[red]Preview factory provider not found[/]");
             return Task.FromResult(2);
         }
-        CadmusPreviewFactory factory = provider.GetFactory(config,
+        CadmusRenderingFactory factory = provider.GetFactory(config,
             typeof(FSTeiOffItemComposer).Assembly);
         factory.ConnectionString = cs;
 
@@ -144,7 +144,7 @@ public class RenderItemsCommandSettings : CommandSettings
 
     /// <summary>
     /// Gets or sets the tag of the component found in some plugin and
-    /// implementing <see cref="ICadmusPreviewFactoryProvider"/>.
+    /// implementing <see cref="ICadmusRenderingFactoryProvider"/>.
     /// </summary>
     [CommandOption("--preview|-p")]
     [Description("The tag of the factory provider plugin.")]

@@ -1,8 +1,5 @@
-﻿using Cadmus.Core.Layers;
-using Cadmus.Core;
-using Fusi.Tools.Configuration;
+﻿using Cadmus.Core;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Driver;
 
@@ -38,37 +35,6 @@ public class TextSpanPayload(FragmentTextRange? range = null)
     /// Gets or sets the text.
     /// </summary>
     public string? Text { get; set; } = range?.Text;
-
-    /// <summary>
-    /// Gets the features sets. Each set is derived from a specific source,
-    /// like a fragment or a part of it, as specified by
-    /// <see cref="FragmentFeatureSource"/>.
-    /// </summary>
-    // public Dictionary<string, TextSpanFeatureSet> FeatureSets { get; init; } = [];
-
-    /// <summary>
-    /// Adds the specified feature to the set with the specified key, adding
-    /// the set if not exists.
-    /// </summary>
-    /// <param name="key">The set key.</param>
-    /// <param name="feature">The feature to add.</param>
-    /// <param name="source">The set source.</param>
-    /// <exception cref="ArgumentNullException">key or feature or source
-    /// </exception>
-    //public void AddFeatureToSet(string key, TextSpanFeature feature,
-    //    string source)
-    //{
-    //    ArgumentNullException.ThrowIfNull(key);
-    //    ArgumentNullException.ThrowIfNull(feature);
-    //    ArgumentNullException.ThrowIfNull(source);
-
-    //    if (!FeatureSets.TryGetValue(key, out TextSpanFeatureSet? set))
-    //    {
-    //        set = new TextSpanFeatureSet(key, source);
-    //        FeatureSets[key] = set;
-    //    }
-    //    set.Features.Add(feature);
-    //}
 
     /// <summary>
     /// Gets the fragment ID prefix used in text tree nodes to link fragments.
@@ -119,8 +85,6 @@ public class TextSpanPayload(FragmentTextRange? range = null)
             Type = Type,
             IsBeforeEol = IsBeforeEol,
             Text = Text,
-            //FeatureSets = FeatureSets.ToDictionary(
-            //    kv => kv.Key, kv => kv.Value.Clone())
         };
     }
 
@@ -132,7 +96,6 @@ public class TextSpanPayload(FragmentTextRange? range = null)
     /// </returns>
     public override string ToString()
     {
-        // return $"[{Type}] {Text}{(IsBeforeEol? " [\u21b4]" : "")}: {FeatureSets.Count}";
         return $"[{Type}] {Text}{(IsBeforeEol ? " [\u21b4]" : "")}";
     }
 }

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Cadmus.Export.Preview;
+namespace Cadmus.Export.Config;
 
 /// <summary>
 /// Components factory for <see cref="CadmusPreviewer"/>.
@@ -81,11 +81,11 @@ namespace Cadmus.Export.Preview;
 /// </list>
 /// </remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="CadmusPreviewFactory" />
+/// Initializes a new instance of the <see cref="CadmusRenderingFactory" />
 /// class.
 /// </remarks>
 /// <param name="host">The host.</param>
-public class CadmusPreviewFactory(IHost host) : ComponentFactory(host)
+public class CadmusRenderingFactory(IHost host) : ComponentFactory(host)
 {
     /// <summary>
     /// The name of the connection string property to be supplied

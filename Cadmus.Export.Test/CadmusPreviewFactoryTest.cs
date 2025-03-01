@@ -1,5 +1,5 @@
-﻿using Cadmus.Export.Filters;
-using Cadmus.Export.Preview;
+﻿using Cadmus.Export.Config;
+using Cadmus.Export.Filters;
 using System.Collections.Generic;
 using Xunit;
 
@@ -10,7 +10,7 @@ public sealed class CadmusPreviewFactoryTest
     [Fact]
     public void GetRendererKeys_Ok()
     {
-        CadmusPreviewFactory factory = TestHelper.GetFactory();
+        CadmusRenderingFactory factory = TestHelper.GetFactory();
 
         HashSet<string>? keys = factory.GetJsonRendererKeys();
 
@@ -23,7 +23,7 @@ public sealed class CadmusPreviewFactoryTest
     [Fact]
     public void GetFlattenerKeys_Ok()
     {
-        CadmusPreviewFactory factory = TestHelper.GetFactory();
+        CadmusRenderingFactory factory = TestHelper.GetFactory();
 
         HashSet<string>? keys = factory.GetFlattenerKeys();
 
@@ -34,7 +34,7 @@ public sealed class CadmusPreviewFactoryTest
     [Fact]
     public void GetJsonRenderer_WithFilters_Ok()
     {
-        CadmusPreviewFactory factory = TestHelper.GetFactory();
+        CadmusRenderingFactory factory = TestHelper.GetFactory();
 
         IJsonRenderer? renderer = factory.GetJsonRenderer("it.vedph.token-text");
 
@@ -51,7 +51,7 @@ public sealed class CadmusPreviewFactoryTest
     [Fact]
     public void GetItemComposer_Ok()
     {
-        CadmusPreviewFactory factory = TestHelper.GetFactory();
+        CadmusRenderingFactory factory = TestHelper.GetFactory();
 
         IItemComposer? composer = factory.GetComposer("text-item");
 

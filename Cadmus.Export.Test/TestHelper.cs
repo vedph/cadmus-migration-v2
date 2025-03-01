@@ -1,5 +1,5 @@
-﻿using Cadmus.Export.ML.Renderers;
-using Cadmus.Export.Preview;
+﻿using Cadmus.Export.Config;
+using Cadmus.Export.ML.Renderers;
 using Fusi.Microsoft.Extensions.Configuration.InMemoryJson;
 using Microsoft.Extensions.Hosting;
 using System.IO;
@@ -24,19 +24,17 @@ internal static class TestHelper
         return new HostBuilder()
             .ConfigureServices((hostContext, services) =>
             {
-                CadmusPreviewFactory.ConfigureServices(services, new[]
-                {
-                    typeof(TeiOffLinearTextTreeRenderer).Assembly
-                });
+                CadmusRenderingFactory.ConfigureServices(services,
+                    typeof(TeiOffLinearTextTreeRenderer).Assembly);
             })
             // extension method from Fusi library
             .AddInMemoryJson(config)
             .Build();
     }
 
-    public static CadmusPreviewFactory GetFactory()
+    public static CadmusRenderingFactory GetFactory()
     {
-        return new CadmusPreviewFactory(GetHost(LoadResourceText("Preview.json")))
+        return new CadmusRenderingFactory(GetHost(LoadResourceText("Preview.json")))
         {
             ConnectionString = "mongodb://localhost:27017/cadmus-test"
         };

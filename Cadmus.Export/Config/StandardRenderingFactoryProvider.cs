@@ -3,20 +3,21 @@ using Fusi.Tools.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
 
-namespace Cadmus.Export.Preview;
+namespace Cadmus.Export.Config;
 
 /// <summary>
 /// Standard preview factory provider.
+/// Tag: <c>it.vedph.rendering-factory-provider.standard</c>.
 /// </summary>
-/// <seealso cref="ICadmusPreviewFactoryProvider" />
-[Tag("it.vedph.preview-factory-provider.standard")]
-public sealed class StandardPreviewFactoryProvider : ICadmusPreviewFactoryProvider
+/// <seealso cref="ICadmusRenderingFactoryProvider" />
+[Tag("it.vedph.rendering-factory-provider.standard")]
+public sealed class StandardRenderingFactoryProvider : ICadmusRenderingFactoryProvider
 {
     private static IHost GetHost(string config, Assembly[] assemblies)
     {
         return new HostBuilder()
             .ConfigureServices((hostContext, services) =>
-                CadmusPreviewFactory.ConfigureServices(services, assemblies))
+                CadmusRenderingFactory.ConfigureServices(services, assemblies))
             // extension method from Fusi library
             .AddInMemoryJson(config)
             .Build();
@@ -29,9 +30,9 @@ public sealed class StandardPreviewFactoryProvider : ICadmusPreviewFactoryProvid
     /// <param name="additionalAssemblies">The optional additional assemblies
     /// to load components from.</param>
     /// <returns>Factory.</returns>
-    public CadmusPreviewFactory GetFactory(string profile,
+    public CadmusRenderingFactory GetFactory(string profile,
         params Assembly[] additionalAssemblies)
     {
-        return new CadmusPreviewFactory(GetHost(profile, additionalAssemblies));
+        return new CadmusRenderingFactory(GetHost(profile, additionalAssemblies));
     }
 }

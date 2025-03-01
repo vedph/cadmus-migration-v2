@@ -1,6 +1,6 @@
 ﻿using Cadmus.Export;
+using Cadmus.Export.Config;
 using Cadmus.Export.ML.Renderers;
-using Cadmus.Export.Preview;
 using Fusi.Microsoft.Extensions.Configuration.InMemoryJson;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -50,7 +50,7 @@ public partial class Builder
         return new HostBuilder()
             .ConfigureServices((hostContext, services) =>
             {
-                CadmusPreviewFactory.ConfigureServices(services,
+                CadmusRenderingFactory.ConfigureServices(services,
                     typeof(TeiOffLinearTextTreeRenderer).Assembly);
             })
             // extension method from Fusi library
@@ -58,9 +58,9 @@ public partial class Builder
             .Build();
     }
 
-    private CadmusPreviewFactory GetFactory()
+    private CadmusRenderingFactory GetFactory()
     {
-        return new CadmusPreviewFactory(GetHost(Model.Config ?? "{}"))
+        return new CadmusRenderingFactory(GetHost(Model.Config ?? "{}"))
         {
             ConnectionString = "mongodb://localhost:27017/cadmus-test"
         };
@@ -146,7 +146,7 @@ public partial class Builder
             int configHash = Model.Config.GetHashCode();
             if (_previewer == null || _configHash != configHash)
             {
-                CadmusPreviewFactory factory = GetFactory();
+                CadmusRenderingFactory factory = GetFactory();
                 // not using a repository here as we're serverless
                 _previewer = new CadmusPreviewer(factory, null);
                 _configHash = configHash;
