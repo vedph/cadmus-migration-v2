@@ -124,7 +124,9 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         XElement root = new(rootName);
         XElement block = new(blockName,
             _options.NoItemSource
-                ? null : new XAttribute("source", "$" + context.Item.Id),
+                ? null
+                : new XAttribute("source",
+                    TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
             new XAttribute("n", 1));
         root.Add(block);
 
@@ -156,7 +158,9 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             {
                 block = new XElement(blockName,
                     _options.NoItemSource
-                        ? null : new XAttribute("source", "$" + context.Item.Id),
+                        ? null
+                        : new XAttribute("source",
+                            TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
                     new XAttribute("n", ++y));
                 root.Add(block);
             }

@@ -104,7 +104,8 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
         // create block element like p
         int y = 1;
         XElement block = new(blockName,
-            new XAttribute("source", "$" + context.Item!.Id),
+            new XAttribute("source",
+                TeiItemComposer.ITEM_ID_PREFIX + context.Item!.Id),
             new XAttribute("n", 1));
         root.Add(block);
 
@@ -134,7 +135,8 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
             if (node.Data?.IsBeforeEol == true)
             {
                 block = new XElement(blockName,
-                    new XAttribute("source", "$" + context.Item.Id),
+                    new XAttribute("source",
+                        TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
                     new XAttribute("n", ++y));
                 root.Add(block);
             }

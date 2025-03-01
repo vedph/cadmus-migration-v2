@@ -45,7 +45,7 @@ public sealed class MongoTokenExtractorRendererFilter : IRendererFilter,
         IItem? item = repository!.GetItem(itemId);
         if (item == null) return null;
 
-        IPart? part = repository.GetItemParts(new[] { itemId },
+        IPart? part = repository.GetItemParts([itemId],
             typeof(TokenTextPart).GetCustomAttribute<TagAttribute>()?.Tag,
             PartBase.BASE_TEXT_ROLE_ID).FirstOrDefault();
 
@@ -74,7 +74,10 @@ public sealed class MongoTokenExtractorRendererFilter : IRendererFilter,
 
         // get base text part
         TokenTextPart? part;
-        if (_itemId == itemId) part = _part!;
+        if (_itemId == itemId)
+        {
+            part = _part!;
+        }
         else
         {
             part = GetTokenTextPart(itemId, repository);

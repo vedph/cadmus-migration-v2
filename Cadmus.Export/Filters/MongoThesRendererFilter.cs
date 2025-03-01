@@ -20,17 +20,8 @@ namespace Cadmus.Export.Filters;
 public sealed class MongoThesRendererFilter : IRendererFilter,
     IConfigurable<MongoThesRendererFilterOptions>
 {
-    private readonly Dictionary<string, Thesaurus> _cache;
+    private readonly Dictionary<string, Thesaurus> _cache = [];
     private Regex? _idRegex;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MongoThesRendererFilter"/>
-    /// class.
-    /// </summary>
-    public MongoThesRendererFilter()
-    {
-        _cache = new Dictionary<string, Thesaurus>();
-    }
 
     /// <summary>
     /// Configures this filter with the specified options.
@@ -61,7 +52,10 @@ public sealed class MongoThesRendererFilter : IRendererFilter,
             string tId = m.Groups["t"].Value;
             string eId = m.Groups["e"].Value;
             Thesaurus? thesaurus = null;
-            if (_cache.ContainsKey(tId)) thesaurus = _cache[tId];
+            if (_cache.ContainsKey(tId))
+            {
+                thesaurus = _cache[tId];
+            }
             else
             {
                 thesaurus = repository.GetThesaurus(tId);

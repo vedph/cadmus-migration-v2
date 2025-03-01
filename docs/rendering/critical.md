@@ -221,7 +221,7 @@ In this case, we are "outsourcing" the rendition logic to the XSLT processor: it
 - the XML being transformed, which in turn is the product of previous rendering stages.
 - the JSON representing the data to render (essentially, the serialization of a Cadmus part, whether it's a layer or not).
 
-So, we can get source identifiers from our XML, assuming that the previous rendering stages output them: for instance, by convention each block of text output from an item carries a `@source` attribute with a value starting with `$` followed by the item's ID (a GUID). This ensures that the XSLT processor has access to the source item's ID.
+So, we can get source identifiers from our XML, assuming that the previous rendering stages output them: for instance, by convention each block of text output from an item carries a `@source` attribute with a value starting with `^` followed by the item's ID (a GUID). This ensures that the XSLT processor has access to the source item's ID.
 
 As for mapping these source identifiers instead, the XSLT script has no clues; and this is desired, because it is right this isolation which guarantees the system's modularity. Also, this frees the XSLT logic from the burden of this task, which is beyond its technical capabilities. So, the XSLT script just emits source identifiers; later, a filter will be used to map these identifiers and replace the original ones. So, this is a _delayed mapping_, which still ends with the same result: the output will have only compact, mapped identifiers.
 

@@ -173,7 +173,7 @@ public sealed class TeiAppLinearTextTreeRendererTest
             Item = item
         });
 
-        Assert.Equal($"<p source=\"${item.Id}\" " +
+        Assert.Equal($"<p source=\"^{item.Id}\" " +
             "n=\"1\" xmlns=\"http://www.tei-c.org/ns/1.0\"><app n=\"1\">" +
             "<lem n=\"1\" wit=\"#O1\">illuc</lem><rdg n=\"2\" wit=\"#O #G #R\">" +
             "illud</rdg><rdg n=\"3\" xml:id=\"rdg1\" resp=\"#Fruterius\">" +

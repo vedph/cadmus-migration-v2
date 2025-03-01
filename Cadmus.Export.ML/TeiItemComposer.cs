@@ -27,6 +27,11 @@ public abstract class TeiItemComposer : ItemComposer
     public const string M_LAYER_ID = "layer-id";
 
     /// <summary>
+    /// The prefix to add to item identifier values in <c>source</c> attributes.
+    /// </summary>
+    public const string ITEM_ID_PREFIX = "^";
+
+    /// <summary>
     /// Composes the output from the specified item.
     /// </summary>
     /// <returns>Composition result or null.</returns>

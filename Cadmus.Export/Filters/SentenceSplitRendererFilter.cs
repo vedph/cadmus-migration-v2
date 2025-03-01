@@ -40,8 +40,8 @@ public sealed class SentenceSplitRendererFilter : IRendererFilter,
             '\u2026'    // ellipsis
         };
         _newLine = Environment.NewLine;
-        _blackOpeners = new[] { '(' };
-        _blackClosers = new[] { ')' };
+        _blackOpeners = ['('];
+        _blackClosers = [')'];
     }
 
     /// <summary>

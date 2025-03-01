@@ -281,7 +281,7 @@ The analyzer has no other requirement for its input format. Yet, for other proce
 
 ### Data Architecture
 
-In our scenario, Cadmus text items have a facet equal to `text`, and use a `TokenTextPart` for the text. They also use layer parts, like critical apparatus; but here we are just interested in exporting the raw text.
+In our scenario, Cadmus text items have a facet equal to `text`, and use a `TokenTextPart` for the text. They also use layer parts, like critical apparatus; but here we are just interested in exporting raw text.
 
 As usual in Cadmus, the text is just a set of items, where each part contains a paragraph or a poetical composition cited in the context of a document. This ensures that every item stands on its own, and can get the required layers. These text portions are virtually grouped under each "work" by means of item group IDs.
 
