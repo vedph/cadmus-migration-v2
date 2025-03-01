@@ -1,7 +1,7 @@
-﻿using Cadmus.Export.ML.Filters;
+﻿using Cadmus.Export.Filters;
 using Xunit;
 
-namespace Cadmus.Export.ML.Test.Filters;
+namespace Cadmus.Export.Test.Filters;
 
 public sealed class SourceIdRendererFilterTest
 {
@@ -42,7 +42,7 @@ public sealed class SourceIdRendererFilterTest
     public void Apply_TagsWithoutMatchWithOmit_Omitted()
     {
         SourceIdRendererFilter filter = new();
-        filter.Configure(new FrLinkRendererFilterOptions
+        filter.Configure(new SourceIdRendererFilterOptions
         {
             OmitUnresolved = true
         });

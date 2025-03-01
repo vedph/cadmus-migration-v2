@@ -7,8 +7,6 @@ nav_order: 2
 
 # Rendering Configuration
 
->See also: [configuration samples](config-samples).
-
 The Cadmus rendering system is configured via an external JSON document, consumed by a factory (`CadmusRenderingFactory`), having these sections, all modeled as arrays of objects:
 
 - `ItemIdCollector`: a single item ID collector to use when required. It has the component ID, and eventual options. Item ID collectors are used to collect the IDs of all the items to be processed, in the desired order.

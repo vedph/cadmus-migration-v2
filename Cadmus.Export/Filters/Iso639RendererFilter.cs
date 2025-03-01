@@ -20,7 +20,7 @@ namespace Cadmus.Export.Filters;
 /// </summary>
 /// <seealso cref="IRendererFilter" />
 [Tag("it.vedph.renderer-filter.iso639")]
-public sealed class Iso639Filter : IRendererFilter,
+public sealed class Iso639RendererFilter : IRendererFilter,
     IConfigurable<Iso639FilterOptions>
 {
     private static Dictionary<string, string>? _code3;
@@ -30,9 +30,9 @@ public sealed class Iso639Filter : IRendererFilter,
     private bool _twoLetters;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Iso639Filter"/> class.
+    /// Initializes a new instance of the <see cref="Iso639RendererFilter"/> class.
     /// </summary>
-    public Iso639Filter()
+    public Iso639RendererFilter()
     {
         _isoRegex = new Regex(@"\^\^([a-z]{3})", RegexOptions.Compiled);
     }
@@ -98,7 +98,7 @@ public sealed class Iso639Filter : IRendererFilter,
 }
 
 /// <summary>
-/// Options for <see cref="Iso639Filter"/>.
+/// Options for <see cref="Iso639RendererFilter"/>.
 /// </summary>
 public class Iso639FilterOptions
 {

@@ -1,9 +1,8 @@
-﻿using Cadmus.Export.Filters;
-using Fusi.Tools.Configuration;
+﻿using Fusi.Tools.Configuration;
 using System;
 using System.Text;
 
-namespace Cadmus.Export.ML.Filters;
+namespace Cadmus.Export.Filters;
 
 /// <summary>
 /// Source IDs renderer filter. This filter replaces all the source identifiers
@@ -16,9 +15,9 @@ namespace Cadmus.Export.ML.Filters;
 /// </summary>
 [Tag("it.vedph.renderer-filter.source-id")]
 public sealed class SourceIdRendererFilter : IRendererFilter,
-    IConfigurable<FrLinkRendererFilterOptions>
+    IConfigurable<SourceIdRendererFilterOptions>
 {
-    private FrLinkRendererFilterOptions _options;
+    private SourceIdRendererFilterOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SourceIdRendererFilter"/>
@@ -26,7 +25,7 @@ public sealed class SourceIdRendererFilter : IRendererFilter,
     /// </summary>
     public SourceIdRendererFilter()
     {
-        _options = new FrLinkRendererFilterOptions();
+        _options = new SourceIdRendererFilterOptions();
     }
 
     /// <summary>
@@ -34,7 +33,7 @@ public sealed class SourceIdRendererFilter : IRendererFilter,
     /// </summary>
     /// <param name="options">The options.</param>
     /// <exception cref="ArgumentNullException">options</exception>
-    public void Configure(FrLinkRendererFilterOptions options)
+    public void Configure(SourceIdRendererFilterOptions options)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
@@ -101,9 +100,9 @@ public sealed class SourceIdRendererFilter : IRendererFilter,
 }
 
 /// <summary>
-/// Options for <see cref="FrLinkRendererFilterOptions"/>.
+/// Options for <see cref="SourceIdRendererFilterOptions"/>.
 /// </summary>
-public class FrLinkRendererFilterOptions
+public class SourceIdRendererFilterOptions
 {
     /// <summary>
     /// Gets or sets the tag opening the fragment key to be mapped.
@@ -123,9 +122,9 @@ public class FrLinkRendererFilterOptions
 
     /// <summary>
     /// Initializes a new instance of the
-    /// <see cref="FrLinkRendererFilterOptions"/> class.
+    /// <see cref="SourceIdRendererFilterOptions"/> class.
     /// </summary>
-    public FrLinkRendererFilterOptions()
+    public SourceIdRendererFilterOptions()
     {
         TagOpen = "#[";
         TagClose = "]#";
