@@ -122,10 +122,13 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
 
         // create root element
         XElement root = new(rootName);
-        XElement block = new(blockName);
+        XElement block = new(blockName,
+            new XAttribute("source", "$" + context.Item.Id),
+            new XAttribute("n", 1));
         root.Add(block);
 
         // traverse nodes and build the XML (each node corresponds to a fragment)
+        int y = 1;
         tree.Traverse(node =>
         {
             string? frId = prefix != null?
@@ -150,7 +153,9 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             // open a new block if needed
             if (node.Data?.IsBeforeEol == true)
             {
-                block = new XElement(blockName);
+                block = new XElement(blockName,
+                    new XAttribute("source", "$" + context.Item.Id),
+                    new XAttribute("n", ++y));
                 root.Add(block);
             }
             return true;

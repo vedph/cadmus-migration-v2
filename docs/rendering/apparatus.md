@@ -222,3 +222,18 @@ For the latter option there is a specific JSON renderer, whose task is right to:
 2. convert it into XML;
 3. apply the received XSLT script to it;
 4. emit the result as its output.
+
+This allows to use a simpler transformation in the context of the rendition system, which provides additional logic. In this approach, this logic is deferred after the XSLT based transformation by using filters. For instance, the link to a base text segment of text in standoff requires the logic for converting a type-based identifier into a compact, globally unique identifier, which in turn requires access to the database. This can't be conveniently done in the XSLT script, so this just emits the type-based identifiers, letting a filter resolve them later.
+
+### Linking
+
+In standoff notation we need a system for linking each annotation with its target text. This TODO
+
+Note that the integrated logic for links is applied when rendering each single item, which allows using just the part type and role IDs of an item's part (plus its fragment ID for layer parts) to identify source data. In a filter instead, which is applied to a rendered text, the item's context is no longer available. This is why the XSLT renderers using this approach are required to emit an extended type-based identifier, which add:
+
+- the category of the identifier, usually derived from the target element's local name. For instance, when the link targets a `seg` element, the category is `seg`. This means that for each emitted `seg` requiring a link, this will get a unique numeric ID (unique in the context of the document(s) emitted in rendering), progressively generated, with its category prefix, like `seg1`, `seg2`, etc.
+- the item ID. This provides the missing context to the filter.
+
+For this reason, instead of emitting identifiers with form `typeId:roleId@fragmentIndex` (or just `typeId:roleId` if not referring to layer parts), such identifiers are required to emit identifiers with form `category/itemId.typeId:roleId@fragmentIndex`.
+
+>This is why integrated renderers also include additional information about source data in their output. For instance, in rendering a block of text like a paragraph from an item the block also gets a `@source` attribute with the item's ID conventionally prefixed by `$`. This can be used by XSLT transformers to get context items.
