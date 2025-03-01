@@ -38,7 +38,7 @@ In this context, producing output essentially means **transforming JSON** docume
 
 - as for _transformation technologies_, given that we start with JSON and we usually end with a text-based format, you can mix a number of approaches, using what best fits your scenario:
   - [JMESPath](https://jmespath.org/tutorial.html), a powerful selection and transformation language for JSON.
-  - [XSLT](https://developer.mozilla.org/en-US/docs/Web/XSLT), by using a component which automatically converts JSON into an XML dialect.
+  - [XSLT](https://developer.mozilla.org/en-US/docs/Web/XSLT), by using a [component](components/json-renderers#xslt-json-renderer) which automatically [converts JSON](json-rendering) into an XML dialect.
   - [filters](filters), a set of components used to post-process the transformation results by further changing it according to some logic, ranging from simple text replacements to database lookups.
 
 ## Flow

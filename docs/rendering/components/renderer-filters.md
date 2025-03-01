@@ -8,6 +8,7 @@
   - [Replace](#replace)
   - [Sentence Split](#sentence-split)
   - [Source ID](#source-id)
+  - [Thesaurus](#thesaurus)
 
 ## Appender
 
@@ -95,3 +96,12 @@ When text cutting is enabled, you can specify these additional options:
   - `TagOpen`: the tag opening the fragment key to be mapped (default `#[`).
   - `TagClose`: the tag closing the fragment key to be mapped (default `]#`).
   - `OmitUnresolved`: true to omit unresolved keys rather than passing them though.
+
+## Thesaurus
+
+👉 Lookup any thesaurus entry by its ID, replacing it with its value when found, or with the entry ID when not found.
+
+- ID: `it.vedph.renderer-filter.mongo-thesaurus`
+- options:
+  - `ConnectionString`: connection string to the Mongo DB. This is usually omitted and supplied by the client code from its own application settings.
+  - `Pattern`: the regular expression pattern representing a thesaurus ID to lookup: it is assumed that this expression has two named captures, `t` for the thesaurus ID, and `e` for its entry ID. The default pattern is a `$` followed by the thesaurus ID, `:`, and the entry ID.
