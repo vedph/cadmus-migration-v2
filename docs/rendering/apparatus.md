@@ -23,7 +23,7 @@ Before illustrating these examples, let us recap the standard [apparatus](https:
     - note
   - note
 
-The apparatus model essentially represents variants as edit operations on the base text. So, a variant like `illic` for the base text `illuc` is represented as a replacement operation (type=replacement). When instead we just want to add metadata, e.g. to list the witnesses for `illuc`, the lemma accepted in the reconstructed text, we use a note type. In this case the value is null (when it is an empty string, this is a zero variant, i.e. an omission or deletion).
+The apparatus model essentially represents variants as edit operations on the base text. So, a variant like `illic` for the base text `illuc` is represented as a replacement operation (type=replacement). When instead we just want to add metadata, e.g. to list the witnesses for `illuc`, the lemma accepted in the reconstructed text, we use a _note_ type. In this case the value is null (or empty). The variant value is null or empty also when it represents a zero variant, i.e. an omission or deletion; but in this case the type is _replacement_.
 
 ## Linear Single Layer
 
