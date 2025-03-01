@@ -123,7 +123,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         // create root element
         XElement root = new(rootName);
         XElement block = new(blockName,
-            new XAttribute("source", "$" + context.Item.Id),
+            _options.NoItemSource
+                ? null : new XAttribute("source", "$" + context.Item.Id),
             new XAttribute("n", 1));
         root.Add(block);
 
@@ -154,7 +155,8 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             if (node.Data?.IsBeforeEol == true)
             {
                 block = new XElement(blockName,
-                    new XAttribute("source", "$" + context.Item.Id),
+                    _options.NoItemSource
+                        ? null : new XAttribute("source", "$" + context.Item.Id),
                     new XAttribute("n", ++y));
                 root.Add(block);
             }
@@ -217,6 +219,14 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
 /// <seealso cref="XmlTextFilterOptions" />
 public class AppLinearTextTreeRendererOptions : XmlTextTreeRendererOptions
 {
+    /// <summary>
+    /// Gets or sets a value indicating whether to omit item source in the
+    /// output XML. Item source can be used either for diagnostic purposes
+    /// or for resolving links in a filter. If you don't need them and you
+    /// want a smaller XML you can set this to true.
+    /// </summary>
+    public bool NoItemSource { get; set; }
+
     /// <summary>
     /// Gets or sets the value for the type attribute to add to <c>rdg</c>
     /// elements for zero-variants, i.e. variants with no text meaning an

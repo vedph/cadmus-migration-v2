@@ -112,7 +112,7 @@ public sealed class TeiAppLinearTextTreeRendererTest
         // get item
         TokenTextPart textPart = GetTextPart();
         TokenTextLayerPart<ApparatusLayerFragment> appPart = GetApparatusPart();
-        IItem item = new Item();
+        Item item = new();
         item.Parts.Add(textPart);
         item.Parts.Add(appPart);
 
@@ -136,7 +136,33 @@ public sealed class TeiAppLinearTextTreeRendererTest
     }
 
     [Fact]
-    public void Render_Ok()
+    public void Render_NoItemSource_Ok()
+    {
+        TeiAppLinearTextTreeRenderer renderer = new();
+        renderer.Configure(new AppLinearTextTreeRendererOptions
+        {
+            NoItemSource = true
+        });
+
+        (TreeNode<TextSpanPayload>? tree, IItem item) = GetTreeAndItem();
+
+        string xml = renderer.Render(tree, new RendererContext
+        {
+            Item = item
+        });
+
+        Assert.Equal("<p n=\"1\" xmlns=\"http://www.tei-c.org/ns/1.0\"><app n=\"1\">" +
+            "<lem n=\"1\" wit=\"#O1\">illuc</lem><rdg n=\"2\" wit=\"#O #G #R\">" +
+            "illud</rdg><rdg n=\"3\" xml:id=\"rdg1\" resp=\"#Fruterius\">" +
+            "illic</rdg><witDetail target=\"#rdg1\" resp=\"#Fruterius\">" +
+            "(†1566) 1605a 388</witDetail></app> unde negant redire " +
+            "<app n=\"2\"><lem n=\"1\" wit=\"#O #G\">quemquam</lem>" +
+            "<rdg n=\"2\" wit=\"#R\">umquam<note>some note</note></rdg></app></p>",
+            xml);
+    }
+
+    [Fact]
+    public void Render_ItemSource_Ok()
     {
         TeiAppLinearTextTreeRenderer renderer = new();
 
@@ -147,7 +173,8 @@ public sealed class TeiAppLinearTextTreeRendererTest
             Item = item
         });
 
-        Assert.Equal("<p xmlns=\"http://www.tei-c.org/ns/1.0\"><app n=\"1\">" +
+        Assert.Equal($"<p source=\"${item.Id}\" " +
+            "n=\"1\" xmlns=\"http://www.tei-c.org/ns/1.0\"><app n=\"1\">" +
             "<lem n=\"1\" wit=\"#O1\">illuc</lem><rdg n=\"2\" wit=\"#O #G #R\">" +
             "illud</rdg><rdg n=\"3\" xml:id=\"rdg1\" resp=\"#Fruterius\">" +
             "illic</rdg><witDetail target=\"#rdg1\" resp=\"#Fruterius\">" +
