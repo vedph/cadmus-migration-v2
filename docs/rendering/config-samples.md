@@ -17,7 +17,7 @@ nav_order: 7
     - [Configuration](#configuration)
     - [Sample Output](#sample-output)
 
-Here I collect some real-world samples of render [configurations](overview.md#configuration).
+Here I collect some real-world samples of render [configurations](config).
 
 >💡 For real-world examples of preview scripts, see the [Cadmus previews repository](https://github.com/vedph/cadmus-previews).
 
