@@ -2,38 +2,24 @@
 
 Tools for migrating (importing/exporting) Cadmus data. Export tools also include "preview", i.e. a human-friendly, highly customizable output for each Cadmus object, to be integrated in the editor itself.
 
-- [Documentation](docs/index.md)
-
 👀 [Cadmus Page](https://myrmex.github.io/overview/cadmus/)
 
-## Cadmus.Export
+Main projects:
 
-General purpose components used to export Cadmus data.
-
-## Cadmus.Export.ML
-
-Markup related components used to export Cadmus data into some markup language, typically XML.
-
-## Cadmus.Import
-
-Core components for thesauri import.
-
-## Cadmus.Import.Excel
-
-Excel (XLSX or XLS) thesauri importers.
-
-## Cadmus.Import.Proteus
-
-Proteus-based components for importing Cadmus items and parts from sources handled with Proteus readers.
+- `Cadmus.Export`: general purpose components used to export Cadmus data.
+- `Cadmus.Export.ML`: markup related components used to export Cadmus data into some markup language, typically XML.
+- `Cadmus.Import`: core components for thesauri import.
+- `Cadmus.Import.Excel`: Excel (XLSX or XLS) thesauri importers.
+- `Cadmus.Import.Proteus`: Proteus-based components for importing Cadmus items and parts from sources handled with Proteus readers.
 
 ## History
 
 ### 6.0.0
 
-- 2025-02-26: refactored export models:
+- 2025-02-26: ⚠️ refactored export models:
   - for text, introduced tree between source models and rendition; tree filters can be used to change the tree itself, or to add features to its metadata from specific layers.
   - the preview factory configuration has changed to include new components and exclude the obsolete blocks
-  - to generate an approximate (richer) equivalent of blocks from linear trees `PayloadLinearTextTreeRenderer` will be used. This will imply refactoring the UI portion consuming blocks.
+  - the preview get blocks method has been replaced with a get spans method using a new model.
   - for TEI, a new set of components allow for simple TEI with linear trees with apparatus. Another set of components is planned to replace standoff-TEI with different strategies. Standoff will still be derived from trees, variously filtered, fragmented into ranges linked to zero or more layer fragments. The corresponding standoff entries, rendered by JSON renderers as before, will be referred to the text via a range of ranges: from the first range to the last one connected to each specific layer fragment. To this end we can use a `loc` child element like `<loc spanFrom="#a" spanTo="#c"/>`.
   - the CLI tool infrastructure has been modernized.
   - component tags have been uniformed to always have the prefix `it.vedph.`.
