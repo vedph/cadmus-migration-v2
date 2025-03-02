@@ -34,7 +34,7 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
     private readonly Regex _rootRegex;
     private XsltJsonRendererOptions? _options;
     private XsltTransformer? _transformer;
-    private IDictionary<XName, XName>? _wrappedEntryNames;
+    private Dictionary<XName, XName>? _wrappedEntryNames;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="XsltJsonRenderer"/> class.
@@ -62,7 +62,7 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
 
         if (_options.WrappedEntryNames?.Count > 0)
         {
-            _wrappedEntryNames = new Dictionary<XName, XName>();
+            _wrappedEntryNames = [];
             IXmlNamespaceResolver nsmgr = _options.GetResolver();
 
             foreach (var p in _options.WrappedEntryNames)
@@ -70,6 +70,7 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
                 XName key = NamespaceOptions.ResolvePrefixedName(p.Key,
                     nsmgr,
                     _options.DefaultNsPrefix);
+
                 _wrappedEntryNames[key] =
                     NamespaceOptions.ResolvePrefixedName(p.Value,
                     nsmgr,
@@ -90,30 +91,76 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
     /// <param name="map">The map between the name of the elements to be
     /// wrapped (keys) and the name of the wrapping element (value).</param>
     /// <exception cref="ArgumentNullException">doc or map</exception>
-    public static void WrapXmlArrays(XDocument doc,
-        IDictionary<XName, XName> map)
+    public static void WrapXmlArrays(XDocument doc, IDictionary<XName, XName> map)
     {
         ArgumentNullException.ThrowIfNull(doc);
         ArgumentNullException.ThrowIfNull(map);
 
         foreach (XName name in map.Keys)
         {
-            List<XElement> headElems = doc.Descendants(name)
-                .Where(e => e.ElementsBeforeSelf().LastOrDefault()?.Name != name)
-                .ToList();
+            // first find all sequences of elements with the same name
+            List<XElement> firstElements = [..
+                doc.Descendants(name).Where(
+                e => e.ElementsBeforeSelf().LastOrDefault()?.Name != name)];
 
-            foreach (XElement headElem in headElems)
+            foreach (XElement firstElement in firstElements)
             {
-                List<XElement> list = new();
-                list.AddRange(headElem
-                    .ElementsAfterSelf()
-                    .TakeWhile(e => e.Name == name));
-                foreach (XElement e in list) e.Remove();
+                // get all subsequent siblings with the same name
+                List<XElement> siblings =
+                [
+                    .. firstElement.ElementsAfterSelf()
+                               .TakeWhile(e => e.Name == name)
+                ];
 
-                list.Insert(0, headElem);
-                headElem.ReplaceWith(new XElement(
-                    name,
-                    list.Select(e => new XElement(map[name], e.Nodes()))));
+                // create a list of all elements to be wrapped
+                List<XElement> allElements = [firstElement];
+                allElements.AddRange(siblings);
+
+                // if there's only one element, just wrap its contents
+                if (siblings.Count == 0)
+                {
+                    // create a wrapper element with the desired name
+                    XElement wrapper = new(map[name]);
+
+                    // move the contents to the wrapper
+                    foreach (XElement child in firstElement.Elements().ToList())
+                    {
+                        child.Remove();
+                        wrapper.Add(child);
+                    }
+
+                    firstElement.Add(wrapper);
+                }
+                // otherwise, create a container with multiple wrapped elements
+                else
+                {
+                    // remove all elements from their parent
+                    XElement parent = firstElement.Parent!;
+                    foreach (XElement element in allElements)
+                    {
+                        element.Remove();
+                    }
+
+                    // create a container element with the same name
+                    // as the originals
+                    XElement containerElement = new(name);
+
+                    // for each original element, create a wrapper and
+                    // add the contents
+                    foreach (XElement original in allElements)
+                    {
+                        XElement wrapper = new(map[name]);
+                        foreach (XElement child in original.Elements())
+                        {
+                            wrapper.Add(new XElement(child));
+                        }
+                        containerElement.Add(wrapper);
+                    }
+
+                    // add the container back to the parent at the position
+                    // of the first element
+                    parent.Add(containerElement);
+                }
             }
         }
     }
