@@ -14,7 +14,7 @@ namespace Cadmus.Export.Renderers;
 /// <seealso cref="TextTreeRenderer" />
 /// <seealso cref="ITextTreeRenderer" />
 [Tag("it.vedph.text-tree-renderer.txt-linear")]
-public sealed class TxtTextLinearTreeRenderer : TextTreeRenderer,
+public sealed class TxtLinearTextTreeRenderer : TextTreeRenderer,
     ITextTreeRenderer
 {
     /// <summary>

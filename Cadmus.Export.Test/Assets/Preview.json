@@ -49,10 +49,10 @@
       "Id": "it.vedph.text-flattener.token"
     }
   ],
-  "TextBlockRenderers": [
+  "TextTreeRenderers": [
     {
       "Keys": "tei-standoff",
-      "Id": "it.vedph.text-block-renderer.tei-standoff",
+      "Id": "it.vedph.text-tree-renderer.tei-off-linear",
       "Options": {
         "RowOpen": "<div xml:id=\"r{y}\">",
         "RowClose": "</div>",
@@ -67,7 +67,7 @@
       "Id": "it.vedph.item-composer.tei-standoff.fs",
       "Options": {
         "TextPartFlattenerKey": "it.vedph.token-text",
-        "TextBlockRendererKey": "tei-standoff",
+        "TextTreeRendererKey": "tei-standoff",
         "JsonRendererKeys": [
           "it.vedph.token-text-layer|fr.it.vedph.comment",
           "it.vedph.token-text-layer|fr.it.vedph.orthography"
