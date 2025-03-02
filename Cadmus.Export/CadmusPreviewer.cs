@@ -252,7 +252,7 @@ public sealed class CadmusPreviewer
     {
         ArgumentNullException.ThrowIfNull(itemId);
         ArgumentNullException.ThrowIfNull(partId);
-        if (frIndex < 0) throw new ArgumentOutOfRangeException(nameof(frIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(frIndex);
 
         string? json = _repository?.GetPartContent(partId);
         if (json == null) return "";
