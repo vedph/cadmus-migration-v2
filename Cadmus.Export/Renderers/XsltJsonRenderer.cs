@@ -261,7 +261,7 @@ public class XsltJsonRendererOptions : NamespaceOptions
     /// <summary>
     /// Gets or sets the JSON transform expressions using JMES Path.
     /// </summary>
-    public IList<string> JsonExpressions { get; set; }
+    public IList<string> JsonExpressions { get; set; } = [];
 
     /// <summary>
     /// Gets or sets a value indicating whether quotes wrapping a string
@@ -289,13 +289,9 @@ public class XsltJsonRendererOptions : NamespaceOptions
     /// </summary>
     public IDictionary<string, string>? WrappedEntryNames { get; set; }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="XsltJsonRendererOptions"/>
-    /// class.
-    /// </summary>
     public XsltJsonRendererOptions()
     {
-        JsonExpressions = new List<string>();
+        DefaultNsPrefix = null;
     }
 }
 #endregion

@@ -2,10 +2,8 @@
 using Cadmus.Export.Renderers;
 using Cadmus.General.Parts;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
-using System.Xml;
 using System.Xml.Linq;
 using Xunit;
 
