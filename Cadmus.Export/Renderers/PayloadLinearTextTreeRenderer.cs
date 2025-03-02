@@ -50,25 +50,18 @@ public sealed class PayloadLinearTextTreeRenderer : TextTreeRenderer,
 
         if (!tree.HasChildren) return "[]";
 
-        StringBuilder sb = new('[');
-        if (!_flatten) sb.Append('[');
+        StringBuilder sb = new();
+        sb.Append('[');
 
-        bool inLine = false;
-        int line = 0;
+        bool inner = false;
         TreeNode<TextSpan>? node = tree.Children[0];
         do
         {
-            // add comma if not first, else open inner array unless flatten
-            if (inLine || line > 0)
-            {
-                sb.Append(',');
-            }
-            else if (!_flatten)
+            if (!_flatten && !inner)
             {
                 // open inner array
                 sb.Append('[');
-                inLine = true;
-                line++;
+                inner = true;
             }
 
             // add data
@@ -76,17 +69,18 @@ public sealed class PayloadLinearTextTreeRenderer : TextTreeRenderer,
                 ? JsonSerializer.Serialize(node.Data) : "{}");
 
             // close inner array if EOL
-            if (node.Data?.IsBeforeEol == true)
+            if (!_flatten && node.Data?.IsBeforeEol == true)
             {
                 sb.Append(']');
-                inLine = false;
+                inner = false;
             }
 
             node = node.HasChildren? node.Children[0] : null;
+            if (node != null) sb.Append(',');
         } while (node != null);
 
         sb.Append(']');
-        if (inLine && !_flatten) sb.Append(']');
+        if (inner && !_flatten) sb.Append(']');
 
         return sb.ToString();
     }
