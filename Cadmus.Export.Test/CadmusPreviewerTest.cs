@@ -107,7 +107,7 @@ public sealed class CadmusPreviewerTest
         TokenTextLayerPart<OrthographyLayerFragment> orthLayer = new()
         {
             Id = ORTH_ID,
-            ItemId = "item",
+            ItemId = ITEM_ID,
             CreatorId = "zeus",
             UserId = "zeus"
         };
@@ -129,7 +129,7 @@ public sealed class CadmusPreviewerTest
         TokenTextLayerPart<CommentLayerFragment> commLayer = new()
         {
             Id = COMM_ID,
-            ItemId = "item",
+            ItemId = ITEM_ID,
             CreatorId = "zeus",
             UserId = "zeus"
         };
@@ -260,7 +260,7 @@ public sealed class CadmusPreviewerTest
         MongoCadmusRepository repository = GetRepository();
         CadmusPreviewer previewer = GetPreviewer(repository);
 
-        IList<TextSpanPayload> payloads = previewer.BuildTextBlocks(TEXT_ID,
+        IList<TextSpan> payloads = previewer.BuildTextSpans(TEXT_ID,
         [
             ORTH_ID,
             COMM_ID
@@ -269,7 +269,7 @@ public sealed class CadmusPreviewerTest
         Assert.Equal(8, payloads.Count);
 
         // qu: -
-        TextSpanPayload p = payloads[0];
+        TextSpan p = payloads[0];
         Assert.Equal("qu", p.Text);
         Assert.NotNull(p.Range);
         Assert.Empty(p.Range.FragmentIds);

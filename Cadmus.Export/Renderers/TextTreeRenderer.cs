@@ -69,7 +69,7 @@ public abstract class TextTreeRenderer : IHasRendererFilters
     /// <param name="tree">The root node of the text tree.</param>
     /// <param name="context">The renderer context.</param>
     /// <returns>Rendered output.</returns>
-    protected abstract string DoRender(TreeNode<TextSpanPayload> tree,
+    protected abstract string DoRender(TreeNode<TextSpan> tree,
         IRendererContext context);
 
     /// <summary>
@@ -79,7 +79,7 @@ public abstract class TextTreeRenderer : IHasRendererFilters
     /// <param name="context">The renderer context.</param>
     /// <returns>Rendered output.</returns>
     /// <exception cref="ArgumentNullException">tree</exception>
-    public string Render(TreeNode<TextSpanPayload> tree,
+    public string Render(TreeNode<TextSpan> tree,
         IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(tree);

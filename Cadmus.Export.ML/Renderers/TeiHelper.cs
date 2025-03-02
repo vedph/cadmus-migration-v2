@@ -22,7 +22,7 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
         options ?? throw new ArgumentNullException(nameof(options));
 
     private IRendererContext? _context;
-    private TreeNode<TextSpanPayload>? _tree;
+    private TreeNode<TextSpan>? _tree;
 
     /// <summary>
     /// Configures the specified context.
@@ -31,7 +31,7 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
     /// <param name="tree">The tree.</param>
     /// <exception cref="ArgumentNullException">context or tree</exception>
     public void Configure(IRendererContext context,
-        TreeNode<TextSpanPayload> tree)
+        TreeNode<TextSpan> tree)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _tree = tree ?? throw new ArgumentNullException(nameof(tree));
@@ -117,7 +117,7 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
 
         // calculate the apparatus fragment ID prefix
         // (like "it.vedph.token-text-layer:fr.it.vedph.comment@INDEX")
-        string prefix = TextSpanPayload.GetFragmentPrefixFor(
+        string prefix = TextSpan.GetFragmentPrefixFor(
             new TokenTextLayerPart<ApparatusLayerFragment>()) + frIndex;
 
         // find first and last nodes having a fragment ID starting with prefix

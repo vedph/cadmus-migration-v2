@@ -26,7 +26,7 @@ public sealed class TxtTextLinearTreeRenderer : TextTreeRenderer,
     /// Rendered output.
     /// </returns>
     /// <exception cref="ArgumentNullException">tree or context</exception>
-    protected override string DoRender(TreeNode<TextSpanPayload> tree,
+    protected override string DoRender(TreeNode<TextSpan> tree,
         IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(tree);

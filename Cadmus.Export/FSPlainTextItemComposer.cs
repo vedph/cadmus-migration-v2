@@ -98,7 +98,7 @@ public sealed class FSPlainTextItemComposer : ItemComposer, IItemComposer,
             return;
         }
 
-        TreeNode<TextSpanPayload>? tree = BuildTextTree(Context.Item);
+        TreeNode<TextSpan>? tree = BuildTextTree(Context.Item);
         if (tree == null) return;
 
         // render blocks

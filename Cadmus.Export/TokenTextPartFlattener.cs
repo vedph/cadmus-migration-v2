@@ -61,7 +61,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener
         return index;
     }
 
-    private static FragmentTextRange GetRangeFromLoc(string loc, string text,
+    private static AnnotatedTextRange GetRangeFromLoc(string loc, string text,
         TokenTextPart part, string frId)
     {
         TokenTextLocation l = TokenTextLocation.Parse(loc);
@@ -81,7 +81,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener
                 : LocateTokenEnd(text, start) - 1;
         }
 
-        return new FragmentTextRange(start, end, frId);
+        return new AnnotatedTextRange(start, end, frId);
     }
 
     private static IList<string> GetFragmentLocations(IPart part)
@@ -111,7 +111,7 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener
     /// <returns>Tuple with 1=text and 2=ranges.</returns>
     /// <exception cref="ArgumentNullException">textPart or layerParts
     /// </exception>
-    public Tuple<string, IList<FragmentTextRange>> Flatten(IPart textPart,
+    public Tuple<string, IList<AnnotatedTextRange>> Flatten(IPart textPart,
         IList<IPart> layerParts)
     {
         if (textPart is not TokenTextPart ttp)
@@ -121,14 +121,14 @@ public sealed class TokenTextPartFlattener : ITextPartFlattener
         string text = string.Join("\n", ttp.Lines.Select(l => l.Text));
 
         // convert all the fragment locations into ranges
-        IList<FragmentTextRange> ranges = [];
+        IList<AnnotatedTextRange> ranges = [];
         int layerIndex = 0;
         foreach (IPart part in layerParts)
         {
             int frIndex = 0;
             foreach (string loc in GetFragmentLocations(part))
             {
-                FragmentTextRange r = GetRangeFromLoc(loc, text, ttp,
+                AnnotatedTextRange r = GetRangeFromLoc(loc, text, ttp,
                     $"{part.TypeId}:{part.RoleId}@{frIndex}");
                 ranges.Add(r);
                 frIndex++;

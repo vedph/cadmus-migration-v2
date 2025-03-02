@@ -26,8 +26,8 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
     /// <param name="skipInitialNewline">True to skip an initial newline if 
     /// present.</param>
     /// <returns>The head of the split chain.</returns>
-    private static TreeNode<TextSpanPayload> SplitNode(
-        TreeNode<TextSpanPayload> node,
+    private static TreeNode<TextSpan> SplitNode(
+        TreeNode<TextSpan> node,
         bool skipInitialNewline = false)
     {
         string? text = node.Data!.Text;
@@ -45,16 +45,16 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
             if (startIndex == 0) return node;
 
             // just skip the initial newline
-            TreeNode<TextSpanPayload> result = new(node.Data.Clone());
+            TreeNode<TextSpan> result = new(node.Data.Clone());
             result.Data!.Text = text[startIndex..];
             return result;
         }
 
         // create the first node with text up to the newline
-        TreeNode<TextSpanPayload> head = new(node.Data.Clone());
+        TreeNode<TextSpan> head = new(node.Data.Clone());
         head.Data!.Text = startIndex == 0 ? text[..i] : text[startIndex..i];
         head.Data.IsBeforeEol = true;
-        TreeNode<TextSpanPayload> current = head;
+        TreeNode<TextSpan> current = head;
 
         // process remaining text
         int start = i + 1;
@@ -63,7 +63,7 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
             i = text.IndexOf('\n', start);
 
             // create new node with the next segment
-            TreeNode<TextSpanPayload> next = new(node.Data.Clone());
+            TreeNode<TextSpan> next = new(node.Data.Clone());
             if (i == -1)
             {
                 // no more newlines, take rest of text
@@ -94,7 +94,7 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
     /// IDs are unique within the tree.
     /// </summary>
     /// <param name="root">The root.</param>
-    private static void AssignNodeIds(TreeNode<TextSpanPayload> root)
+    private static void AssignNodeIds(TreeNode<TextSpan> root)
     {
         // first pass gets max node ID
         int maxId = 0;
@@ -126,13 +126,13 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
     /// The root node of the new tree.
     /// </returns>
     /// <exception cref="ArgumentNullException">tree</exception>
-    public TreeNode<TextSpanPayload> Apply(TreeNode<TextSpanPayload> tree,
+    public TreeNode<TextSpan> Apply(TreeNode<TextSpan> tree,
           IItem item)
     {
         ArgumentNullException.ThrowIfNull(tree);
 
-        TreeNode<TextSpanPayload> root = new();
-        TreeNode<TextSpanPayload> current = root;
+        TreeNode<TextSpan> root = new();
+        TreeNode<TextSpan> current = root;
 
         tree.Traverse(node =>
         {
@@ -154,12 +154,12 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
                 {
                     // mark parent (if it's root we need to create its payload)
                     if (current.Data != null) current.Data.IsBeforeEol = true;
-                    else current.Data = new TextSpanPayload { IsBeforeEol = true };
+                    else current.Data = new TextSpan { IsBeforeEol = true };
 
                     if (node.Data.Text.Length > 1)
                     {
                         // Process the text after the initial newline
-                        TreeNode<TextSpanPayload> head = SplitNode(node, true);
+                        TreeNode<TextSpan> head = SplitNode(node, true);
                         current.AddChild(head);
 
                         // Move to the last node in the chain
@@ -172,7 +172,7 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
                 }
 
                 // case 3: Regular case - newlines in the middle or at end
-                TreeNode<TextSpanPayload> splitHead = SplitNode(node);
+                TreeNode<TextSpan> splitHead = SplitNode(node);
                 current.AddChild(splitHead);
 
                 // move to the last node in the chain
@@ -183,7 +183,7 @@ public sealed class BlockLinearTextTreeFilter : ITextTreeFilter
             // handle nodes without newlines
             else
             {
-                TreeNode<TextSpanPayload> child = new()
+                TreeNode<TextSpan> child = new()
                 {
                     Id = node.Id,
                     Label = node.Label,

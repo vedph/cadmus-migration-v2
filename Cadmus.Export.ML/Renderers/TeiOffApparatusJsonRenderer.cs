@@ -64,7 +64,7 @@ public sealed class TeiOffApparatusJsonRenderer : MLJsonRenderer,
     /// <returns>Rendered output.</returns>
     /// <exception cref="InvalidOperationException">null tree</exception>
     protected override string DoRender(string json,
-        IRendererContext context, TreeNode<TextSpanPayload>? tree = null)
+        IRendererContext context, TreeNode<TextSpan>? tree = null)
     {
         if (tree == null)
         {

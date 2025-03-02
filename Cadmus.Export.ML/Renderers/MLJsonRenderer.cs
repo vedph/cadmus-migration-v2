@@ -22,12 +22,12 @@ public abstract class MLJsonRenderer : JsonRenderer
     /// <param name="tree">The text tree root node.</param>
     /// <returns>Tuple with first and last node, which might be the same if
     /// the text spans for a single node.</returns>
-    public static (TreeNode<TextSpanPayload> First, TreeNode<TextSpanPayload> Last)?
-        FindFragmentBounds(string prefix, TreeNode<TextSpanPayload> tree)
+    public static (TreeNode<TextSpan> First, TreeNode<TextSpan> Last)?
+        FindFragmentBounds(string prefix, TreeNode<TextSpan> tree)
     {
         // find the first and last nodes having any fragment ID starting with prefix
-        TreeNode<TextSpanPayload>? firstNode = null;
-        TreeNode<TextSpanPayload>? lastNode = null;
+        TreeNode<TextSpan>? firstNode = null;
+        TreeNode<TextSpan>? lastNode = null;
 
         tree.Traverse(node =>
         {
@@ -63,8 +63,8 @@ public abstract class MLJsonRenderer : JsonRenderer
     /// <param name="context">The rendering context.</param>
     /// <exception cref="ArgumentNullException">any of the arguments is null
     /// </exception>
-    public static void AddTeiLocToElement(TreeNode<TextSpanPayload> first,
-        TreeNode<TextSpanPayload> last, XElement element,
+    public static void AddTeiLocToElement(TreeNode<TextSpan> first,
+        TreeNode<TextSpan> last, XElement element,
         IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(first);

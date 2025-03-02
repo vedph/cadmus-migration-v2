@@ -39,7 +39,7 @@ public interface ITextTreeRenderer : IHasRendererFilters
     /// <param name="tree">The tree.</param>
     /// <param name="context">The rendering context.</param>
     /// <returns>Rendition.</returns>
-    string Render(TreeNode<TextSpanPayload> tree, IRendererContext context);
+    string Render(TreeNode<TextSpan> tree, IRendererContext context);
 
     /// <summary>
     /// Renders the tail of the output. This is called by the item composer

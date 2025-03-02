@@ -33,5 +33,5 @@ public sealed class NullJsonRenderer : JsonRenderer, IJsonRenderer
     /// <returns>Rendered output.</returns>
     protected override string DoRender(string json,
         IRendererContext context,
-        TreeNode<TextSpanPayload>? tree = null) => json ?? "";
+        TreeNode<TextSpan>? tree = null) => json ?? "";
 }

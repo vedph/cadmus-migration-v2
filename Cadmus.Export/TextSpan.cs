@@ -6,19 +6,20 @@ using MongoDB.Driver;
 namespace Cadmus.Export;
 
 /// <summary>
-/// The payload added to nodes during text export.
+/// A span of text derived from a range and added as payload to nodes during
+/// the rendition process.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="TextSpanPayload"/> class.
+/// Initializes a new instance of the <see cref="TextSpan"/> class.
 /// </remarks>
 /// <param name="range">The source fragment text range for this payload.</param>
-public class TextSpanPayload(FragmentTextRange? range = null)
+public class TextSpan(AnnotatedTextRange? range = null)
 {
     /// <summary>
     /// Gets the source fragment text range for this payload.
     /// This is null for the root node, all the other nodes should have one.
     /// </summary>
-    public FragmentTextRange? Range { get; } = range;
+    public AnnotatedTextRange? Range { get; } = range;
 
     /// <summary>
     /// Gets or sets the optional node type.
@@ -78,9 +79,9 @@ public class TextSpanPayload(FragmentTextRange? range = null)
     /// Create a clone of this instance.
     /// </summary>
     /// <returns>Cloned instance.</returns>
-    public TextSpanPayload Clone()
+    public TextSpan Clone()
     {
-        return new TextSpanPayload(Range)
+        return new TextSpan(Range)
         {
             Type = Type,
             IsBeforeEol = IsBeforeEol,

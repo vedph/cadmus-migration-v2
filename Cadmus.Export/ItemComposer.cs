@@ -286,21 +286,21 @@ public abstract class ItemComposer
     /// </param>
     /// <returns>The root node of the built tree.</returns>
     /// <exception cref="ArgumentNullException">ranges</exception>
-    public static TreeNode<TextSpanPayload> BuildTreeFromRanges(
-        IList<FragmentTextRange> ranges, string text)
+    public static TreeNode<TextSpan> BuildTreeFromRanges(
+        IList<AnnotatedTextRange> ranges, string text)
     {
         ArgumentNullException.ThrowIfNull(ranges);
 
-        TreeNode<TextSpanPayload> root = new();
-        TreeNode<TextSpanPayload> node = root;
+        TreeNode<TextSpan> root = new();
+        TreeNode<TextSpan> node = root;
         int n = 0;
-        foreach (FragmentTextRange range in ranges)
+        foreach (AnnotatedTextRange range in ranges)
         {
-            TreeNode<TextSpanPayload> child = new()
+            TreeNode<TextSpan> child = new()
             {
                 Id = $"{++n}",
                 Label = MapNonPrintables(range.Text),
-                Data = new TextSpanPayload(range)
+                Data = new TextSpan(range)
                 {
                     IsBeforeEol = range.End + 1 < text.Length &&
                         text[range.End + 1] == '\n'
@@ -317,7 +317,7 @@ public abstract class ItemComposer
     /// </summary>
     /// <param name="item">The item.</param>
     /// <returns>The text tree or null if no text.</returns>
-    protected virtual TreeNode<TextSpanPayload>? BuildTextTree(IItem item)
+    protected virtual TreeNode<TextSpan>? BuildTextTree(IItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
@@ -344,15 +344,15 @@ public abstract class ItemComposer
         var tr = TextPartFlattener.Flatten(textPart, layerParts);
 
         // merge ranges
-        IList<FragmentTextRange> mergedRanges = FragmentTextRange.MergeRanges(
+        IList<AnnotatedTextRange> mergedRanges = AnnotatedTextRange.MergeRanges(
             0, tr.Item1.Length - 1, tr.Item2);
 
         // assign text to merged ranges
-        foreach (FragmentTextRange range in mergedRanges)
+        foreach (AnnotatedTextRange range in mergedRanges)
             range.AssignText(tr.Item1);
 
         // build a linear tree from merged ranges
-        TreeNode<TextSpanPayload> tree = BuildTreeFromRanges(
+        TreeNode<TextSpan> tree = BuildTreeFromRanges(
             mergedRanges, tr.Item1);
 
         // apply tree filters

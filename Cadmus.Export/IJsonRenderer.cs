@@ -19,5 +19,5 @@ public interface IJsonRenderer : IHasRendererFilters
     /// text.</param>
     /// <returns>Rendered output.</returns>
     string Render(string json, IRendererContext context,
-        TreeNode<TextSpanPayload>? tree = null);
+        TreeNode<TextSpan>? tree = null);
 }

@@ -8,13 +8,13 @@ namespace Cadmus.Export;
 /// A text range linked to one or more fragments.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="FragmentTextRange"/>
+/// Initializes a new instance of the <see cref="AnnotatedTextRange"/>
 /// class.
 /// </remarks>
 /// <param name="start">The start.</param>
 /// <param name="end">The end.</param>
 /// <param name="frIds">The optional fragment identifier(s).</param>
-public class FragmentTextRange(int start, int end, params IList<string>? frIds)
+public class AnnotatedTextRange(int start, int end, params IList<string>? frIds)
 {
     /// <summary>
     /// Gets or sets the start index.
@@ -73,26 +73,26 @@ public class FragmentTextRange(int start, int end, params IList<string>? frIds)
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException">Start must not be greater than end
     /// </exception>
-    public static IList<FragmentTextRange> MergeRanges(int start, int end,
-        IList<FragmentTextRange> ranges)
+    public static IList<AnnotatedTextRange> MergeRanges(int start, int end,
+        IList<AnnotatedTextRange> ranges)
     {
         ArgumentNullException.ThrowIfNull(ranges);
         if (start > end)
             throw new ArgumentException("Start must not be greater than end");
 
-        List<FragmentTextRange> result = [];
+        List<AnnotatedTextRange> result = [];
 
         // if no ranges, create a single range with no fragments
         if (ranges.Count == 0)
         {
-            if (start <= end) result.Add(new FragmentTextRange(start, end));
+            if (start <= end) result.Add(new AnnotatedTextRange(start, end));
             return result;
         }
 
         // create a sorted list of all unique positions where fragment
         // combinations change
         SortedSet<int> positions = [start, end + 1];
-        foreach (FragmentTextRange range in ranges)
+        foreach (AnnotatedTextRange range in ranges)
         {
             positions.Add(range.Start);
             positions.Add(range.End + 1);
@@ -116,14 +116,14 @@ public class FragmentTextRange(int start, int end, params IList<string>? frIds)
 
             // find all fragments that cover this range
             HashSet<string> fragmentIds = [];
-            foreach (FragmentTextRange range in ranges)
+            foreach (AnnotatedTextRange range in ranges)
             {
                 if (range.Start <= currentEnd && range.End >= currentStart)
                     fragmentIds.UnionWith(range.FragmentIds);
             }
 
             // create new range with combined fragments
-            FragmentTextRange newRange = new(currentStart, currentEnd);
+            AnnotatedTextRange newRange = new(currentStart, currentEnd);
             newRange.FragmentIds.AddRange(fragmentIds.Order());
             result.Add(newRange);
         }

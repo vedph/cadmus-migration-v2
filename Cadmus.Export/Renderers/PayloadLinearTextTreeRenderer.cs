@@ -42,7 +42,7 @@ public sealed class PayloadLinearTextTreeRenderer : TextTreeRenderer,
     /// <param name="context">The rendering context.</param>
     /// <returns>Rendition.</returns>
     /// <exception cref="ArgumentNullException"></exception>
-    protected override string DoRender(TreeNode<TextSpanPayload> tree,
+    protected override string DoRender(TreeNode<TextSpan> tree,
         IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(tree);
@@ -55,7 +55,7 @@ public sealed class PayloadLinearTextTreeRenderer : TextTreeRenderer,
 
         bool inLine = false;
         int line = 0;
-        TreeNode<TextSpanPayload>? node = tree.Children[0];
+        TreeNode<TextSpan>? node = tree.Children[0];
         do
         {
             // add comma if not first, else open inner array unless flatten

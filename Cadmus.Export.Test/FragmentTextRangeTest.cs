@@ -5,7 +5,7 @@ namespace Cadmus.Export.Test;
 
 public sealed class FragmentTextRangeTest
 {
-    private static List<FragmentTextRange> GetRangesWithSingleFr()
+    private static List<AnnotatedTextRange> GetRangesWithSingleFr()
     {
         // 012345678901234567
         // que bixit annos XX
@@ -16,17 +16,17 @@ public sealed class FragmentTextRangeTest
         // 012345678901234567
         return
         [
-            new FragmentTextRange(2, 2, "fr1"),
-            new FragmentTextRange(4, 4, "fr2"),
-            new FragmentTextRange(2, 4, "fr3"),
-            new FragmentTextRange(4, 14, "fr4")
+            new AnnotatedTextRange(2, 2, "fr1"),
+            new AnnotatedTextRange(4, 4, "fr2"),
+            new AnnotatedTextRange(2, 4, "fr3"),
+            new AnnotatedTextRange(4, 14, "fr4")
         ];
     }
 
     [Fact]
     public void MergeRanges_SingleFragments_Ok()
     {
-        IList<FragmentTextRange> ranges = FragmentTextRange.MergeRanges(
+        IList<AnnotatedTextRange> ranges = AnnotatedTextRange.MergeRanges(
             0, 17, GetRangesWithSingleFr());
         Assert.Equal(6, ranges.Count);
 

@@ -76,7 +76,7 @@ public sealed class TokenTextPartFlattenerTest
         TokenTextPart textPart = GetSampleTextPart();
         IList<IPart> layerParts = GetSampleLayerParts();
 
-        Tuple<string, IList<FragmentTextRange>> result = flattener.Flatten(
+        Tuple<string, IList<AnnotatedTextRange>> result = flattener.Flatten(
             textPart, layerParts);
 
         // text
@@ -90,10 +90,10 @@ public sealed class TokenTextPartFlattenerTest
 
         // ranges
         Assert.Equal(4, result.Item2.Count);
-        foreach (FragmentTextRange r in result.Item2) r.AssignText(result.Item1);
+        foreach (AnnotatedTextRange r in result.Item2) r.AssignText(result.Item1);
 
         // orthography: qu[e]
-        FragmentTextRange range = result.Item2[0];
+        AnnotatedTextRange range = result.Item2[0];
         Assert.Equal("e", range.Text);
         Assert.Equal(2, range.Start);
         Assert.Equal(2, range.End);

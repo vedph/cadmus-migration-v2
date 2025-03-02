@@ -266,7 +266,7 @@ public sealed class CadmusPreviewer
     }
 
     /// <summary>
-    /// Builds blocks of texts from the specified text part.
+    /// Builds an array of spans of text from the specified text part.
     /// Note that this method requires a repository.
     /// </summary>
     /// <param name="textPartId">The text part identifier.</param>
@@ -275,7 +275,7 @@ public sealed class CadmusPreviewer
     /// <returns>Rendition.</returns>
     /// <exception cref="ArgumentNullException">textPartId or layerPartIds
     /// </exception>
-    public IList<TextSpanPayload> BuildTextBlocks(string textPartId,
+    public IList<TextSpan> BuildTextSpans(string textPartId,
         IList<string> layerPartIds)
     {
         ArgumentNullException.ThrowIfNull(textPartId);
@@ -317,19 +317,19 @@ public sealed class CadmusPreviewer
             .Where(p => p != null)];
 
         // flatten them
-        Tuple<string, IList<FragmentTextRange>> tr = flattener.Flatten(
+        Tuple<string, IList<AnnotatedTextRange>> tr = flattener.Flatten(
             part, layerParts);
 
         // merge ranges
-        IList<FragmentTextRange> mergedRanges = FragmentTextRange.MergeRanges(
+        IList<AnnotatedTextRange> mergedRanges = AnnotatedTextRange.MergeRanges(
             0, tr.Item1.Length - 1, tr.Item2);
 
         // assign text to merged ranges
-        foreach (FragmentTextRange range in mergedRanges)
+        foreach (AnnotatedTextRange range in mergedRanges)
             range.AssignText(tr.Item1);
 
         // build a linear tree from merged ranges
-        TreeNode<TextSpanPayload> tree = ItemComposer.BuildTreeFromRanges(
+        TreeNode<TextSpan> tree = ItemComposer.BuildTreeFromRanges(
             mergedRanges, tr.Item1);
         if (!tree.HasChildren) return [];
 
@@ -337,7 +337,7 @@ public sealed class CadmusPreviewer
         tree = _blockFilter.Apply(tree, item);
 
         // collect payloads from tree nodes and return them
-        List<TextSpanPayload> payloads = [];
+        List<TextSpan> payloads = [];
         tree.Traverse(node =>
         {
             if (node.Data != null) payloads.Add(node.Data);

@@ -14,6 +14,6 @@ public interface ITextTreeFilter
     /// <param name="tree">The tree's root node.</param>
     /// <param name="item">The item being rendered.</param>
     /// <returns>The root node of the new tree.</returns>
-    public TreeNode<TextSpanPayload> Apply(TreeNode<TextSpanPayload> tree,
+    public TreeNode<TextSpan> Apply(TreeNode<TextSpan> tree,
         IItem item);
 }

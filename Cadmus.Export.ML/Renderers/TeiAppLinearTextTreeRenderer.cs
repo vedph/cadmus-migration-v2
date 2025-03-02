@@ -80,7 +80,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     /// <param name="context">The rendering context.</param>
     /// <returns>Rendition.</returns>
     /// <exception cref="ArgumentNullException">tree or context</exception>
-    protected override string DoRender(TreeNode<TextSpanPayload> tree,
+    protected override string DoRender(TreeNode<TextSpan> tree,
         IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(tree);
@@ -118,7 +118,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         // calculate the apparatus fragment ID prefix
         // (like "it.vedph.token-text-layer:fr.it.vedph.comment@")
         string? prefix = layerPart != null
-            ? TextSpanPayload.GetFragmentPrefixFor(layerPart) : null;
+            ? TextSpan.GetFragmentPrefixFor(layerPart) : null;
 
         // create root element
         XElement root = new(rootName);
@@ -139,7 +139,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
             if (frId != null)
             {
                 // get the index of the fragment linked to this node
-                int frIndex = TextSpanPayload.GetFragmentIndex(frId);
+                int frIndex = TextSpan.GetFragmentIndex(frId);
 
                 // app
                 XElement app = _tei.BuildAppElement(textPart.Id,

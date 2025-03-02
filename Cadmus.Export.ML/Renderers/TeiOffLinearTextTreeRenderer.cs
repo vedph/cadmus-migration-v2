@@ -75,7 +75,7 @@ public sealed class TeiOffLinearTextTreeRenderer : TextTreeRenderer,
     /// <param name="context">The rendering context.</param>
     /// <returns>Rendition.</returns>
     /// <exception cref="ArgumentNullException">tree or context</exception>
-    protected override string DoRender(TreeNode<TextSpanPayload> tree,
+    protected override string DoRender(TreeNode<TextSpan> tree,
         IRendererContext context)
     {
         ArgumentNullException.ThrowIfNull(tree);

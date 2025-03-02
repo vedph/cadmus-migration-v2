@@ -131,7 +131,7 @@ public sealed class XsltJsonRenderer : JsonRenderer, IJsonRenderer,
     /// text.</param>
     /// <exception cref="ArgumentNullException">json</exception>
     protected override string DoRender(string json,
-        IRendererContext context, TreeNode<TextSpanPayload>? tree = null)
+        IRendererContext context, TreeNode<TextSpan>? tree = null)
     {
         if (_options == null) return json;
 

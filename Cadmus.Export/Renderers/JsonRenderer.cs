@@ -26,7 +26,7 @@ public abstract class JsonRenderer
     /// <returns>Rendered output.</returns>
     protected abstract string DoRender(string json,
         IRendererContext context,
-        TreeNode<TextSpanPayload>? tree = null);
+        TreeNode<TextSpan>? tree = null);
 
     /// <summary>
     /// Renders the specified JSON code.
@@ -39,7 +39,7 @@ public abstract class JsonRenderer
     /// text.</param>
     /// <exception cref="ArgumentNullException">json or context</exception>
     public string Render(string json, IRendererContext context,
-        TreeNode<TextSpanPayload>? tree = null)
+        TreeNode<TextSpan>? tree = null)
     {
         ArgumentNullException.ThrowIfNull(json);
         ArgumentNullException.ThrowIfNull(context);

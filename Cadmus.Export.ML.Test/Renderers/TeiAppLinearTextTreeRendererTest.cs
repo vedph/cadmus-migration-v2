@@ -107,7 +107,7 @@ public sealed class TeiAppLinearTextTreeRendererTest
         return part;
     }
 
-    public static (TreeNode<TextSpanPayload> tree, IItem item) GetTreeAndItem()
+    public static (TreeNode<TextSpan> tree, IItem item) GetTreeAndItem()
     {
         // get item
         TokenTextPart textPart = GetTextPart();
@@ -118,18 +118,18 @@ public sealed class TeiAppLinearTextTreeRendererTest
 
         // flatten
         TokenTextPartFlattener flattener = new();
-        Tuple<string, IList<FragmentTextRange>> tr = flattener.Flatten(
+        Tuple<string, IList<AnnotatedTextRange>> tr = flattener.Flatten(
             textPart, [appPart]);
 
         // merge ranges
-        IList<FragmentTextRange> mergedRanges = FragmentTextRange.MergeRanges(
+        IList<AnnotatedTextRange> mergedRanges = AnnotatedTextRange.MergeRanges(
             0, tr.Item1.Length - 1, tr.Item2);
         // assign text to merged ranges
-        foreach (FragmentTextRange range in mergedRanges)
+        foreach (AnnotatedTextRange range in mergedRanges)
             range.AssignText(tr.Item1);
 
         // build a linear tree from ranges
-        TreeNode<TextSpanPayload> tree = ItemComposer.BuildTreeFromRanges(
+        TreeNode<TextSpan> tree = ItemComposer.BuildTreeFromRanges(
             mergedRanges, tr.Item1);
         // apply block filter
         return (new BlockLinearTextTreeFilter().Apply(tree, item), item);
@@ -144,7 +144,7 @@ public sealed class TeiAppLinearTextTreeRendererTest
             NoItemSource = true
         });
 
-        (TreeNode<TextSpanPayload>? tree, IItem item) = GetTreeAndItem();
+        (TreeNode<TextSpan>? tree, IItem item) = GetTreeAndItem();
 
         string xml = renderer.Render(tree, new RendererContext
         {
@@ -166,7 +166,7 @@ public sealed class TeiAppLinearTextTreeRendererTest
     {
         TeiAppLinearTextTreeRenderer renderer = new();
 
-        (TreeNode<TextSpanPayload>? tree, IItem item) = GetTreeAndItem();
+        (TreeNode<TextSpan>? tree, IItem item) = GetTreeAndItem();
 
         string xml = renderer.Render(tree, new RendererContext
         {

@@ -41,7 +41,7 @@ public abstract class TeiItemComposer : ItemComposer
             return;
 
         // build text tree
-        TreeNode<TextSpanPayload>? tree = BuildTextTree(Context.Item);
+        TreeNode<TextSpan>? tree = BuildTextTree(Context.Item);
         if (tree == null) return;
 
         // render text from tree
