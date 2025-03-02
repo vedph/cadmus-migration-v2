@@ -1,7 +1,6 @@
 ﻿using Cadmus.Core;
 using Cadmus.Export.Filters;
 using Cadmus.Export.Renderers;
-using Cadmus.Export.Test.Filters;
 using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Data;
@@ -113,7 +112,7 @@ public sealed class PayloadLinearTextTreeRendererTest
         // get item
         TokenTextPart textPart = GetTextPart();
         TokenTextLayerPart<ApparatusLayerFragment> appPart = GetApparatusPart();
-        IItem item = new Item();
+        Item item = new();
         item.Parts.Add(textPart);
         item.Parts.Add(appPart);
 
@@ -149,15 +148,14 @@ public sealed class PayloadLinearTextTreeRendererTest
             "{\"Start\":0,\"End\":4,\"FragmentIds\":" +
             "[\"it.vedph.token-text-layer:fr.it.vedph.apparatus@0\"]," +
             "\"Text\":\"illuc\"},\"Type\":null,\"IsBeforeEol\":false," +
-            "\"Text\":\"illuc\",\"FeatureSets\":{}}," +
+            "\"Text\":\"illuc\"}," +
             "{\"Range\":{\"Start\":5,\"End\":24,\"FragmentIds\":[]," +
             "\"Text\":\" unde negant redire \"},\"Type\":null," +
-            "\"IsBeforeEol\":false,\"Text\":\" unde negant redire \"," +
-            "\"FeatureSets\":{}}," +
+            "\"IsBeforeEol\":false,\"Text\":\" unde negant redire \"}," +
             "{\"Range\":{\"Start\":25,\"End\":32,\"FragmentIds\":" +
             "[\"it.vedph.token-text-layer:fr.it.vedph.apparatus@1\"]," +
             "\"Text\":\"quemquam\"},\"Type\":null,\"IsBeforeEol\":false," +
-            "\"Text\":\"quemquam\",\"FeatureSets\":{}}]]", json);
+            "\"Text\":\"quemquam\"}]]", json);
     }
 
     [Fact]
@@ -177,15 +175,14 @@ public sealed class PayloadLinearTextTreeRendererTest
             "{\"Start\":0,\"End\":4,\"FragmentIds\":" +
             "[\"it.vedph.token-text-layer:fr.it.vedph.apparatus@0\"]," +
             "\"Text\":\"illuc\"},\"Type\":null,\"IsBeforeEol\":false," +
-            "\"Text\":\"illuc\",\"FeatureSets\":{}}," +
+            "\"Text\":\"illuc\"}," +
             "{\"Range\":{\"Start\":5,\"End\":24,\"FragmentIds\":[]," +
             "\"Text\":\" unde negant redire \"},\"Type\":null," +
-            "\"IsBeforeEol\":false,\"Text\":\" unde negant redire \"," +
-            "\"FeatureSets\":{}}," +
+            "\"IsBeforeEol\":false,\"Text\":\" unde negant redire \"}," +
             "{\"Range\":{\"Start\":25,\"End\":32,\"FragmentIds\":" +
             "[\"it.vedph.token-text-layer:fr.it.vedph.apparatus@1\"]," +
             "\"Text\":\"quemquam\"},\"Type\":null,\"IsBeforeEol\":false," +
-            "\"Text\":\"quemquam\",\"FeatureSets\":{}}]", json);
+            "\"Text\":\"quemquam\"}]", json);
     }
 
     // TODO: add multiple lines tests
