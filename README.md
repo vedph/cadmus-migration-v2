@@ -2,6 +2,8 @@
 
 Tools for migrating (importing/exporting) Cadmus data. Export tools also include "preview", i.e. a human-friendly, highly customizable output for each Cadmus object, to be integrated in the editor itself.
 
+👉 This is the second generation of Cadmus migration components. For compatibility reasons, the previous generation can be still be reached at its [original repository](https://github.com/vedph/cadmus-migration). Cadmus API from major version 11 and UI from major version 13 have been updated to this new version.
+
 👀 [Cadmus Page](https://myrmex.github.io/overview/cadmus/)
 
 Main projects:
