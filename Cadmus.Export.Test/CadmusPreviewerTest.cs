@@ -52,7 +52,7 @@ public sealed class CadmusPreviewerTest
         TokenTextPart text = new()
         {
             Id = TEXT_ID,
-            ItemId = "item",
+            ItemId = ITEM_ID,
             CreatorId = "zeus",
             UserId = "zeus",
             Citation = "CIL 1,23",
@@ -247,7 +247,7 @@ public sealed class CadmusPreviewerTest
     }
 
     [Fact]
-    public void BuildTextBlocks_Ok()
+    public void BuildTextSpans_Ok()
     {
         // 0123456789-1234567
         // que bixit|annos XX
@@ -260,67 +260,67 @@ public sealed class CadmusPreviewerTest
         MongoCadmusRepository repository = GetRepository();
         CadmusPreviewer previewer = GetPreviewer(repository);
 
-        IList<TextSpan> payloads = previewer.BuildTextSpans(TEXT_ID,
+        IList<TextSpan> spans = previewer.BuildTextSpans(TEXT_ID,
         [
             ORTH_ID,
             COMM_ID
         ]);
 
-        Assert.Equal(8, payloads.Count);
+        Assert.Equal(8, spans.Count);
 
         // qu: -
-        TextSpan p = payloads[0];
-        Assert.Equal("qu", p.Text);
-        Assert.NotNull(p.Range);
-        Assert.Empty(p.Range.FragmentIds);
+        TextSpan span = spans[0];
+        Assert.Equal("qu", span.Text);
+        Assert.NotNull(span.Range);
+        Assert.Empty(span.Range.FragmentIds);
         // e: AB
-        p = payloads[1];
-        Assert.Equal("e", p.Text);
-        Assert.NotNull(p.Range);
-        Assert.Single(p.Range.FragmentIds);
-        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.orthography.0",
-            p.Range.FragmentIds[0]);
+        span = spans[1];
+        Assert.Equal("e", span.Text);
+        Assert.NotNull(span.Range);
+        Assert.Single(span.Range.FragmentIds);
+        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.orthography@0",
+            span.Range.FragmentIds[0]);
         // _: -
-        p = payloads[2];
-        Assert.Equal(" ", p.Text);
-        Assert.NotNull(p.Range);
-        Assert.Empty(p.Range.FragmentIds);
+        span = spans[2];
+        Assert.Equal(" ", span.Text);
+        Assert.NotNull(span.Range);
+        Assert.Empty(span.Range.FragmentIds);
         // b: OC
-        p = payloads[3];
-        Assert.Equal("b", p.Text);
-        Assert.NotNull(p.Range);
-        Assert.Equal(2, p.Range.FragmentIds.Count);
-        Assert.Contains("it.vedph.token-text-layer:fr.it.vedph.orthography.1",
-            p.Range.FragmentIds);
-        Assert.Contains("it.vedph.token-text-layer:fr.it.vedph.comment.0",
-            p.Range.FragmentIds);
+        span = spans[3];
+        Assert.Equal("b", span.Text);
+        Assert.NotNull(span.Range);
+        Assert.Equal(2, span.Range.FragmentIds.Count);
+        Assert.Contains("it.vedph.token-text-layer:fr.it.vedph.orthography@1",
+            span.Range.FragmentIds);
+        Assert.Contains("it.vedph.token-text-layer:fr.it.vedph.comment@0",
+            span.Range.FragmentIds);
         // ixit: C
-        p = payloads[4];
-        Assert.Equal("ixit", p.Text);
-        Assert.NotNull(p.Range);
-        Assert.Single(p.Range.FragmentIds);
-        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.comment.0",
-            p.Range.FragmentIds[0]);
-        Assert.True(p.IsBeforeEol);
+        span = spans[4];
+        Assert.Equal("ixit", span.Text);
+        Assert.NotNull(span.Range);
+        Assert.Single(span.Range.FragmentIds);
+        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.comment@0",
+            span.Range.FragmentIds[0]);
+        Assert.True(span.IsBeforeEol);
 
         // annos: C
-        p = payloads[5];
-        Assert.Equal("annos", p.Text);
-        Assert.NotNull(p.Range);
-        Assert.Single(p.Range.FragmentIds);
-        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.comment.0",
-            p.Range.FragmentIds[0]);
+        span = spans[5];
+        Assert.Equal("annos", span.Text);
+        Assert.NotNull(span.Range);
+        Assert.Single(span.Range.FragmentIds);
+        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.comment@0",
+            span.Range.FragmentIds[0]);
         // _: -
-        p = payloads[6];
-        Assert.Equal(" ", p.Text);
-        Assert.NotNull(p.Range);
-        Assert.Empty(p.Range.FragmentIds);
+        span = spans[6];
+        Assert.Equal(" ", span.Text);
+        Assert.NotNull(span.Range);
+        Assert.Empty(span.Range.FragmentIds);
         // XX: D
-        p = payloads[7];
-        Assert.Equal("XX", p.Text);
-        Assert.NotNull(p.Range);
-        Assert.Single(p.Range.FragmentIds);
-        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.comment.1",
-            p.Range.FragmentIds[0]);
+        span = spans[7];
+        Assert.Equal("XX", span.Text);
+        Assert.NotNull(span.Range);
+        Assert.Single(span.Range.FragmentIds);
+        Assert.Equal("it.vedph.token-text-layer:fr.it.vedph.comment@1",
+            span.Range.FragmentIds[0]);
     }
 }

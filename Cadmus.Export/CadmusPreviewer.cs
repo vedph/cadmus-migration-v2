@@ -337,13 +337,13 @@ public sealed class CadmusPreviewer
         tree = _blockFilter.Apply(tree, item);
 
         // collect payloads from tree nodes and return them
-        List<TextSpan> payloads = [];
+        List<TextSpan> spans = [];
         tree.Traverse(node =>
         {
-            if (node.Data != null) payloads.Add(node.Data);
+            if (node.Data != null) spans.Add(node.Data);
             return true;
         });
 
-        return payloads;
+        return spans;
     }
 }
