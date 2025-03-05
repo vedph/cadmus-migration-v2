@@ -16,6 +16,8 @@ Main projects:
 
 ## History
 
+- 2025-03-05: updated packages.
+
 ### 6.0.0
 
 - 2025-02-26: ⚠️ refactored export models:

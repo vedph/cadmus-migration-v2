@@ -289,6 +289,9 @@ public class XsltJsonRendererOptions : NamespaceOptions
     /// </summary>
     public IDictionary<string, string>? WrappedEntryNames { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="XsltJsonRendererOptions"/> class.
+    /// </summary>
     public XsltJsonRendererOptions()
     {
         DefaultNsPrefix = null;
