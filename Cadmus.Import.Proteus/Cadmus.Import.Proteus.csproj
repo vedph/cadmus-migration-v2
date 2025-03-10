@@ -21,8 +21,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Cadmus.Core" Version="8.0.6" />
-		<PackageReference Include="Cadmus.Mongo" Version="8.0.6" />
+		<PackageReference Include="Cadmus.Core" Version="8.0.7" />
+		<PackageReference Include="Cadmus.Mongo" Version="8.0.7" />
 		<PackageReference Include="MongoDB.Driver" Version="3.2.1" />
 		<PackageReference Include="Proteus.Core" Version="6.0.4" />
 		<PackageReference Include="Proteus.Entries" Version="6.0.4" />

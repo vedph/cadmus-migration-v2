@@ -61,6 +61,20 @@ public sealed class SpanTreeNodePayloadTagger : ITreeNodePayloadTagger<TextSpan>
     }
 
     /// <summary>
+    /// Determines whether the specified payload data has a comparable value.
+    /// </summary>
+    /// <param name="data">The data.</param>
+    /// <returns>
+    /// <c>true</c> if has payload value; otherwise, <c>false</c>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">data</exception>
+    public bool HasPayloadValue(TextSpan data)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        return data.Text != null;
+    }
+
+    /// <summary>
     /// Determines whether the specified data has the specified tag.
     /// </summary>
     /// <param name="data">The data.</param>

@@ -19,10 +19,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Cadmus.Core" Version="8.0.6" />
+		<PackageReference Include="Cadmus.Core" Version="8.0.7" />
 		<PackageReference Include="Cadmus.General.Parts" Version="7.0.3" />
 		<PackageReference Include="Cadmus.Philology.Parts" Version="9.0.3" />
-		<PackageReference Include="Fusi.Xml.Extras" Version="5.0.0" />
+		<PackageReference Include="Fusi.Xml.Extras" Version="6.0.0" />
 		<PackageReference Include="JmesPath.Net" Version="1.0.330" />
 		<PackageReference Include="Proteus.Text.Xml" Version="6.0.4" />
 	</ItemGroup>

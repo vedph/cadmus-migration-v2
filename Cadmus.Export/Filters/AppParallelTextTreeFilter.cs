@@ -30,7 +30,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
     /// </summary>
     public const string FN_VERSION_TAG = "tag";
 
-    private readonly TreeNodeVersionMerger<TextSpan> _merger = new(
+    private readonly TreeNodeVersionMerger2<TextSpan> _merger = new(
         new SpanTreeNodePayloadTagger());
     private AppParallelTextTreeFilterOptions? _options;
 
@@ -219,27 +219,24 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
         // collect all the unique sources identifiers from witnesses/authors
         // (item1=true for authors, false for witnesses)
         HashSet<Tuple<bool, string>> sources = CollectSources(tree, part, prefix);
-        Dictionary<Tuple<bool, string>, TreeNode<TextSpan>> versions = [];
+        if (_options?.SortSources == true)
+            sources = [.. sources.OrderBy(s => s.Item2)];
 
-        // base text version has empty tag
-        versions[Tuple.Create(false, "")] = tree.FirstChild!.Clone();
+        // merge the base text version (empty tag)
+        TreeNode<TextSpan> root = new();
+        _merger.Merge(root, "", tree.FirstChild!.Clone(), true, true);
 
-        // collect the trees representing the other versions
+        // merge the other versions
         foreach (var source in sources)
         {
-            versions[source] = BuildVersionTree(tree, part, prefix,
-                source.Item2, source.Item1).FirstChild!;
+            TreeNode<TextSpan> version = BuildVersionTree(tree, part, prefix,
+                source.Item2, source.Item1);
+
+            string tag = (source.Item1 ? "a:" : "w:") + source.Item2;
+            _merger.Merge(root, tag, version, true, false);
         }
 
-        // merge each version into a new tree
-        List<string> prefixedTags = [.. sources
-            .Select(t => (t.Item1 ? "a:" : "w:") + t.Item2)];
-
-        return _merger.Merge(prefixedTags, prefixedTag =>
-        {
-            bool author = prefixedTag.StartsWith("a:");
-            return versions[Tuple.Create(author, prefixedTag[2..])];
-        }, true);
+        return root;
     }
 }
 
@@ -260,4 +257,11 @@ public class AppParallelTextTreeFilterOptions
     /// authors. If the replacement value is empty, the author will be ignored.
     /// /// </summary>
     public IDictionary<string, string>? AuthReplacements { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to sort sources collected
+    /// from the apparatus fragments before merging them. If not set, sources
+    /// will be merged in the order they were collected.
+    /// </summary>
+    public bool SortSources { get; set; }
 }

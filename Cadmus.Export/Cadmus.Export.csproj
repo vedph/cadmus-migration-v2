@@ -29,15 +29,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Cadmus.Core" Version="8.0.6" />
+		<PackageReference Include="Cadmus.Core" Version="8.0.7" />
 		<PackageReference Include="Cadmus.General.Parts" Version="7.0.3" />
-		<PackageReference Include="Cadmus.Mongo" Version="8.0.6" />
+		<PackageReference Include="Cadmus.Mongo" Version="8.0.7" />
 		<PackageReference Include="Cadmus.Philology.Parts" Version="9.0.3" />
 		<PackageReference Include="Fusi.Microsoft.Extensions.Configuration.InMemoryJson" Version="4.0.0" />
-		<PackageReference Include="Fusi.Tools" Version="7.0.0" />
-		<PackageReference Include="Fusi.Tools.Configuration" Version="7.0.0" />
-		<PackageReference Include="Fusi.Xml" Version="5.0.0" />
-		<PackageReference Include="Fusi.Xml.Extras" Version="5.0.0" />
+		<PackageReference Include="Fusi.Tools" Version="7.0.2" />
+		<PackageReference Include="Fusi.Tools.Configuration" Version="7.0.2" />
+		<PackageReference Include="Fusi.Xml" Version="6.0.0" />
+		<PackageReference Include="Fusi.Xml.Extras" Version="6.0.0" />
 		<PackageReference Include="JmesPath.Net" Version="1.0.330" />
 		<PackageReference Include="Markdig" Version="0.40.0" />
 		<PackageReference Include="Proteus.Core" Version="6.0.4" />

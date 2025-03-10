@@ -3,6 +3,8 @@ using System;
 using System.Linq;
 using MongoDB.Driver;
 using System.Collections.Generic;
+using Fusi.Tools.Data;
+using System.Text;
 
 namespace Cadmus.Export;
 
@@ -160,7 +162,33 @@ public class TextSpan(AnnotatedTextRange? range = null)
     /// </returns>
     public override string ToString()
     {
-        return $"[{Type}] {Text}{(IsBeforeEol ? " [\u21b4]" : "")}" +
-            (Features?.Count > 0? $" (F={Features.Count})" : "");
+        StringBuilder sb = new();
+
+        // type
+        if (!string.IsNullOrEmpty(Type)) sb.Append($"[{Type}] ");
+
+        // text
+        sb.Append(DumpHelper.MapNonPrintables(Text, true));
+
+        // end of line
+        if (IsBeforeEol) sb.Append(" [\u21b4]");
+
+        // features
+        if (Features?.Count > 0)
+        {
+            sb.Append(" F").Append(Features.Count).Append(": ");
+            if (Features.Count <= 10)
+            {
+                sb.AppendJoin(", ", Features);
+            }
+            else
+            {
+                sb.Append(" [");
+                sb.AppendJoin(", ", Features.Take(10));
+                sb.Append(", ...]");
+            }
+        }
+
+        return sb.ToString();
     }
 }
