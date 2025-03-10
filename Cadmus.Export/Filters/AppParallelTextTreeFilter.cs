@@ -181,7 +181,9 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
             if (child == null)
             {
                 child = node.Clone(false, false);
-                child.Data ??= new();
+                if (child.Data == null) child.Data = new();
+                else child.Data.RemoveFeatures();
+
                 child.Data.AddFeature(FN_VERSION_TAG, prefixedTag);
                 current.AddChild(child);
             }

@@ -103,17 +103,21 @@ public class TextSpan(AnnotatedTextRange? range = null)
     }
 
     /// <summary>
-    /// Removes all the features matching the specified name or name and value,
-    /// when value is not null.
+    /// Removes all the features, or all the features matching the specified
+    /// name, or all the features matching the specified name and value.
     /// </summary>
-    /// <param name="name">The name.</param>
+    /// <param name="name">The optional name.</param>
     /// <param name="value">The optional value.</param>
-    /// <exception cref="ArgumentNullException">name</exception>
-    public void RemoveFeatures(string name, string? value = null)
+    public void RemoveFeatures(string? name = null, string? value = null)
     {
-        ArgumentNullException.ThrowIfNull(name);
-
         if (Features == null) return;
+
+        if (name == null)
+        {
+            Features = null;
+            return;
+        }
+
         Features = [.. Features.Where(f => f.Name != name ||
             (value != null && f.Value != value))];
     }
