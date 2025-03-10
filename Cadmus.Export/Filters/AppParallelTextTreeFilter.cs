@@ -164,7 +164,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
                     string text = entry.Type == ApparatusEntryType.Note
                         ? node.Data.Text! : entry.Value ?? "";
 
-                    child = new(new TextSpan
+                    child = new(new TextSpan(node.Data.Range)
                     {
                         IsBeforeEol = node.Data.IsBeforeEol,
                         Text = text,
@@ -181,6 +181,8 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
             if (child == null)
             {
                 child = node.Clone(false, false);
+                child.Data ??= new();
+                child.Data.AddFeature(FN_VERSION_TAG, prefixedTag);
                 current.AddChild(child);
             }
 
@@ -220,18 +222,18 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
         Dictionary<Tuple<bool, string>, TreeNode<TextSpan>> versions = [];
 
         // base text version has empty tag
-        versions[Tuple.Create(false, "")] = tree.Clone();
+        versions[Tuple.Create(false, "")] = tree.FirstChild!.Clone();
 
         // collect the trees representing the other versions
         foreach (var source in sources)
         {
             versions[source] = BuildVersionTree(tree, part, prefix,
-                source.Item2, source.Item1);
+                source.Item2, source.Item1).FirstChild!;
         }
 
         // merge each version into a new tree
         List<string> prefixedTags = [.. sources
-            .Select(t => $"{(t.Item1 ? "a:" : "w:")}{t.Item2}")];
+            .Select(t => (t.Item1 ? "a:" : "w:") + t.Item2)];
 
         return _merger.Merge(prefixedTags, prefixedTag =>
         {
