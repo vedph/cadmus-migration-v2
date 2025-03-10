@@ -158,7 +158,7 @@ public class TreeNodeVersionMerger2<T>(ITreeNodePayloadTagger<T> tagger,
         if (payloads.Count == 0 || !root.HasChildren) return (root, 0);
 
         TreeNode<T> current = root;
-        int matchLength = 1;
+        int matchLength = 1;  // start with 1 as we're checking children
 
         while (current.HasChildren && matchLength < payloads.Count)
         {
@@ -167,14 +167,19 @@ public class TreeNodeVersionMerger2<T>(ITreeNodePayloadTagger<T> tagger,
             {
                 if (child.Data is null)
                 {
+                    // for blank fork nodes, use the SAME payloads index
+                    // but with adjusted skipping in the recursive call
                     (TreeNode<T> deepNode, int deepMatchLength) =
-                        FindCommonPrefix(child, tag, [.. payloads.Skip(matchLength)],
+                        FindCommonPrefix(child, tag,
+                            [.. payloads.Skip(matchLength - 1)],
                         binary);
 
                     if (deepMatchLength > 0)
                     {
                         current = deepNode;
-                        matchLength += deepMatchLength;
+                        // only add deepMatchLength - 1 because we've already
+                        // accounted for one match
+                        matchLength += deepMatchLength - 1;
                         foundMatch = true;
                         break;
                     }
@@ -282,6 +287,17 @@ public class TreeNodeVersionMerger2<T>(ITreeNodePayloadTagger<T> tagger,
         // find where this version branches from existing tree
         (TreeNode<T> branchNode, int matchLength) =
             FindCommonPrefix(root, tag, tagPayloads, binary);
+
+        // if all payloads match, just add the tag to the last node
+        // and propagate it up
+        if (matchLength == tagPayloads.Count)
+        {
+            branchNode.Data ??= _tagger.ClonePayload(
+                tagPayloads[matchLength - 1]);
+            _tagger.AddTag(branchNode.Data!, tag);
+            PropagateTagUp(branchNode, tag);
+            return;
+        }
 
         // add version tag to matching nodes
         if (matchLength > 0)

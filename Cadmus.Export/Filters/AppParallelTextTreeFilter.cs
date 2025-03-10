@@ -144,7 +144,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
         TreeNode<TextSpan> root = new();
         TreeNode<TextSpan> current = root;
 
-        string prefixedTag = $"{(author ? "a:" : "w:")}{tag}";
+        string prefixedTag = (author ? "a:" : "w:") + tag;
 
         tree.Traverse(node =>
         {
@@ -230,7 +230,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
         foreach (var source in sources)
         {
             TreeNode<TextSpan> version = BuildVersionTree(tree, part, prefix,
-                source.Item2, source.Item1);
+                source.Item2, source.Item1).FirstChild!;
 
             string tag = (source.Item1 ? "a:" : "w:") + source.Item2;
             _merger.Merge(root, tag, version, true, false);
