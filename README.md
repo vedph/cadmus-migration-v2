@@ -16,6 +16,7 @@ Main projects:
 
 ## History
 
+- 2025-03-11: fixes to `AppParallelTextTreeFilter`.
 - 2025-03-05: updated packages.
 
 ### 6.0.0

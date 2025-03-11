@@ -92,11 +92,35 @@ public class TextSpan(AnnotatedTextRange? range = null)
     /// </summary>
     /// <param name="name">The name.</param>
     /// <param name="value">The value.</param>
+    /// <param name="unique">True if the feature name must be unique in the
+    /// set. In this case, if a feature with the same name exists, it will
+    /// be replaced by the new one.</param>
     /// <exception cref="ArgumentNullException">name or value</exception>
-    public void AddFeature(string name, string value)
+    public void AddFeature(string name, string value, bool unique = false)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(value);
+
+        if (Features != null)
+        {
+            // never add a feature with both name and value equal to an existing
+            // feature
+            if (Features.Any(f => f.Name == name && f.Value == value))
+            {
+                return;
+            }
+
+            // replace existing feature with same name if unique is true
+            if (unique && Features.Any(f => f.Name == name))
+            {
+                // remove all features with name
+                foreach (TextSpanFeature feature in Features.Where(
+                    f => f.Name == name).ToList())
+                {
+                    Features.Remove(feature);
+                }
+            }
+        }
 
         Features ??= [];
         Features.Add(new TextSpanFeature(name, value));

@@ -6,6 +6,7 @@ using Fusi.Tools.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Cadmus.Export.Filters;
 
@@ -30,7 +31,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
     /// </summary>
     public const string FN_VERSION_TAG = "tag";
 
-    private readonly TreeNodeVersionMerger2<TextSpan> _merger = new(
+    private readonly TreeNodeVersionMerger<TextSpan> _merger = new(
         new SpanTreeNodePayloadTagger());
     private AppParallelTextTreeFilterOptions? _options;
 
@@ -141,13 +142,24 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
         TokenTextLayerPart<ApparatusLayerFragment> part, string prefix,
         string tag, bool author)
     {
-        TreeNode<TextSpan> root = new();
-        TreeNode<TextSpan> current = root;
+        TreeNode<TextSpan>? root = null;
+        TreeNode<TextSpan>? current = null;
 
         string prefixedTag = (author ? "a:" : "w:") + tag;
 
         tree.Traverse(node =>
         {
+            // just clone the root
+            if (root == null)
+            {
+                current = root = new TreeNode<TextSpan>
+                {
+                    Id = node.Id,
+                    Label = node.Label
+                };
+                return true;
+            }
+
             string? frId;
             TreeNode<TextSpan>? child = null;
 
@@ -174,7 +186,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
                         Label = text
                     };
                     child.Data!.AddFeature(FN_VERSION_TAG, prefixedTag);
-                    current.AddChild(child);
+                    current!.AddChild(child);
                 }
             }
 
@@ -185,7 +197,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
                 else child.Data.RemoveFeatures();
 
                 child.Data.AddFeature(FN_VERSION_TAG, prefixedTag);
-                current.AddChild(child);
+                current!.AddChild(child);
             }
 
             current = child;
@@ -193,7 +205,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
             return true;
         });
 
-        return root;
+        return root!;
     }
 
     /// <summary>
@@ -226,13 +238,13 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
 
         // merge the base text version (empty tag)
         TreeNode<TextSpan> root = new();
-        _merger.Merge(root, "", tree.FirstChild!.Clone(), true, true);
+        _merger.Merge(root, "", tree.Clone(), true, true);
 
         // merge the other versions
         foreach (var source in sources)
         {
             TreeNode<TextSpan> version = BuildVersionTree(tree, part, prefix,
-                source.Item2, source.Item1).FirstChild!;
+                source.Item2, source.Item1);
 
             string tag = (source.Item1 ? "a:" : "w:") + source.Item2;
             _merger.Merge(root, tag, version, true, false);
