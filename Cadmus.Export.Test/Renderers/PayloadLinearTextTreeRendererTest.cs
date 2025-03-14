@@ -147,14 +147,14 @@ public sealed class PayloadLinearTextTreeRendererTest
         Assert.Equal("[[{\"Range\":" +
             "{\"Start\":0,\"End\":4,\"FragmentIds\":" +
             "[\"it.vedph.token-text-layer:fr.it.vedph.apparatus@0\"]," +
-            "\"Text\":\"illuc\"},\"Type\":null,\"IsBeforeEol\":false," +
+            "\"Text\":\"illuc\"},\"IsBeforeEol\":false," +
             "\"Text\":\"illuc\"}," +
             "{\"Range\":{\"Start\":5,\"End\":24,\"FragmentIds\":[]," +
-            "\"Text\":\" unde negant redire \"},\"Type\":null," +
+            "\"Text\":\" unde negant redire \"}," +
             "\"IsBeforeEol\":false,\"Text\":\" unde negant redire \"}," +
             "{\"Range\":{\"Start\":25,\"End\":32,\"FragmentIds\":" +
             "[\"it.vedph.token-text-layer:fr.it.vedph.apparatus@1\"]," +
-            "\"Text\":\"quemquam\"},\"Type\":null,\"IsBeforeEol\":false," +
+            "\"Text\":\"quemquam\"},\"IsBeforeEol\":false," +
             "\"Text\":\"quemquam\"}]]", json);
     }
 
@@ -174,14 +174,14 @@ public sealed class PayloadLinearTextTreeRendererTest
         Assert.Equal("[{\"Range\":" +
             "{\"Start\":0,\"End\":4,\"FragmentIds\":" +
             "[\"it.vedph.token-text-layer:fr.it.vedph.apparatus@0\"]," +
-            "\"Text\":\"illuc\"},\"Type\":null,\"IsBeforeEol\":false," +
+            "\"Text\":\"illuc\"},\"IsBeforeEol\":false," +
             "\"Text\":\"illuc\"}," +
             "{\"Range\":{\"Start\":5,\"End\":24,\"FragmentIds\":[]," +
-            "\"Text\":\" unde negant redire \"},\"Type\":null," +
+            "\"Text\":\" unde negant redire \"}," +
             "\"IsBeforeEol\":false,\"Text\":\" unde negant redire \"}," +
             "{\"Range\":{\"Start\":25,\"End\":32,\"FragmentIds\":" +
             "[\"it.vedph.token-text-layer:fr.it.vedph.apparatus@1\"]," +
-            "\"Text\":\"quemquam\"},\"Type\":null,\"IsBeforeEol\":false," +
+            "\"Text\":\"quemquam\"},\"IsBeforeEol\":false," +
             "\"Text\":\"quemquam\"}]", json);
     }
 

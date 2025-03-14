@@ -3,6 +3,7 @@ using Fusi.Tools.Data;
 using System;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Cadmus.Export.Renderers;
 
@@ -22,6 +23,11 @@ namespace Cadmus.Export.Renderers;
 public sealed class PayloadLinearTextTreeRenderer : TextTreeRenderer,
     ITextTreeRenderer, IConfigurable<PayloadLinearTextTreeRendererOptions>
 {
+    private readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     private bool _flatten;
 
     /// <summary>
@@ -66,7 +72,7 @@ public sealed class PayloadLinearTextTreeRenderer : TextTreeRenderer,
 
             // add data
             sb.Append(node.Data != null
-                ? JsonSerializer.Serialize(node.Data) : "{}");
+                ? JsonSerializer.Serialize(node.Data, _jsonOptions) : "{}");
 
             // close inner array if EOL
             if (!_flatten && node.Data?.IsBeforeEol == true)
