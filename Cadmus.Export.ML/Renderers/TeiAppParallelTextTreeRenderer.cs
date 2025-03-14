@@ -6,6 +6,7 @@ using Fusi.Tools.Data;
 using Proteus.Core.Text;
 using Proteus.Text.Xml;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -105,20 +106,63 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
 
         // traverse nodes and build the XML (each node corresponds to a fragment)
         int y = 1;
+
+        // stack to keep track of the current parent element during traversal
+        Stack<XElement> elementStack = new();
+        elementStack.Push(block);
+
         tree.Traverse(node =>
         {
-            // nope if root
+            // skip root node
             if (node.Parent == null) return true;
 
-            // if it's an empty fork node, render app
+            // get the current parent element
+            XElement currentParent = elementStack.Peek();
+
+            // if node has no data and has 2 children, create an app element
             if (node.Data == null && node.Children.Count == 2)
             {
-                XElement app = new(NamespaceOptions.TEI + "app");
-                block.Add(app);
+                // create app element
+                XElement appElement = new(NamespaceOptions.TEI + "app");
+                currentParent.Add(appElement);
+
+                // push this app element to the stack for its children
+                elementStack.Push(appElement);
+
+                // we'll pop this element after processing all its children
+                // at this point we continue traversal, children will be
+                // handled in their turn
                 return true;
             }
+            // for leaf nodes with text content
+            else if (node.Data?.Text != null && node.Children.Count == 0)
+            {
+                // if parent is an app element, add a rdg element
+                if (currentParent.Name.LocalName == "app")
+                {
+                    // TODO lem vs rdg
+                    XElement rdgElement = new(NamespaceOptions.TEI + "rdg")
+                    {
+                        Value = node.Data.Text
+                    };
+                    currentParent.Add(rdgElement);
+                }
+                // otherwise add the text directly
+                else
+                {
+                    currentParent.Add(new XText(node.Data.Text));
+                }
+            }
 
-            // TODO
+            // check if we need to pop the element stack
+            // if this is the last child of its parent and its parent
+            // is not the block
+            if (node.Parent != null && node.Parent.Children.IndexOf(node) ==
+                node.Parent.Children.Count - 1 && elementStack.Count > 1)
+            {
+                // pop the element if we're processing the last child
+                elementStack.Pop();
+            }
 
             // open a new block if needed
             if (node.Data?.IsBeforeEol == true)
@@ -130,7 +174,12 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
                             TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
                     new XAttribute("n", ++y));
                 root.Add(block);
+
+                // reset the element stack with the new block
+                elementStack.Clear();
+                elementStack.Push(block);
             }
+
             return true;
         });
 
