@@ -47,6 +47,9 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
         GroupTailTemplate = _options.GroupTailTemplate;
     }
 
+    private static bool IsForkNode(TreeNode<TextSpan> node) =>
+        node.Data == null && node.Children.Count > 1;
+
     /// <summary>
     /// Renders the specified tree.
     /// </summary>
@@ -119,8 +122,8 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
             // get the current parent element
             XElement currentParent = elementStack.Peek();
 
-            // if node has no data and has 2 children, create an app element
-            if (node.Data == null && node.Children.Count == 2)
+            // if node is a fork, create an app element
+            if (IsForkNode(node))
             {
                 // create app element
                 XElement appElement = new(NamespaceOptions.TEI + "app");
@@ -129,19 +132,20 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
                 // push this app element to the stack for its children
                 elementStack.Push(appElement);
 
-                // we'll pop this element after processing all its children
+                // we'll pop this element after processing all its children:
                 // at this point we continue traversal, children will be
                 // handled in their turn
                 return true;
             }
-            // for leaf nodes with text content
-            else if (node.Data?.Text != null && node.Children.Count == 0)
+            // for nodes with text content
+            else if (node.Data?.Text != null)
             {
-                // if parent is an app element, add a rdg element
-                if (currentParent.Name.LocalName == "app")
+                // if parent node is a fork, add a lem/rdg element
+                if (IsForkNode(node.Parent))
                 {
-                    // TODO lem vs rdg
-                    XElement rdgElement = new(NamespaceOptions.TEI + "rdg")
+                    bool lem = node.Data.Text == node.Data.Range!.Text;
+                    XElement rdgElement =
+                        new(NamespaceOptions.TEI + (lem? "lem" : "rdg"))
                     {
                         Value = node.Data.Text
                     };
