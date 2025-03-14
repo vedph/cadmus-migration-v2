@@ -218,10 +218,11 @@ public sealed class AppParallelTextTreeFilterTest
     }
 
     [Fact]
-    public void Apply_Ok()
+    public void Apply_Binary_Ok()
     {
         (TreeNode<TextSpan> tree, IItem item) = GetTreeAndItem();
         AppParallelTextTreeFilter filter = new();
+        filter.Configure(new AppParallelTextTreeFilterOptions { IsBinary = true });
 
         TreeNode<TextSpan> result = filter.Apply(tree, item);
 

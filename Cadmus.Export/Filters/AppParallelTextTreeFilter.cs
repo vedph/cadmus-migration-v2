@@ -6,7 +6,6 @@ using Fusi.Tools.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Cadmus.Export.Filters;
 
@@ -238,7 +237,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
 
         // merge the base text version (empty tag)
         TreeNode<TextSpan> root = new();
-        _merger.Merge(root, "", tree.Clone(), true, true);
+        _merger.Merge(root, "", tree.Clone(), _options?.IsBinary == true, true);
 
         // merge the other versions
         foreach (var source in sources)
@@ -247,7 +246,7 @@ public sealed class AppParallelTextTreeFilter : ITextTreeFilter,
                 source.Item2, source.Item1);
 
             string tag = (source.Item1 ? "a:" : "w:") + source.Item2;
-            _merger.Merge(root, tag, version, true, false);
+            _merger.Merge(root, tag, version, _options?.IsBinary == true, false);
         }
 
         return root;
@@ -278,4 +277,11 @@ public class AppParallelTextTreeFilterOptions
     /// will be merged in the order they were collected.
     /// </summary>
     public bool SortSources { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this instance targets a binary
+    /// tree. If true, the filter will limit the children of each node to
+    /// maximum two.
+    /// </summary>
+    public bool IsBinary { get; set; }
 }
