@@ -232,12 +232,12 @@ public sealed class AppParallelTextTreeFilterTest
 
         // 2.1 fork
         Assert.Single(result.Children);
-        TreeNode<TextSpan> fork = result.Children[0];
-        Assert.Null(fork.Data);
+        TreeNode<TextSpan> fork21 = result.Children[0];
+        Assert.Null(fork21.Data);
 
         // 3.1 tecum
-        Assert.Equal(2, fork.Children.Count);
-        TreeNode<TextSpan>? tecum = fork.FirstChild;
+        Assert.Equal(2, fork21.Children.Count);
+        TreeNode<TextSpan>? tecum = fork21.FirstChild;
         Assert.NotNull(tecum);
         Assert.Equal("tecum", tecum.Data?.Text);
         // 9 tags: empty, w:O, w:G, w:R,
@@ -370,5 +370,42 @@ public sealed class AppParallelTextTreeFilterTest
         AssertContainsTags(possem91.Data!.Features!, "possem@9.1", "w:O");
         // leaf
         Assert.False(possem91.HasChildren);
+
+        // 7.2 loedere
+        TreeNode<TextSpan>? loedere = fork62.Children[1];
+        Assert.NotNull(loedere);
+        Assert.Equal("loedere", loedere.Data?.Text);
+        // 1 tag: a:Trappers-Lomax
+        AssertContainsTags(loedere.Data!.Features!, "loedere@7.2", "a:Trappers-Lomax");
+
+        // 8.1 sicut ipsa
+        TreeNode<TextSpan>? sicutIpsa82 = loedere.FirstChild;
+        Assert.NotNull(sicutIpsa82);
+        Assert.Equal(" sicut ipsa ", sicutIpsa82.Data?.Text);
+        // 1 tag: a:Trappers-Lomax
+        AssertContainsTags(sicutIpsa82.Data!.Features!, "sicut ipsa@8.1",
+            "a:Trappers-Lomax");
+
+        // 9.1 possem
+        TreeNode<TextSpan>? possem91b = sicutIpsa82.FirstChild;
+        Assert.NotNull(possem91b);
+        Assert.Equal("possem", possem91b.Data?.Text);
+        // 1 tag: a:Trappers-Lomax
+        AssertContainsTags(possem91b.Data!.Features!, "possem@9.1",
+            "a:Trappers-Lomax");
+
+        // 3.2 secum
+        TreeNode<TextSpan>? secum = fork21.Children[1];
+        Assert.NotNull(secum);
+        Assert.Equal("secum", secum.Data?.Text);
+        // 1 tag: w:O1
+        AssertContainsTags(secum.Data!.Features!, "secum@3.2", "w:O1");
+
+        // 4.1 space
+        TreeNode<TextSpan>? space = secum.FirstChild;
+        Assert.NotNull(space);
+        Assert.Equal(" ", space.Data?.Text);
+        // 1 tag: w:O1
+        AssertContainsTags(space.Data!.Features!, "space@4.1", "w:O1");
     }
 }
