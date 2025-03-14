@@ -314,5 +314,18 @@ public sealed class AppParallelTextTreeFilterTest
         // 1 tag: w:MS48
         AssertContainsTags(possum.Data!.Features!, "possum@12.1", "w:MS48");
 
+        // 12.2 possim
+        TreeNode<TextSpan>? possim = fork111.Children[1];
+        Assert.NotNull(possim);
+        Assert.Equal("possim", possim.Data?.Text);
+        // 1 tag: a:Turnebus
+        AssertContainsTags(possim.Data!.Features!, "possim@12.2", "a:Turnebus");
+
+        // 11.2 posse
+        TreeNode<TextSpan>? posse = fork101.Children[1];
+        Assert.NotNull(posse);
+        Assert.Equal("posse", posse.Data?.Text);
+        // 1 tag: a:Vossius
+        AssertContainsTags(posse.Data!.Features!, "posse@11.2", "a:Vossius");
     }
 }
