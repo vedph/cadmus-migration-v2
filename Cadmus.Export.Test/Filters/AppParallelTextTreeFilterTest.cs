@@ -276,5 +276,43 @@ public sealed class AppParallelTextTreeFilterTest
         // 7 tags: empty, w:G, w:R, w:MS48, a:Turnebus, a:Vossius, a:Heinsius
         AssertContainsTags(sicutIpsa.Data!.Features!, "sicut ipsa@7.1",
             "", "w:G", "w:R", "w:MS48", "a:Turnebus", "a:Vossius", "a:Heinsius");
+
+        // 8.1 fork
+        TreeNode<TextSpan>? fork81 = sicutIpsa.FirstChild;
+        Assert.NotNull(fork81);
+        Assert.Null(fork81.Data);
+
+        // 9.1 possem
+        TreeNode<TextSpan>? possem = fork81.FirstChild;
+        Assert.NotNull(possem);
+        Assert.Equal("possem", possem.Data?.Text);
+        // 3 tags: empty, w:G, w:R
+        AssertContainsTags(possem.Data!.Features!, "possem@9.1",
+            "", "w:G", "w:R");
+        // leaf
+        Assert.False(possem.HasChildren);
+
+        // 9.2 fork
+        TreeNode<TextSpan>? fork92 = fork81.Children[1];
+        Assert.NotNull(fork92);
+        Assert.Null(fork92.Data);
+
+        // 10.1 fork
+        TreeNode<TextSpan>? fork101 = fork92.FirstChild;
+        Assert.NotNull(fork101);
+        Assert.Null(fork101.Data);
+
+        // 11.1 fork
+        TreeNode<TextSpan>? fork111 = fork101.FirstChild;
+        Assert.NotNull(fork111);
+        Assert.Null(fork111.Data);
+
+        // 12.1 possum
+        TreeNode<TextSpan>? possum = fork111.FirstChild;
+        Assert.NotNull(possum);
+        Assert.Equal("possum", possum.Data?.Text);
+        // 1 tag: w:MS48
+        AssertContainsTags(possum.Data!.Features!, "possum@12.1", "w:MS48");
+
     }
 }
