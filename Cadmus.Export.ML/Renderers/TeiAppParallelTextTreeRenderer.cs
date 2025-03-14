@@ -3,6 +3,7 @@ using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
+using Proteus.Core.Text;
 using Proteus.Text.Xml;
 using System;
 using System.Linq;
@@ -92,8 +93,62 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
         string? prefix = layerPart != null
             ? TextSpan.GetFragmentPrefixFor(layerPart) : null;
 
-        // TODO
-        throw new NotImplementedException();
+        // create root element
+        XElement root = new(rootName);
+        XElement block = new(blockName,
+            _options.NoItemSource
+                ? null
+                : new XAttribute("source",
+                    TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
+            new XAttribute("n", 1));
+        root.Add(block);
+
+        // traverse nodes and build the XML (each node corresponds to a fragment)
+        int y = 1;
+        tree.Traverse(node =>
+        {
+            // nope if root
+            if (node.Parent == null) return true;
+
+            // if it's an empty fork node, render app
+            if (node.Data == null && node.Children.Count == 2)
+            {
+                XElement app = new(NamespaceOptions.TEI + "app");
+                block.Add(app);
+                return true;
+            }
+
+            // TODO
+
+            // open a new block if needed
+            if (node.Data?.IsBeforeEol == true)
+            {
+                block = new XElement(blockName,
+                    _options.NoItemSource
+                        ? null
+                        : new XAttribute("source",
+                            TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
+                    new XAttribute("n", ++y));
+                root.Add(block);
+            }
+            return true;
+        });
+
+        string xml = _options.IsRootIncluded
+            ? root.ToString(_options.IsIndented
+                ? SaveOptions.OmitDuplicateNamespaces
+                : SaveOptions.OmitDuplicateNamespaces |
+                  SaveOptions.DisableFormatting)
+            : string.Concat(root.Nodes().Select(
+            node => node.ToString(_options.IsIndented
+            ? SaveOptions.OmitDuplicateNamespaces
+            : SaveOptions.OmitDuplicateNamespaces |
+                SaveOptions.DisableFormatting)));
+
+        // if there is a pending group ID:
+        // - if there is a current group, prepend tail.
+        // - prepend head.
+        return WrapXml(xml, context);
     }
 }
 
