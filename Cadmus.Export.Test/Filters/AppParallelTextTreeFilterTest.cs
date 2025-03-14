@@ -313,6 +313,8 @@ public sealed class AppParallelTextTreeFilterTest
         Assert.Equal("possum", possum.Data?.Text);
         // 1 tag: w:MS48
         AssertContainsTags(possum.Data!.Features!, "possum@12.1", "w:MS48");
+        // leaf
+        Assert.False(possum.HasChildren);
 
         // 12.2 possim
         TreeNode<TextSpan>? possim = fork111.Children[1];
@@ -320,6 +322,8 @@ public sealed class AppParallelTextTreeFilterTest
         Assert.Equal("possim", possim.Data?.Text);
         // 1 tag: a:Turnebus
         AssertContainsTags(possim.Data!.Features!, "possim@12.2", "a:Turnebus");
+        // leaf
+        Assert.False(possim.HasChildren);
 
         // 11.2 posse
         TreeNode<TextSpan>? posse = fork101.Children[1];
@@ -327,5 +331,21 @@ public sealed class AppParallelTextTreeFilterTest
         Assert.Equal("posse", posse.Data?.Text);
         // 1 tag: a:Vossius
         AssertContainsTags(posse.Data!.Features!, "posse@11.2", "a:Vossius");
+        // leaf
+        Assert.False(posse.HasChildren);
+
+        // 10.2 posset
+        TreeNode<TextSpan>? posset = fork92.Children[1];
+        Assert.NotNull(posset);
+        Assert.Equal("posset", posset.Data?.Text);
+        // 1 tag: a:Heinsius
+        AssertContainsTags(posset.Data!.Features!, "posset@10.2", "a:Heinsius");
+        // leaf
+        Assert.False(posset.HasChildren);
+
+        // 6.2 fork
+        TreeNode<TextSpan>? fork62 = fork51.Children[1];
+        Assert.NotNull(fork62);
+        Assert.Null(fork62.Data);
     }
 }
