@@ -3,6 +3,7 @@ using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
+using MongoDB.Driver;
 using Proteus.Core.Text;
 using Proteus.Text.Xml;
 using System;
@@ -47,32 +48,34 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
         GroupTailTemplate = _options.GroupTailTemplate;
     }
 
-    private static void ProcessLevelNodes(List<TreeNode<TextSpan>> nodes,
-        XElement targetElem)
+    private void ProcessVariants(Dictionary<string, HashSet<string>> variants,
+        string originalText, XElement targetElem)
     {
-        if (nodes.Count == 0) return;
+        if (variants.Count == 0) return;
 
-        // for single node we just output its text
-        if (nodes.Count == 1)
+        // for single variant we just output its text
+        if (variants.Count == 1)
         {
-            targetElem.Add(nodes[0].Data!.Text);
+            targetElem.Add(variants.Keys.First());
         }
-        // for multiple nodes, add as many child elements of type lem or rdg
-        // using lem only when the node's text is original
+
+        // for multiple variants, add as many child elements of type lem or rdg
+        // using lem only when the variant's text is original
         else
         {
+            // app
             XElement app = new(NamespaceOptions.TEI + "app");
             targetElem.Add(app);
 
             // for each node, add an entry
-            foreach (TreeNode<TextSpan> node in nodes)
+            foreach (string text in variants.Keys)
             {
-                // TODO apparatus attrs
-                TextSpan span = node.Data!;
-                XElement entryElem = span.Text == span.Range?.Text
-                    ? new(NamespaceOptions.TEI + "lem", span.Text)
-                    : new(NamespaceOptions.TEI + "rdg", span.Text);
+                XElement entryElem = text == originalText
+                    ? new(NamespaceOptions.TEI + "lem", text)
+                    : new(NamespaceOptions.TEI + "rdg", text);
                 app.Add(entryElem);
+
+                // TODO wit and resp attrs from variants[text]
             }
         }
     }
@@ -119,11 +122,6 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
                 p.RoleId == "fr.it.vedph.apparatus")
             as TokenTextLayerPart<ApparatusLayerFragment>;
 
-        // calculate the apparatus fragment ID prefix
-        // (like "it.vedph.token-text-layer:fr.it.vedph.comment@")
-        string? prefix = layerPart != null
-            ? TextSpan.GetFragmentPrefixFor(layerPart) : null;
-
         // create root element
         XElement root = new(rootName);
         XElement block = new(blockName,
@@ -134,36 +132,60 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
             new XAttribute("n", 1));
         root.Add(block);
 
-        // traverse nodes and build the XML (each node corresponds to a fragment)
+        // traverse nodes collecting text variants with their version tags
         int y = 2;
-        List<TreeNode<TextSpan>> levelNodes = [];
+        Dictionary<string, HashSet<string>> textVariants = [];
+        string? originalText = null;
 
         // traverse breadth-first so we can group nodes by their Y level
         tree.Traverse(node =>
         {
             // skip blank nodes (root)
-            if (node.Data == null) return true;
+            if (node.Data?.Text == null) return true;
 
-            // while the node belongs to the current level, add it to the list
-            // unless its text is a duplicate
+            // while the node belongs to the current level, add it to the dictionary
             if (node.GetY() == y)
             {
-                if (levelNodes.All(n => n.Data?.Text != node.Data?.Text))
-                    levelNodes.Add(node);
+                // set original text for this group (all the nodes in group
+                // should have it equal)
+                originalText ??= node.Data.Range?.Text;
+
+                if (!textVariants.TryGetValue(node.Data.Text,
+                    out HashSet<string>? tags))
+                {
+                    tags = [];
+                    textVariants[node.Data.Text] = tags;
+                }
+
+                if (node.Data.Features?.Count > 0)
+                {
+                    foreach (string tag in node.Data.Features.Where(
+                        f => f.Name == "tag").Select(f => f.Value))
+                    {
+                        tags.Add(tag);
+                    }
+                }
             }
             // otherwise, process the current level nodes and start a new group
             else
             {
-                ProcessLevelNodes(levelNodes, block);
-                levelNodes.Clear();
-                levelNodes.Add(node);
+                ProcessVariants(textVariants, originalText!, block);
+                textVariants.Clear();
+                if (node.Data.Features?.Count > 0)
+                {
+                    foreach (string tag in node.Data.Features.Where(
+                        f => f.Name == "tag").Select(f => f.Value))
+                    {
+                        textVariants[node.Data.Text!].Add(tag);
+                    }
+                }
                 y = node.GetY();
             }
             return true;
         }, true);
 
         // process the last group
-        ProcessLevelNodes(levelNodes, block);
+        ProcessVariants(textVariants, originalText!, block);
 
         string xml = _options.IsRootIncluded
             ? root.ToString(_options.IsIndented
