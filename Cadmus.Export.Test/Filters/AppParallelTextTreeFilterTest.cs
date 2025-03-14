@@ -347,5 +347,28 @@ public sealed class AppParallelTextTreeFilterTest
         TreeNode<TextSpan>? fork62 = fork51.Children[1];
         Assert.NotNull(fork62);
         Assert.Null(fork62.Data);
+
+        // 7.1 luderem
+        TreeNode<TextSpan>? luderem = fork62.FirstChild;
+        Assert.NotNull(luderem);
+        Assert.Equal("luderem", luderem.Data?.Text);
+        // 1 tag: w:O
+        AssertContainsTags(luderem.Data!.Features!, "luderem@7.1", "w:O");
+
+        // 8.1 sicut ipsa
+        TreeNode<TextSpan>? sicutIpsa81 = luderem.FirstChild;
+        Assert.NotNull(sicutIpsa81);
+        Assert.Equal(" sicut ipsa ", sicutIpsa81.Data?.Text);
+        // 1 tag: w:O
+        AssertContainsTags(sicutIpsa81.Data!.Features!, "sicut ipsa@8.1", "w:O");
+
+        // 9.1 possem
+        TreeNode<TextSpan>? possem91 = sicutIpsa81.FirstChild;
+        Assert.NotNull(possem91);
+        Assert.Equal("possem", possem91.Data?.Text);
+        // 1 tag: w:O
+        AssertContainsTags(possem91.Data!.Features!, "possem@9.1", "w:O");
+        // leaf
+        Assert.False(possem91.HasChildren);
     }
 }
