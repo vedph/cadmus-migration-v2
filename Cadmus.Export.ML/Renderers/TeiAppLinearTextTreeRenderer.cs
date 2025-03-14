@@ -1,10 +1,8 @@
 ﻿using Cadmus.Core;
-using Cadmus.Export.Renderers;
 using Cadmus.General.Parts;
 using Cadmus.Philology.Parts;
 using Fusi.Tools.Configuration;
 using Fusi.Tools.Data;
-using Fusi.Tools.Text;
 using MongoDB.Driver;
 using Proteus.Text.Xml;
 using System;
@@ -19,13 +17,11 @@ namespace Cadmus.Export.ML.Renderers;
 /// </summary>
 /// <seealso cref="ITextTreeRenderer" />
 [Tag("it.vedph.text-tree-renderer.tei-app-linear")]
-public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
+public sealed class TeiAppLinearTextTreeRenderer : GroupTextTreeRenderer,
     ITextTreeRenderer,
     IConfigurable<AppLinearTextTreeRendererOptions>
 {
     private TeiHelper _tei;
-    private int _group;
-    private string? _pendingGroupId;
 
     private AppLinearTextTreeRendererOptions _options;
 
@@ -47,30 +43,9 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
     {
         _options = options ?? new AppLinearTextTreeRendererOptions();
         _tei = new TeiHelper(_options);
-    }
 
-    /// <summary>
-    /// Resets the state of this renderer. This is called once before
-    /// starting the rendering process.
-    /// </summary>
-    /// <param name="context">The context.</param>
-    public override void Reset(IRendererContext context)
-    {
-        _group = 0;
-        _pendingGroupId = null;
-    }
-
-    /// <summary>
-    /// Called when items group has changed.
-    /// </summary>
-    /// <param name="item">The item.</param>
-    /// <param name="prevGroupId">The previous group identifier.</param>
-    /// <param name="context">The context.</param>
-    public override void OnGroupChanged(IItem item, string? prevGroupId,
-        IRendererContext context)
-    {
-        _group++;
-        _pendingGroupId = item.GroupId;
+        GroupHeadTemplate = _options.GroupHeadTemplate;
+        GroupTailTemplate = _options.GroupTailTemplate;
     }
 
     /// <summary>
@@ -181,39 +156,7 @@ public sealed class TeiAppLinearTextTreeRenderer : TextTreeRenderer,
         // if there is a pending group ID:
         // - if there is a current group, prepend tail.
         // - prepend head.
-        if (_pendingGroupId != null)
-        {
-            if (_group > 0 && !string.IsNullOrEmpty(_options.GroupTailTemplate))
-            {
-                xml = TextTemplate.FillTemplate(
-                    _options.GroupTailTemplate, context.Data) + xml;
-            }
-            if (!string.IsNullOrEmpty(_options.GroupHeadTemplate))
-            {
-                xml = TextTemplate.FillTemplate(
-                    _options.GroupHeadTemplate, context.Data) + xml;
-            }
-        }
-
-        return xml;
-    }
-
-    /// <summary>
-    /// Renders the tail of the output. This is called by the item composer
-    /// once when ending the rendering process and can be used to output
-    /// specific content at the document's end.
-    /// </summary>
-    /// <param name="context">The context.</param>
-    /// <returns>Tail content.</returns>
-    public override string RenderTail(IRendererContext context)
-    {
-        // close a group if any
-        if (_group > 0 && !string.IsNullOrEmpty(_options.GroupTailTemplate))
-        {
-            return TextTemplate.FillTemplate(
-                _options.GroupTailTemplate, context.Data);
-        }
-        return "";
+        return WrapXml(xml, context);
     }
 }
 
