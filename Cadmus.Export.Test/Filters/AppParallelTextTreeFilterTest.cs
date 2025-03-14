@@ -268,5 +268,13 @@ public sealed class AppParallelTextTreeFilterTest
         // 7 tags: empty, w:G, w:R, w:MS48, a:Turnebus, a:Vossius, a:Heinsius
         AssertContainsTags(ludere.Data!.Features!, "ludere@6.1",
             "", "w:G", "w:R", "w:MS48", "a:Turnebus", "a:Vossius", "a:Heinsius");
+
+        // 7.1. sicut ipsa
+        TreeNode<TextSpan>? sicutIpsa = ludere.FirstChild;
+        Assert.NotNull(sicutIpsa);
+        Assert.Equal(" sicut ipsa ", sicutIpsa.Data?.Text);
+        // 7 tags: empty, w:G, w:R, w:MS48, a:Turnebus, a:Vossius, a:Heinsius
+        AssertContainsTags(sicutIpsa.Data!.Features!, "sicut ipsa@7.1",
+            "", "w:G", "w:R", "w:MS48", "a:Turnebus", "a:Vossius", "a:Heinsius");
     }
 }
