@@ -5,6 +5,7 @@ using Cadmus.Philology.Parts;
 using Fusi.Tools.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Cadmus.Export.Test.Filters;
@@ -205,6 +206,17 @@ public sealed class AppParallelTextTreeFilterTest
         return (new BlockLinearTextTreeFilter().Apply(tree, item), item);
     }
 
+    private static void AssertContainsTags(IList<TextSpanFeature> features,
+        string context, params string[] tags)
+    {
+        foreach (string tag in tags)
+        {
+            bool containsTag = features.Any(f => f.Name == "tag" && f.Value == tag);
+            Assert.True(containsTag,
+                $"Tag '{tag}' not found in context: {context}");
+        }
+    }
+
     [Fact]
     public void Apply_Ok()
     {
@@ -214,5 +226,47 @@ public sealed class AppParallelTextTreeFilterTest
         TreeNode<TextSpan> result = filter.Apply(tree, item);
 
         Assert.NotNull(result);
+
+        // 1.1 root
+        Assert.Null(result.Data);
+
+        // 2.1 fork
+        Assert.Single(result.Children);
+        TreeNode<TextSpan> fork = result.Children[0];
+        Assert.Null(fork.Data);
+
+        // 3.1 tecum
+        Assert.Equal(2, fork.Children.Count);
+        TreeNode<TextSpan>? tecum = fork.FirstChild;
+        Assert.NotNull(tecum);
+        Assert.Equal("tecum", tecum.Data?.Text);
+        // 9 tags: empty, w:O, w:G, w:R,
+        // a:Trappers-Lomax, w:MS48, a:Turnebus, a:Vossius, a:Heinsius
+        AssertContainsTags(tecum.Data!.Features!, "tecum@3.1",
+            "", "w:O", "w:G", "w:R",
+            "a:Trappers-Lomax", "w:MS48", "a:Turnebus", "a:Vossius", "a:Heinsius");
+
+        // 4.1 fork
+        TreeNode<TextSpan>? fork41 = tecum.FirstChild;
+        Assert.NotNull(fork41);
+        Assert.NotNull(fork41.Data);
+        // 9 tags: empty, w:O, w:G, w:R,
+        // a:Trappers-Lomax, w:MS48, a:Turnebus, a:Vossius, a:Heinsius
+        AssertContainsTags(fork41.Data.Features!, "fork@4.1",
+            "", "w:O", "w:G", "w:R",
+            "a:Trappers-Lomax", "w:MS48", "a:Turnebus", "a:Vossius", "a:Heinsius");
+
+        // 5.1. fork
+        TreeNode<TextSpan>? fork51 = fork41.FirstChild;
+        Assert.NotNull(fork51);
+        Assert.Null(fork51.Data);
+
+        // 6.1. ludere
+        TreeNode<TextSpan>? ludere = fork51.FirstChild;
+        Assert.NotNull(ludere);
+        Assert.Equal("ludere", ludere.Data?.Text);
+        // 7 tags: empty, w:G, w:R, w:MS48, a:Turnebus, a:Vossius, a:Heinsius
+        AssertContainsTags(ludere.Data!.Features!, "ludere@6.1",
+            "", "w:G", "w:R", "w:MS48", "a:Turnebus", "a:Vossius", "a:Heinsius");
     }
 }
