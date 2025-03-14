@@ -47,8 +47,35 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
         GroupTailTemplate = _options.GroupTailTemplate;
     }
 
-    private static bool IsForkNode(TreeNode<TextSpan> node) =>
-        node.Data == null && node.Children.Count > 1;
+    private static void ProcessLevelNodes(List<TreeNode<TextSpan>> nodes,
+        XElement targetElem)
+    {
+        if (nodes.Count == 0) return;
+
+        // for single node we just output its text
+        if (nodes.Count == 1)
+        {
+            targetElem.Add(nodes[0].Data!.Text);
+        }
+        // for multiple nodes, add as many child elements of type lem or rdg
+        // using lem only when the node's text is original
+        else
+        {
+            XElement app = new(NamespaceOptions.TEI + "app");
+            targetElem.Add(app);
+
+            // for each node, add an entry
+            foreach (TreeNode<TextSpan> node in nodes)
+            {
+                // TODO apparatus attrs
+                TextSpan span = node.Data!;
+                XElement entryElem = span.Text == span.Range?.Text
+                    ? new(NamespaceOptions.TEI + "lem", span.Text)
+                    : new(NamespaceOptions.TEI + "rdg", span.Text);
+                app.Add(entryElem);
+            }
+        }
+    }
 
     /// <summary>
     /// Renders the specified tree.
@@ -108,84 +135,35 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
         root.Add(block);
 
         // traverse nodes and build the XML (each node corresponds to a fragment)
-        int y = 1;
+        int y = 2;
+        List<TreeNode<TextSpan>> levelNodes = [];
 
-        // stack to keep track of the current parent element during traversal
-        Stack<XElement> elementStack = new();
-        elementStack.Push(block);
-
+        // traverse breadth-first so we can group nodes by their Y level
         tree.Traverse(node =>
         {
-            // skip root node
-            if (node.Parent == null) return true;
+            // skip blank nodes (root)
+            if (node.Data == null) return true;
 
-            // get the current parent element
-            XElement currentParent = elementStack.Peek();
-
-            // if node is a fork, create an app element
-            if (IsForkNode(node))
+            // while the node belongs to the current level, add it to the list
+            // unless its text is a duplicate
+            if (node.GetY() == y)
             {
-                // create app element
-                XElement appElement = new(NamespaceOptions.TEI + "app");
-                currentParent.Add(appElement);
-
-                // push this app element to the stack for its children
-                elementStack.Push(appElement);
-
-                // we'll pop this element after processing all its children:
-                // at this point we continue traversal, children will be
-                // handled in their turn
-                return true;
+                if (levelNodes.All(n => n.Data?.Text != node.Data?.Text))
+                    levelNodes.Add(node);
             }
-            // for nodes with text content
-            else if (node.Data?.Text != null)
+            // otherwise, process the current level nodes and start a new group
+            else
             {
-                // if parent node is a fork, add a lem/rdg element
-                if (IsForkNode(node.Parent))
-                {
-                    bool lem = node.Data.Text == node.Data.Range!.Text;
-                    XElement rdgElement =
-                        new(NamespaceOptions.TEI + (lem? "lem" : "rdg"))
-                    {
-                        Value = node.Data.Text
-                    };
-                    currentParent.Add(rdgElement);
-                }
-                // otherwise add the text directly
-                else
-                {
-                    currentParent.Add(new XText(node.Data.Text));
-                }
+                ProcessLevelNodes(levelNodes, block);
+                levelNodes.Clear();
+                levelNodes.Add(node);
+                y = node.GetY();
             }
-
-            // check if we need to pop the element stack
-            // if this is the last child of its parent and its parent
-            // is not the block
-            if (node.Parent != null && node.Parent.Children.IndexOf(node) ==
-                node.Parent.Children.Count - 1 && elementStack.Count > 1)
-            {
-                // pop the element if we're processing the last child
-                elementStack.Pop();
-            }
-
-            // open a new block if needed
-            if (node.Data?.IsBeforeEol == true)
-            {
-                block = new XElement(blockName,
-                    _options.NoItemSource
-                        ? null
-                        : new XAttribute("source",
-                            TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
-                    new XAttribute("n", ++y));
-                root.Add(block);
-
-                // reset the element stack with the new block
-                elementStack.Clear();
-                elementStack.Push(block);
-            }
-
             return true;
-        });
+        }, true);
+
+        // process the last group
+        ProcessLevelNodes(levelNodes, block);
 
         string xml = _options.IsRootIncluded
             ? root.ToString(_options.IsIndented
