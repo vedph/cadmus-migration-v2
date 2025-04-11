@@ -156,9 +156,19 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
                 ? new(NamespaceOptions.TEI + "rdg", entry.Value)
                 : new(NamespaceOptions.TEI + "lem", text.ToString());
 
+            // add @type if tag
+            if (!string.IsNullOrEmpty(entry.Tag))
+                lemOrRdg.SetAttributeValue("type", entry.Tag);
+
             // add @type if zero variant
             if (zeroVarType != null && entry.Value?.Length == 0)
-                lemOrRdg.SetAttributeValue("type", zeroVarType);
+            {
+                string? type = lemOrRdg.Attribute("type")?.Value;
+                if (type != null)
+                    lemOrRdg.SetAttributeValue("type", type + " " + zeroVarType);
+                else
+                    lemOrRdg.SetAttributeValue("type", zeroVarType);
+            }
 
             // rdg or lem @n="ENTRY_INDEX+1"
             lemOrRdg.SetAttributeValue("n", entryIndex + 1);
