@@ -16,6 +16,7 @@ Main projects:
 
 ## History
 
+- 2025-04-16: use IsAccepted in `TeiHelper` to distinguish between `lem` and `rdg` in `TeiAppLinearTextTreeRenderer` (and `TeiAppParallelTextTreeRenderer`).`
 - 2025-04-11:
   - updated packages (including Proteus). Note that test `TeiAppParallelTextTreeRendererTest` is broken but this is due only to the fact that this code is a stub for future implementation.
   - added entry's `Tag` rendition (in `@type`) for `lem`/`rdg` in `TeiAppLinearTextTreeRenderer`.

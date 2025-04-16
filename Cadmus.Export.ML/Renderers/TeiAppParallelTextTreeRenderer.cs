@@ -22,7 +22,7 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
     ITextTreeRenderer,
     IConfigurable<TeiAppParallelTextTreeRendererOptions>
 {
-    private TeiHelper _tei;
+    private TeiAppHelper _tei;
     private TeiAppParallelTextTreeRendererOptions _options;
 
     /// <summary>
@@ -32,7 +32,7 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
     public TeiAppParallelTextTreeRenderer()
     {
         _options = new();
-        _tei = new TeiHelper(_options);
+        _tei = new TeiAppHelper(_options);
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public sealed class TeiAppParallelTextTreeRenderer : GroupTextTreeRenderer,
     public void Configure(TeiAppParallelTextTreeRendererOptions options)
     {
         _options = options ?? new TeiAppParallelTextTreeRendererOptions();
-        _tei = new TeiHelper(_options);
+        _tei = new TeiAppHelper(_options);
 
         GroupHeadTemplate = _options.GroupHeadTemplate;
         GroupTailTemplate = _options.GroupTailTemplate;

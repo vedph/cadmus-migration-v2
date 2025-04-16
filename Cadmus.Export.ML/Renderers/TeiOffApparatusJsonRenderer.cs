@@ -23,7 +23,7 @@ public sealed class TeiOffApparatusJsonRenderer : MLJsonRenderer,
     IJsonRenderer, IConfigurable<AppLinearTextTreeRendererOptions>
 {
     private readonly JsonSerializerOptions _jsonOptions;
-    private TeiHelper _tei;
+    private TeiAppHelper _tei;
 
     private AppLinearTextTreeRendererOptions _options;
 
@@ -50,7 +50,7 @@ public sealed class TeiOffApparatusJsonRenderer : MLJsonRenderer,
     public void Configure(AppLinearTextTreeRendererOptions options)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
-        _tei = new TeiHelper(_options);
+        _tei = new TeiAppHelper(_options);
     }
 
     /// <summary>

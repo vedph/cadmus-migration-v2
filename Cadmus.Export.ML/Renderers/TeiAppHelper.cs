@@ -9,20 +9,25 @@ using System.Xml.Linq;
 namespace Cadmus.Export.ML.Renderers;
 
 /// <summary>
-/// TEI rendition helper.
+/// TEI app element rendition helper.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="TeiHelper"/> class.
+/// Initializes a new instance of the <see cref="TeiAppHelper"/> class.
 /// </remarks>
 /// <param name="options">The options.</param>
 /// <exception cref="ArgumentNullException">options</exception>
-public class TeiHelper(XmlTextTreeRendererOptions options)
+public class TeiAppHelper(XmlTextTreeRendererOptions options)
 {
     private readonly XmlTextTreeRendererOptions _options =
         options ?? throw new ArgumentNullException(nameof(options));
 
     private IRendererContext? _context;
     private TreeNode<TextSpan>? _tree;
+
+    /// <summary>
+    /// Do not output @n attribute for <c>app</c>, <c>lem</c>, and <c>rdg</c>.
+    /// </summary>
+    public bool NoNAttribute { get; set; }
 
     /// <summary>
     /// Configures the specified context.
@@ -133,8 +138,9 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
         });
 
         // app @n="FRINDEX+1"
-        XElement app = new(NamespaceOptions.TEI + "app",
-            new XAttribute("n", frIndex + 1));
+        XElement app = new(NamespaceOptions.TEI + "app");
+        if (!NoNAttribute)
+            app.SetAttributeValue("n", frIndex + 1);
 
         // app @type="TAG"
         if (!string.IsNullOrEmpty(fragment.Tag))
@@ -152,9 +158,9 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
         foreach (ApparatusEntry entry in fragment.Entries)
         {
             // if it has a variant render rdg, else render lem
-            XElement lemOrRdg = entry.Value != null
-                ? new(NamespaceOptions.TEI + "rdg", entry.Value)
-                : new(NamespaceOptions.TEI + "lem", text.ToString());
+            XElement lemOrRdg = entry.IsAccepted
+                ? new(NamespaceOptions.TEI + "lem", text.ToString())
+                : new(NamespaceOptions.TEI + "rdg", entry.Value);
 
             // add @type if tag
             if (!string.IsNullOrEmpty(entry.Tag))
@@ -171,7 +177,8 @@ public class TeiHelper(XmlTextTreeRendererOptions options)
             }
 
             // rdg or lem @n="ENTRY_INDEX+1"
-            lemOrRdg.SetAttributeValue("n", entryIndex + 1);
+            if (!NoNAttribute)
+                lemOrRdg.SetAttributeValue("n", entryIndex + 1);
             app.Add(lemOrRdg);
 
             // rdg or lem @type="TAG"

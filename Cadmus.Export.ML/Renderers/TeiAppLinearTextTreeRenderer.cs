@@ -21,7 +21,7 @@ public sealed class TeiAppLinearTextTreeRenderer : GroupTextTreeRenderer,
     ITextTreeRenderer,
     IConfigurable<AppLinearTextTreeRendererOptions>
 {
-    private TeiHelper _tei;
+    private TeiAppHelper _tei;
 
     private AppLinearTextTreeRendererOptions _options;
 
@@ -32,7 +32,7 @@ public sealed class TeiAppLinearTextTreeRenderer : GroupTextTreeRenderer,
     public TeiAppLinearTextTreeRenderer()
     {
         _options = new();
-        _tei = new TeiHelper(_options);
+        _tei = new TeiAppHelper(_options);
     }
 
     /// <summary>
@@ -42,7 +42,10 @@ public sealed class TeiAppLinearTextTreeRenderer : GroupTextTreeRenderer,
     public void Configure(AppLinearTextTreeRendererOptions options)
     {
         _options = options ?? new AppLinearTextTreeRendererOptions();
-        _tei = new TeiHelper(_options);
+        _tei = new TeiAppHelper(_options)
+        {
+            NoNAttribute = options?.NoNAttribute ?? false
+        };
 
         GroupHeadTemplate = _options.GroupHeadTemplate;
         GroupTailTemplate = _options.GroupTailTemplate;
@@ -173,6 +176,11 @@ public class AppLinearTextTreeRendererOptions : XmlTextTreeRendererOptions
     /// want a smaller XML you can set this to true.
     /// </summary>
     public bool NoItemSource { get; set; }
+
+    /// <summary>
+    /// Do not output @n attribute for <c>app</c>, <c>lem</c>, and <c>rdg</c>.
+    /// </summary>
+    public bool NoNAttribute { get; set; }
 
     /// <summary>
     /// Gets or sets the value for the type attribute to add to <c>rdg</c>
