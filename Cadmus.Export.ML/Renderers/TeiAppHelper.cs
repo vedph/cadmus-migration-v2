@@ -30,6 +30,12 @@ public class TeiAppHelper(XmlTextTreeRendererOptions options)
     public bool NoNAttribute { get; set; }
 
     /// <summary>
+    /// True to render <c>witDetail</c> as a child of <c>lem</c>/<c>rdg</c>
+    /// rather than as a sibling (which is the recommended option).
+    /// </summary>
+    public bool WitDetailAsChild { get; set; }
+
+    /// <summary>
     /// Configures the specified context.
     /// </summary>
     /// <param name="context">The context.</param>
@@ -56,7 +62,8 @@ public class TeiAppHelper(XmlTextTreeRendererOptions options)
     {
         // witDetail
         XElement witDetail = new(NamespaceOptions.TEI + "witDetail", detail);
-        lemOrRdg.Parent!.Add(witDetail);
+        if (WitDetailAsChild) lemOrRdg.Add(witDetail);
+        else lemOrRdg.Parent!.Add(witDetail);
 
         // @target=lem or rdg ID
         string local = lemOrRdg.Name.LocalName;
@@ -167,7 +174,7 @@ public class TeiAppHelper(XmlTextTreeRendererOptions options)
                 lemOrRdg.SetAttributeValue("type", entry.Tag);
 
             // add @type if zero variant
-            if (zeroVarType != null && entry.Value?.Length == 0)
+            if (zeroVarType != null && (string.IsNullOrEmpty(entry.Value)))
             {
                 string? type = lemOrRdg.Attribute("type")?.Value;
                 if (type != null)

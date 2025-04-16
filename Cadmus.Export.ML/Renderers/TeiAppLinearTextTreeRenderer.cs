@@ -44,7 +44,8 @@ public sealed class TeiAppLinearTextTreeRenderer : GroupTextTreeRenderer,
         _options = options ?? new AppLinearTextTreeRendererOptions();
         _tei = new TeiAppHelper(_options)
         {
-            NoNAttribute = options?.NoNAttribute ?? false
+            NoNAttribute = options?.NoNAttribute ?? false,
+            WitDetailAsChild = options?.WitDetailAsChild ?? false,
         };
 
         GroupHeadTemplate = _options.GroupHeadTemplate;
@@ -181,6 +182,12 @@ public class AppLinearTextTreeRendererOptions : XmlTextTreeRendererOptions
     /// Do not output @n attribute for <c>app</c>, <c>lem</c>, and <c>rdg</c>.
     /// </summary>
     public bool NoNAttribute { get; set; }
+
+    /// <summary>
+    /// True to render <c>witDetail</c> as a child of <c>lem</c>/<c>rdg</c>
+    /// rather than as a sibling (which is the recommended option).
+    /// </summary>
+    public bool WitDetailAsChild { get; set; }
 
     /// <summary>
     /// Gets or sets the value for the type attribute to add to <c>rdg</c>
