@@ -106,7 +106,9 @@ public sealed class TeiAppLinearTextTreeRenderer : GroupTextTreeRenderer,
                 ? null
                 : new XAttribute("source",
                     TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
-            new XAttribute("n", 1));
+            _options.NoNAttribute
+                ? null
+                : new XAttribute("n", 1));
         root.Add(block);
 
         // traverse nodes and build the XML (each node corresponds to a fragment)
@@ -140,7 +142,9 @@ public sealed class TeiAppLinearTextTreeRenderer : GroupTextTreeRenderer,
                         ? null
                         : new XAttribute("source",
                             TeiItemComposer.ITEM_ID_PREFIX + context.Item.Id),
-                    new XAttribute("n", ++y));
+                    _options.NoNAttribute
+                        ? null
+                        : new XAttribute("n", ++y));
                 root.Add(block);
             }
             return true;
